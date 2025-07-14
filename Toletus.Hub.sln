@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub", "src\Toletus.Hub\Toletus.Hub.csproj", "{EE055001-7574-47C6-93CD-AB3EBD99BA12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.API", "src\Toletus.Hub.API\Toletus.Hub.API.csproj", "{E9CF38A7-EE6C-46D3-8E09-8E9DD9544893}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE055001-7574-47C6-93CD-AB3EBD99BA12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE055001-7574-47C6-93CD-AB3EBD99BA12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE055001-7574-47C6-93CD-AB3EBD99BA12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE055001-7574-47C6-93CD-AB3EBD99BA12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9CF38A7-EE6C-46D3-8E09-8E9DD9544893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9CF38A7-EE6C-46D3-8E09-8E9DD9544893}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9CF38A7-EE6C-46D3-8E09-8E9DD9544893}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9CF38A7-EE6C-46D3-8E09-8E9DD9544893}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
