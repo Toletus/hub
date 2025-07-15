@@ -27,8 +27,6 @@ void ConfigureMiddlewares(WebApplication app)
     app.MapOpenApi();
     app.MapScalarApiReference();
     app.Lifetime.ApplicationStopping.Register(ApplicationStopping);
-    app.UseHttpsRedirection();
-    app.UseAuthorization();
     app.MapControllers();
 }
 
