@@ -64,7 +64,7 @@ public class LiteNet2NotificationService : NotificationBaseService
 
         var response = GetResponseOrNotification(litenet2Board, litenet2Response, out var notification);
 
-        ProcessNotification(ip, command, response, notification);
+        ProcessNotification(ip, command, response, notification, shouldSendToDelegate: false);
     }
 
     private static void Board_OnIdentification(LiteNet2BoardBase litenet2Board, Identification identification)
@@ -99,7 +99,7 @@ public class LiteNet2NotificationService : NotificationBaseService
             litenet2Board.Id,
             command,
             DeviceType.LiteNet2,
-            new { GyreResponse = direction });
+            new { Gyre = direction });
 
         ProcessNotification(litenet2Board.Ip.ToString(), command, notification: notification, shouldSendToWebhook: false);
     }

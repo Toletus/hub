@@ -15,9 +15,10 @@ public class NotificationBaseService
         int command,
         DeviceResponse? response = null,
         Notification? notification = null,
+        bool shouldSendToDelegate = true,
         bool shouldSendToWebhook = true)
     {
-        if (notification != null)
+        if (shouldSendToDelegate && notification != null)
             OnNotification?.Invoke(notification);
 
         HandleNotification(ip, command, response, notification, shouldSendToWebhook);
