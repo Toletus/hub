@@ -17,7 +17,6 @@ public static class DeviceCommonCommandsExtensions
             case LiteNet2Board liteNet2Board:
                 liteNet2Board.ReleaseEntry(message);
                 break;
-
             case LiteNet3Board liteNet3Board:
                 liteNet3Board.ReleaseEntry("", message);
                 break;
