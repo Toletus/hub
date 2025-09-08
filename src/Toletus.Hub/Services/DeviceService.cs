@@ -1,5 +1,6 @@
 using Toletus.Hub.DeviceCollectionManager;
 using Toletus.Hub.Models;
+using Toletus.Pack.Core.Network.Utils;
 using Toletus.Pack.Core.Utils;
 
 namespace Toletus.Hub.Services;

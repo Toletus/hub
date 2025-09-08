@@ -1,5 +1,6 @@
 using System.Net;
 using Toletus.LiteNet3;
+using Toletus.Pack.Core.Network.Utils;
 using Toletus.Pack.Core.Utils;
 
 namespace Toletus.Hub.DeviceCollectionManager;
