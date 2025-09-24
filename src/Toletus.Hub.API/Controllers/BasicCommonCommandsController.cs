@@ -15,21 +15,21 @@ public class BasicCommonCommandsController(BasicCommonCommandService basicCommon
     }
 
     [HttpPost(nameof(ReleaseEntry))]
-    public IActionResult ReleaseEntry(Device device)
+    public IActionResult ReleaseEntry(Device device, string message)
     {
-        return Ok(basicCommonCommandService.ReleaseEntry(device));
+        return Ok(basicCommonCommandService.ReleaseEntry(device, message));
     }
 
     [HttpPost(nameof(ReleaseEntryAndExit))]
-    public IActionResult ReleaseEntryAndExit(Device device)
+    public IActionResult ReleaseEntryAndExit(Device device, string message)
     {
-        return Ok(basicCommonCommandService.ReleaseEntryAndExit(device));
+        return Ok(basicCommonCommandService.ReleaseEntryAndExit(device, message));
     }
 
     [HttpPost(nameof(ReleaseExit))]
-    public IActionResult ReleaseExit(Device device)
+    public IActionResult ReleaseExit(Device device, string message)
     {
-        return Ok(basicCommonCommandService.ReleaseExit(device));
+        return Ok(basicCommonCommandService.ReleaseExit(device, message));
     }
 
     [HttpPost(nameof(SetId))]
