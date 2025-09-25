@@ -18,14 +18,6 @@ public class LiteNet3CommandService : LiteNet3NotificationService
             () => device.Get<LiteNet3Board>()?.GetBuzzerMute());
     }
 
-    public async Task<Notification> GetFirmwareVersion(Device device)
-    {
-        return await ExecuteCommandAsync(
-            device,
-            ResponseType.Buzzer,
-            () => device.Get<LiteNet3Board>()?.GetBuzzerMute());
-    }
-
     public async Task<Notification> GetFlow(Device device)
     {
         return await ExecuteCommandAsync(
@@ -87,7 +79,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
             () => device.Get<LiteNet3Board>()?.Notify(cmd, time, alignBot, topRow, bottomRow));
     }
 
-    public async Task<Notification> ReleaseEntry(Device device, string? topRow, string? bottomRow)
+    public async Task<Notification> ReleaseEntry(Device device, string? topRow = null, string? bottomRow = null)
     {
         return await ExecuteCommandAsync(
             device,
@@ -95,7 +87,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
             () => device.Get<LiteNet3Board>()?.ReleaseEntry(topRow, bottomRow));
     }
 
-    public async Task<Notification> ReleaseEntryAndExit(Device device, string? topRow, string? bottomRow)
+    public async Task<Notification> ReleaseEntryAndExit(Device device, string? topRow = null, string? bottomRow = null)
     {
         return await ExecuteCommandAsync(
             device,
@@ -103,7 +95,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
             () => device.Get<LiteNet3Board>()?.ReleaseEntryAndExit(topRow, bottomRow));
     }
 
-    public async Task<Notification> ReleaseExit(Device device, string? topRow, string? bottomRow)
+    public async Task<Notification> ReleaseExit(Device device, string? topRow = null, string? bottomRow = null)
     {
         return await ExecuteCommandAsync(
             device,

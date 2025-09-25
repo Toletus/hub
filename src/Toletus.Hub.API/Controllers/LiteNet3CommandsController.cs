@@ -18,12 +18,6 @@ public class LiteNet3CommandsController(LiteNet3CommandService liteNet3CommandSe
         return GetResponse(await liteNet3CommandService.GetBuzzerMute(device));
     }
 
-    [HttpPost(nameof(GetFirmwareVersion))]
-    public async Task<IActionResult> GetFirmwareVersion(Device device)
-    {
-        return GetResponse(await liteNet3CommandService.GetFirmwareVersion(device));
-    }
-
     [HttpPost(nameof(GetFlow))]
     public async Task<IActionResult> GetFlow(Device device)
     {
