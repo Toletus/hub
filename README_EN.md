@@ -50,4 +50,4 @@ https://documenter.getpostman.com/view/45933287/2sB34bLPRv#intro
 - **Models:** Data contracts (e.g., `Device`, `DeviceType`, device responses).
 
 ## License
-Define the project license here (MIT, Apache-2.0, etc.).
+Define the project license here MIT.
