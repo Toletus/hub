@@ -50,4 +50,4 @@ https://documenter.getpostman.com/view/45933287/2sB34bLPRv#intro
 - Models: contratos de dados (por exemplo, `Device`, `DeviceType`, respostas de dispositivo).
 
 ## Licença
-Defina aqui a licença do projeto (MIT, Apache-2.0, etc.).
+Defina aqui a licença do projeto MIT.
