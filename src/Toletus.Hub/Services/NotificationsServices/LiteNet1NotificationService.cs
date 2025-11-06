@@ -27,7 +27,7 @@ public class LiteNet1NotificationService : NotificationBaseService
         return Notification.CreateNotification(device.Ip, device.Id, 0, device.Type, result);
     }
 
-    private static void OnLiteNet1BoardReceived(LiteNet obj, Controlador controlador)
+    public static void OnLiteNet1BoardReceived(LiteNet obj, Controlador controlador)
     {
         controlador.OnIdentificacao += Board_OnIdentification;
         controlador.OnAcessou += Board_OnGyre;
