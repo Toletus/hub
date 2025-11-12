@@ -39,7 +39,7 @@ public class LiteNet3NotificationService : NotificationBaseService
             new DeviceResponse(true));
     }
 
-    private static void OnLiteNet3BoardReceived(LiteNet3Board obj)
+    public static void OnLiteNet3BoardReceived(LiteNet3Board obj)
     {
         obj.OnResponse += Board_OnResponse;
         obj.OnResult += Board_OnResult;

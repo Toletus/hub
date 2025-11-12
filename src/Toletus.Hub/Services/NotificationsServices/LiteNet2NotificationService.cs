@@ -46,7 +46,7 @@ public class LiteNet2NotificationService : NotificationBaseService
         return await Notification.GetNotification(device.Ip, device.Id, (int)command, device.Type, deviceResponse);
     }
 
-    private static void OnLiteNet2BoardReceived(LiteNet2Board obj)
+    public static void OnLiteNet2BoardReceived(LiteNet2Board obj)
     {
         obj.OnResponse += Board_OnResponse;
         obj.OnIdentification += Board_OnIdentification;
