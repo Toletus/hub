@@ -9,6 +9,8 @@
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
         <RepositoryUrl>https://github.com/Toletus/hub.git</RepositoryUrl>
         <PackageVersion>$(PackageVersion)</PackageVersion>
+
+        <PackageId>Toletus.Hub.V2</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
