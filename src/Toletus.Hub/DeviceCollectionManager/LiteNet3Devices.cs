@@ -46,19 +46,7 @@ public static class LiteNet3Devices
             .Select(LiteNet3Board.CreateFromBase).ToArray();
     }
 
-    public static LiteNet3Board? Get(int id)
-    {
-        if (Boards == null || Boards.All(c => c.Id != id))
-            Boards = SearchLiteNet3Boards();
+    public static LiteNet3Board? Get(int id) => Boards.FirstOrDefault(c => c.Id == id);
 
-        return Boards.FirstOrDefault(c => c.Id == id);
-    }
-
-    public static LiteNet3Board? Get(string ip)
-    {
-        if (Boards == null || Boards.All(c => c.Ip.ToString() != ip))
-            Boards = SearchLiteNet3Boards();
-
-        return Boards?.FirstOrDefault(c => c.Ip.ToString() == ip);
-    }
+    public static LiteNet3Board? Get(string ip) => Boards?.FirstOrDefault(c => c.Ip.ToString() == ip);
 }

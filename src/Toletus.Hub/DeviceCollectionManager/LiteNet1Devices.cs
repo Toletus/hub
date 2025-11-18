@@ -57,19 +57,7 @@ public static class LiteNet1Devices
         return Controlador.LiteNets.ToArray();
     }
 
-    public static LiteNet? Get(int id)
-    {
-        if (Boards == null || Boards.All(c => c.Id != id))
-            Boards = SearchLiteNetBoards();
+    public static LiteNet? Get(int id) => Boards.FirstOrDefault(c => c.Id == id);
 
-        return Boards.FirstOrDefault(c => c.Id == id);
-    }
-
-    public static LiteNet? Get(string ip)
-    {
-        if (Boards == null || Boards.All(c => c.IP != ip))
-            Boards = SearchLiteNetBoards();
-
-        return Boards?.FirstOrDefault(c => c.IP == ip);
-    }
+    public static LiteNet? Get(string ip) => Boards?.FirstOrDefault(c => c.IP == ip);
 }
