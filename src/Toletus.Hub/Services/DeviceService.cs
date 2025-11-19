@@ -1,7 +1,6 @@
 using Toletus.Hub.DeviceCollectionManager;
 using Toletus.Hub.Models;
 using Toletus.Pack.Core.Network.Utils;
-using Toletus.Pack.Core.Utils;
 
 namespace Toletus.Hub.Services;
 
@@ -27,11 +26,28 @@ public class DeviceService
         return NetworkInterfaceUtils.GetDefaultNetworkInterface()?.Name;
     }
 
-    public static IEnumerable<Device>? Devices =>
-        LiteNet2Devices.Boards?.Select(Device.CreateFrom)
-            .Concat(LiteNet3Devices.Boards?.Select(Device.CreateFrom)
-                        .Concat(LiteNet1Devices.Boards?.Select(Device.CreateFrom))
-                    ?? []);
+    public static IEnumerable<Device>? Devices => GetDevices();
+
+    private static IEnumerable<Device>? GetDevices()
+    {
+        var liteNet2 = LiteNet2Devices.Boards?.Select(Device.CreateFrom);
+        var liteNet3 = LiteNet3Devices.Boards?.Select(Device.CreateFrom);
+        var liteNet1 = LiteNet1Devices.Boards?.Select(Device.CreateFrom);
+
+        var conjuntos = new[] { liteNet2, liteNet3, liteNet1 }
+            .Where(sequence => sequence != null)
+            .Cast<IEnumerable<Device>>()
+            .ToArray();
+
+        if (conjuntos.Length == 0)
+            return null;
+
+        return conjuntos
+            .Skip(1)
+            .Aggregate(
+                conjuntos[0],
+                (acc, next) => acc.Concat(next));
+    }
 
     /// <summary>
     /// Retrieves the discovered devices for a given network.

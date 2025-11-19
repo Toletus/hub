@@ -14,10 +14,11 @@
     <ItemGroup>
         <PackageReference Include="RestSharp" Version="112.1.0"/>
         <PackageReference Include="Toletus.LiteNet1" Version="8.6.1"/>
-        <PackageReference Include="Toletus.LiteNet2" Version="8.20.1" />
-        <PackageReference Include="Toletus.LiteNet3" Version="9.23.1" />
+        <PackageReference Include="Toletus.LiteNet2" Version="8.23.1" />
+        <PackageReference Include="Toletus.LiteNet3" Version="9.27.3" />
         <PackageReference Include="Toletus.Pack.Core" Version="8.31.1" />
         <PackageReference Include="Toletus.SM25" Version="8.6.1"/>
+        <PackageReference Include="System.IO.Ports" Version="10.0.0" />
     </ItemGroup>
 
     <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">

@@ -73,6 +73,17 @@ public class DeviceConnectionController(
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="portName"></param>
+    /// <returns></returns>
+    [HttpPost(nameof(ConnectToSerialPort))]
+    public IActionResult ConnectToSerialPort(string? portName = null)
+    {
+        return GetResponse(controllerService.ConnectSerialPort(portName));
+    }
+
+    /// <summary>
     /// Disconnects from a device using its IP address.
     /// </summary>
     /// <param name="ip">The IP address of the device to disconnect from.</param>

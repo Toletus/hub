@@ -23,11 +23,17 @@ public static class LiteNet3Devices
             OnBoardReceived?.Invoke(newBoard);
     }
 
+    public static void SetBoard(LiteNet3Board board)
+        => SetBoards(new List<LiteNet3Board> { board });
+
     private static void SetRemovedBoards(ICollection<LiteNet3Board> newBoards)
     {
-        Boards = Boards
-            .Where(existingBoard => newBoards.Any(newBoard => newBoard.Ip.ToString() == existingBoard.Ip.ToString()))
-            .ToList();
+        foreach (var newBoard in newBoards)
+        {
+            var existing = Boards.FirstOrDefault(b => b.Ip.ToString() == newBoard.Ip.ToString());
+            if (existing != null)
+                ((List<LiteNet3Board>)Boards).Remove(existing);
+        }
     }
 
     private static void SetAddedBoards(ICollection<LiteNet3Board> newBoards)

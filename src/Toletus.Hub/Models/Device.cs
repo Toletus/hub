@@ -49,7 +49,7 @@ public partial class Device
         return new Device
         {
             Id = board.Id,
-            Name = $"{DeviceType.LiteNet1.ToString()} #{board.Id}",
+            Name = $"{nameof(DeviceType.LiteNet1)} #{board.Id}",
             Ip = board.IP,
             Port = board.Porta,
             Type = DeviceType.LiteNet1,
@@ -65,7 +65,7 @@ public partial class Device
         return new Device
         {
             Id = board.Id,
-            Name = $"{DeviceType.LiteNet2.ToString()} #{board.Id}",
+            Name = $"{nameof(DeviceType.LiteNet2)} #{board.Id}",
             Ip = board.Ip.ToString(),
             Port = LiteNet2BoardBase.Port,
             Type = DeviceType.LiteNet2,
@@ -80,7 +80,7 @@ public partial class Device
         {
             Id = board.Id,
             Name = string.IsNullOrEmpty(board.Alias)
-                ? $"{DeviceType.LiteNet3.ToString()} #{board.Id}"
+                ? $"{nameof(DeviceType.LiteNet3)} #{board.Id}"
                 : $"{board.Alias} #{board.Id}",
             Ip = board.Ip.ToString(),
             Port = LiteNet3BoardBase.Port,

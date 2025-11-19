@@ -23,6 +23,22 @@ public class ControllerService
         };
     }
 
+    public DeviceResponse ConnectSerialPort(string? portName = null)
+    {
+        var board = LiteNet3Board.CreateToSerialPort();
+        
+        var isConnetect = board.ConnectSerialPort(portName);
+        
+        if (!isConnetect)
+            return new DeviceResponse(success: false, AlreadyConnected); 
+        
+        LiteNet3Devices.SetBoard(board);
+
+        var device = DeviceService.Devices;
+        
+        return new DeviceResponse(Device.CreateFrom(board));
+    }
+
     private DeviceResponse ConnectLiteNet1(LiteNet? board)
     {
         if (board == null)
