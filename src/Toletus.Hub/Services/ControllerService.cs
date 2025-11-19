@@ -27,14 +27,9 @@ public class ControllerService
     {
         var board = LiteNet3Board.CreateToSerialPort();
         
-        var isConnetect = board.ConnectSerialPort(portName);
-        
-        if (!isConnetect)
-            return new DeviceResponse(success: false, AlreadyConnected); 
+        board.ConnectSerialPort(portName); 
         
         LiteNet3Devices.SetBoard(board);
-
-        var device = DeviceService.Devices;
         
         return new DeviceResponse(Device.CreateFrom(board));
     }
