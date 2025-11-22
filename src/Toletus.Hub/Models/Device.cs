@@ -11,6 +11,7 @@ public partial class Device
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Ip { get; set; } = string.Empty;
+    public string SerialNumber { get; set; } = string.Empty;
     public int Port { get; set; }
     public DeviceType Type { get; set; }
 
@@ -67,6 +68,7 @@ public partial class Device
             Id = board.Id,
             Name = $"{nameof(DeviceType.LiteNet2)} #{board.Id}",
             Ip = board.Ip.ToString(),
+            SerialNumber = board.SerialNumber!,
             Port = LiteNet2BoardBase.Port,
             Type = DeviceType.LiteNet2,
             Connected = board.Connected,
@@ -83,6 +85,7 @@ public partial class Device
                 ? $"{nameof(DeviceType.LiteNet3)} #{board.Id}"
                 : $"{board.Alias} #{board.Id}",
             Ip = board.Ip.ToString(),
+            SerialNumber = board.Serial!,
             Port = LiteNet3BoardBase.Port,
             Type = DeviceType.LiteNet3,
             Connected = board.Connected,
