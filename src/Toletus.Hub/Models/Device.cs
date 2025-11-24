@@ -20,6 +20,14 @@ public partial class Device
     // Supondo que ambos os boards herdem de uma classe base comum
     private object _board;
 
+    public override string ToString() => $"{base.ToString()} {Name}";
+
+    public static Device? AsDevice(object data) =>
+        data is not Device device ? null : device;
+
+    public static IEnumerable<Device>? AsDevices(object data) =>
+        data is not IEnumerable<Device> devices ? null : devices;
+
     public T? Get<T>() where T : class
     {
         return typeof(T) switch
@@ -59,7 +67,6 @@ public partial class Device
         };
     }
 
-    public override string ToString() => $"{base.ToString()} {Name}";
 
     public static Device CreateFrom(LiteNet2Board board)
     {
