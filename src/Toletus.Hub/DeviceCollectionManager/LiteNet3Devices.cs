@@ -12,7 +12,7 @@ public static class LiteNet3Devices
     public static void SetBoards(ICollection<LiteNet3Board> newBoards)
     {
         if (Boards == null)
-            Boards = newBoards;
+            Boards = newBoards.ToList();
         else
         {
             SetRemovedBoards(newBoards);
@@ -28,12 +28,9 @@ public static class LiteNet3Devices
 
     private static void SetRemovedBoards(ICollection<LiteNet3Board> newBoards)
     {
-        foreach (var newBoard in newBoards)
-        {
-            var existing = Boards.FirstOrDefault(b => b.Ip.ToString() == newBoard.Ip.ToString());
-            if (existing != null)
-                ((List<LiteNet3Board>)Boards).Remove(existing);
-        }
+        Boards = Boards
+            .Where(existingBoard => newBoards.Any(newBoard => newBoard.Ip.ToString() == existingBoard.Ip.ToString()))
+            .ToList();
     }
 
     private static void SetAddedBoards(ICollection<LiteNet3Board> newBoards)
