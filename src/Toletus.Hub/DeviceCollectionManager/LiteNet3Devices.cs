@@ -26,6 +26,12 @@ public static class LiteNet3Devices
     public static void SetBoard(LiteNet3Board board)
         => SetBoards([board]);
 
+    public static void RemoveBoard(LiteNet3Board board)
+    {
+        var removedBoard = Boards?.FirstOrDefault(x => x.Ip.ToString() == board.Ip.ToString());
+        if (removedBoard != null) Boards?.Remove(removedBoard);
+    }
+
     private static void SetRemovedBoards(List<LiteNet3Board> newBoards)
     {
         var removedBoards = Boards?.Where(x => 

@@ -123,7 +123,10 @@ public class ControllerService
             case { Connected: false }:
                 return new DeviceResponse(success: false, message: NotConnected);
             default:
+            {
                 board!.Close();
+                LiteNet3Devices.RemoveBoard(board);
+            }
 
                 return new DeviceResponse(Device.CreateFrom(board));
         }
