@@ -8,9 +8,9 @@ public static class LiteNet1Devices
 {
     public static Action<LiteNet, Controlador> OnBoardReceived;
     private static readonly Controlador Controlador = new();
-    public static IEnumerable<LiteNet>? Boards { get; private set; }
+    public static List<LiteNet>? Boards { get; private set; }
 
-    public static void SetBoards(ICollection<LiteNet> newBoards)
+    public static void SetBoards(List<LiteNet> newBoards)
     {
         if (Boards == null)
             Boards = newBoards;
@@ -24,18 +24,22 @@ public static class LiteNet1Devices
             OnBoardReceived?.Invoke(newBoard, Controlador);
     }
 
-    private static void SetRemovedBoards(ICollection<LiteNet> newBoards)
+    private static void SetRemovedBoards(List<LiteNet> newBoards)
     {
-        Boards = Boards
-            .Where(existingBoard => newBoards.Any(newBoard => newBoard.IP == existingBoard.IP))
+        var removedBoards = Boards?.Where(x => 
+                newBoards.Exists(p => x.IP.ToString() == p.IP.ToString()))
             .ToList();
+        
+        if (removedBoards == null || removedBoards.Count == 0) return;
+        
+        Boards?.RemoveAll(removedBoards.Contains);
     }
 
-    private static void SetAddedBoards(ICollection<LiteNet> newBoards)
+    private static void SetAddedBoards(List<LiteNet> newBoards)
     {
         foreach (var newBoard in newBoards)
             if (Boards.All(existingBoard => existingBoard.IP != newBoard.IP))
-                ((List<LiteNet>)Boards).Add(newBoard);
+                Boards.Add(newBoard);
     }
 
     public static LiteNet[] SearchLiteNetBoards(IPAddress? address = null)

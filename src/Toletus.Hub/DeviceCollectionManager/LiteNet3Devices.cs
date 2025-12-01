@@ -7,9 +7,9 @@ namespace Toletus.Hub.DeviceCollectionManager;
 public static class LiteNet3Devices
 {
     public static Action<LiteNet3Board> OnBoardReceived;
-    public static IEnumerable<LiteNet3Board>? Boards { get; private set; }
+    public static List<LiteNet3Board>? Boards { get; private set; }
 
-    public static void SetBoards(ICollection<LiteNet3Board> newBoards)
+    public static void SetBoards(List<LiteNet3Board> newBoards)
     {
         if (Boards == null)
             Boards = newBoards.ToList();
@@ -24,20 +24,24 @@ public static class LiteNet3Devices
     }
 
     public static void SetBoard(LiteNet3Board board)
-        => SetBoards(new List<LiteNet3Board> { board });
+        => SetBoards([board]);
 
-    private static void SetRemovedBoards(ICollection<LiteNet3Board> newBoards)
+    private static void SetRemovedBoards(List<LiteNet3Board> newBoards)
     {
-        Boards = Boards
-            .Where(existingBoard => newBoards.Any(newBoard => newBoard.Ip.ToString() == existingBoard.Ip.ToString()))
+        var removedBoards = Boards?.Where(x => 
+                newBoards.Exists(p => x.Ip.ToString() == p.Ip.ToString()))
             .ToList();
+        
+        if (removedBoards == null || removedBoards.Count == 0) return;
+        
+        Boards?.RemoveAll(removedBoards.Contains);
     }
 
-    private static void SetAddedBoards(ICollection<LiteNet3Board> newBoards)
+    private static void SetAddedBoards(List<LiteNet3Board> newBoards)
     {
         foreach (var newBoard in newBoards)
             if (!Boards.Any(existingBoard => existingBoard.Ip.ToString() == newBoard.Ip.ToString()))
-                ((List<LiteNet3Board>)Boards).Add(newBoard);
+                Boards.Add(newBoard);
     }
 
     public static LiteNet3Board[] SearchLiteNet3Boards(IPAddress? address = null)

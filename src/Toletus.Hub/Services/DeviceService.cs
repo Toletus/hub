@@ -78,9 +78,9 @@ public class DeviceService
             return new DeviceResponse(success: false,
                 message: $"The specified network '{network}' was not found.");
 
-        LiteNet1Devices.SetBoards(LiteNet1Devices.SearchLiteNetBoards(networks[network]));
-        LiteNet2Devices.SetBoards(LiteNet2Devices.SearchLiteNet2Boards(networks[network]));
-        LiteNet3Devices.SetBoards(LiteNet3Devices.SearchLiteNet3Boards(networks[network]));
+        LiteNet1Devices.SetBoards(LiteNet1Devices.SearchLiteNetBoards(networks[network]).ToList());
+        LiteNet2Devices.SetBoards(LiteNet2Devices.SearchLiteNet2Boards(networks[network]).ToList());
+        LiteNet3Devices.SetBoards(LiteNet3Devices.SearchLiteNet3Boards(networks[network]).ToList());
 
         return new DeviceResponse(Devices);
     }
