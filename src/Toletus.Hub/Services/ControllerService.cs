@@ -65,9 +65,6 @@ public class ControllerService
         if (board == null)
             return new DeviceResponse(success: false, NotFoundMessage);
 
-        if (board.Connected)
-            return new DeviceResponse(success: false, AlreadyConnected);
-
         board.Connect(network);
 
         return new DeviceResponse(Device.CreateFrom(board));
