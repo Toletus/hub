@@ -15,7 +15,7 @@
         <PackageReference Include="RestSharp" Version="112.1.0"/>
         <PackageReference Include="Toletus.LiteNet1" Version="8.6.1"/>
         <PackageReference Include="Toletus.LiteNet2" Version="8.26.1" />
-        <PackageReference Include="Toletus.LiteNet3" Version="9.34.1" />
+        <PackageReference Include="Toletus.LiteNet3" Version="9.35.1" />
         <PackageReference Include="Toletus.Pack.Core" Version="10.12.1" />
         <PackageReference Include="Toletus.SM25" Version="8.6.1"/>
         <PackageReference Include="System.IO.Ports" Version="10.0.0" />
