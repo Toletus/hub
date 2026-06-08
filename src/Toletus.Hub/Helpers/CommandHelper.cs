@@ -87,7 +87,7 @@ public static class CommandHelper
             { LiteNet2Commands.GetBuzzerMute, board => (TOutput)(object)((LiteNet2Board)(object)board).BuzzerMute },
             {
                 LiteNet2Commands.GetFlowControl,
-                board => (TOutput)(object)((LiteNet2Board)(object)board).FirmwareVersion
+                board => (TOutput)(object)((LiteNet2Board)(object)board).ControlledFlow
             },
             {
                 LiteNet2Commands.GetFlowControlExtended,

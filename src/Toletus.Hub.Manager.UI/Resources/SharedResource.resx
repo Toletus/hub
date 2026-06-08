@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App.Title" xml:space="preserve"><value>Gerenciador Universal do Hub</value></data>
+  <data name="App.Subtitle" xml:space="preserve"><value>Controle direto de dispositivos LiteNet e m&#243;dulos expostos pelo Hub</value></data>
+  <data name="Toolbar.Network" xml:space="preserve"><value>Rede</value></data>
+  <data name="Toolbar.Search" xml:space="preserve"><value>Buscar por IP, s&#233;rie ou tipo</value></data>
+  <data name="Toolbar.Discover" xml:space="preserve"><value>Descobrir</value></data>
+  <data name="Toolbar.Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Toolbar.SelectNetwork" xml:space="preserve"><value>Selecione a rede</value></data>
+  <data name="Language.pt-BR" xml:space="preserve"><value>Portugu&#234;s</value></data>
+  <data name="Language.en-US" xml:space="preserve"><value>Ingl&#234;s</value></data>
+  <data name="Devices.Title" xml:space="preserve"><value>Dispositivos expostos pelo Hub</value></data>
+  <data name="Devices.Hint" xml:space="preserve"><value>LiteNet descobertos por rede; SM25 aparece como m&#243;dulo biom&#233;trico.</value></data>
+  <data name="Devices.Empty" xml:space="preserve"><value>Nenhum dispositivo descoberto nesta rede.</value></data>
+  <data name="Devices.Modules" xml:space="preserve"><value>M&#243;dulos</value></data>
+  <data name="Devices.SerialHint" xml:space="preserve"><value>Conectar via porta serial quando aplic&#225;vel.</value></data>
+  <data name="Workspace.EmptyTitle" xml:space="preserve"><value>Selecione um dispositivo</value></data>
+  <data name="Workspace.EmptyText" xml:space="preserve"><value>Os comandos e diagn&#243;sticos aparecem aqui depois da descoberta.</value></data>
+  <data name="Workspace.Connected" xml:space="preserve"><value>Conectado</value></data>
+  <data name="Workspace.Disconnected" xml:space="preserve"><value>Desconectado</value></data>
+  <data name="Workspace.Serial" xml:space="preserve"><value>S&#233;rie</value></data>
+  <data name="History.Title" xml:space="preserve"><value>Hist&#243;rico</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>Nenhum comando executado.</value></data>
+  <data name="History.Clear" xml:space="preserve"><value>Limpar</value></data>
+  <data name="Group.Connection" xml:space="preserve"><value>Conex&#227;o</value></data>
+  <data name="Group.Operation" xml:space="preserve"><value>Opera&#231;&#227;o</value></data>
+  <data name="Group.Maintenance" xml:space="preserve"><value>Manuten&#231;&#227;o</value></data>
+  <data name="Group.Diagnostics" xml:space="preserve"><value>Diagn&#243;stico</value></data>
+  <data name="Group.Settings" xml:space="preserve"><value>Configura&#231;&#245;es</value></data>
+  <data name="Group.Biometrics" xml:space="preserve"><value>Biometria SM25</value></data>
+  <data name="Config.General" xml:space="preserve"><value>Vis&#227;o geral</value></data>
+  <data name="Config.Network" xml:space="preserve"><value>Rede</value></data>
+  <data name="Config.Flow" xml:space="preserve"><value>Fluxo</value></data>
+  <data name="Config.Messages" xml:space="preserve"><value>Mensagens</value></data>
+  <data name="Config.Counters" xml:space="preserve"><value>Contadores</value></data>
+  <data name="Config.Operation" xml:space="preserve"><value>Opera&#231;&#227;o</value></data>
+  <data name="Config.Security" xml:space="preserve"><value>Seguran&#231;a</value></data>
+  <data name="Metric.Devices" xml:space="preserve"><value>Dispositivos</value></data>
+  <data name="Metric.Connected" xml:space="preserve"><value>Conectados</value></data>
+  <data name="Metric.ActiveCommand" xml:space="preserve"><value>Comandos ativos</value></data>
+  <data name="Field.FirmwareVersion" xml:space="preserve"><value>Vers&#227;o firmware</value></data>
+  <data name="Field.DeviceId" xml:space="preserve"><value>ID do dispositivo</value></data>
+  <data name="Field.FlowMode" xml:space="preserve"><value>Modo de fluxo</value></data>
+  <data name="Field.DefaultMessage" xml:space="preserve"><value>Mensagem padr&#227;o</value></data>
+  <data name="Field.SecondaryMessage" xml:space="preserve"><value>Mensagem secund&#225;ria</value></data>
+  <data name="Field.IpMode" xml:space="preserve"><value>Modo IP</value></data>
+  <data name="Field.StaticIp" xml:space="preserve"><value>IP fixo</value></data>
+  <data name="Field.SubnetMask" xml:space="preserve"><value>M&#225;scara sub-rede</value></data>
+  <data name="Field.ShowCounters" xml:space="preserve"><value>Exibir contadores</value></data>
+  <data name="Field.Entered" xml:space="preserve"><value>Entraram</value></data>
+  <data name="Field.Exited" xml:space="preserve"><value>Sa&#237;ram</value></data>
+  <data name="Field.ReleaseDuration" xml:space="preserve"><value>Dura&#231;&#227;o de acionamento</value></data>
+  <data name="Field.MenuPassword" xml:space="preserve"><value>Senha menu</value></data>
+  <data name="Field.Mac" xml:space="preserve"><value>MAC</value></data>
+  <data name="Field.SelectOption" xml:space="preserve"><value>Selecionar</value></data>
+  <data name="Option.Flow.None" xml:space="preserve"><value>Nenhum</value></data>
+  <data name="Option.Flow.Entry" xml:space="preserve"><value>Entrada</value></data>
+  <data name="Option.Flow.Exit" xml:space="preserve"><value>Saída</value></data>
+  <data name="Option.Flow.Both" xml:space="preserve"><value>Entrada e saída</value></data>
+  <data name="Option.IpMode.Dhcp" xml:space="preserve"><value>DHCP</value></data>
+  <data name="Option.IpMode.Static" xml:space="preserve"><value>IP fixo</value></data>
+  <data name="Placeholder.DefaultMessage" xml:space="preserve"><value>Mensagem exibida no display</value></data>
+  <data name="Placeholder.SecondaryMessage" xml:space="preserve"><value>Mensagem auxiliar</value></data>
+  <data name="Modules.Empty" xml:space="preserve"><value>Nenhum m&#243;dulo adicional dispon&#237;vel para este dispositivo.</value></data>
+  <data name="Modules.Sm25Hint" xml:space="preserve"><value>Dispon&#237;vel quando o LiteNet2 conectado exp&#245;e o leitor biom&#233;trico.</value></data>
+  <data name="Command.Connect" xml:space="preserve"><value>Conectar</value></data>
+  <data name="Command.ConnectSerial" xml:space="preserve"><value>Conectar LiteNet3 serial</value></data>
+  <data name="Command.Disconnect" xml:space="preserve"><value>Desconectar</value></data>
+  <data name="Command.ReleaseEntry" xml:space="preserve"><value>Liberar entrada</value></data>
+  <data name="Command.ReleaseEntryAndExit" xml:space="preserve"><value>Liberar entrada e sa&#237;da</value></data>
+  <data name="Command.ReleaseExit" xml:space="preserve"><value>Liberar sa&#237;da</value></data>
+  <data name="Command.Reset" xml:space="preserve"><value>Reiniciar</value></data>
+  <data name="Command.ResetCounters" xml:space="preserve"><value>Zerar contadores</value></data>
+  <data name="Command.GetStatus" xml:space="preserve"><value>Ler status</value></data>
+  <data name="Command.GetProperties" xml:space="preserve"><value>Obter propriedades</value></data>
+  <data name="Command.Sm25ReaderInfo" xml:space="preserve"><value>Informa&#231;&#245;es do leitor</value></data>
+  <data name="Command.Sm25Cancel" xml:space="preserve"><value>Cancelar leitura</value></data>
+  <data name="Command.SendConfiguration" xml:space="preserve"><value>Enviar configura&#231;&#227;o</value></data>
+  <data name="Message.NetworkMissing" xml:space="preserve"><value>Selecione uma interface de rede.</value></data>
+  <data name="Message.DiscoveryPending" xml:space="preserve"><value>Descoberta em andamento.</value></data>
+  <data name="Message.DiscoverySuccess" xml:space="preserve"><value>Descoberta conclu&#237;da.</value></data>
+  <data name="Message.CommandPending" xml:space="preserve"><value>Comando em andamento.</value></data>
+  <data name="Message.CommandSuccess" xml:space="preserve"><value>Comando executado.</value></data>
+  <data name="Message.CommandUnsupported" xml:space="preserve"><value>Comando ainda n&#227;o est&#225; dispon&#237;vel para este dispositivo.</value></data>
+  <data name="Message.CommandFailed" xml:space="preserve"><value>N&#227;o foi poss&#237;vel executar o comando.</value></data>
+  <data name="Message.Connected" xml:space="preserve"><value>Dispositivo conectado.</value></data>
+  <data name="Message.Disconnected" xml:space="preserve"><value>Dispositivo desconectado.</value></data>
+  <data name="Message.ConfigurationSent" xml:space="preserve"><value>Configuração enviada.</value></data>
+  <data name="Message.ConfigurationLoaded" xml:space="preserve"><value>Propriedades obtidas.</value></data>
+  <data name="Message.ConfigurationQueued" xml:space="preserve"><value>Configura&#231;&#227;o pronta para envio por comandos espec&#237;ficos.</value></data>
+</root>

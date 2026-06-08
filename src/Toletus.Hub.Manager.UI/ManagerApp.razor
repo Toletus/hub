@@ -1,0 +1,293 @@
+@implements IDisposable
+@inject ManagerUiState State
+@inject DeviceCapabilityCatalog Catalog
+@inject NotificationHistoryService History
+@inject CultureState Culture
+@inject UiText Text
+
+<div class="thm-page">
+    <section class="thm-app">
+        <header class="thm-topbar">
+            <div class="thm-brand">
+                <div class="thm-mark">T</div>
+                <div>
+                    <div class="thm-product-name">Toletus Hub Manager</div>
+                    <div class="thm-muted">@Text["App.Subtitle"]</div>
+                </div>
+            </div>
+
+            <div class="thm-controls">
+                <label class="thm-control thm-control-network">
+                    <span>@Text["Toolbar.Network"]</span>
+                    <select @bind="State.SelectedNetwork" disabled="@State.IsBusy">
+                        <option value="">@Text["Toolbar.SelectNetwork"]</option>
+                        @foreach (var network in State.Networks)
+                        {
+                            <option value="@network">@network</option>
+                        }
+                    </select>
+                </label>
+                <input class="thm-control thm-control-search" @bind="State.SearchText" @bind:event="oninput" placeholder="@Text["Toolbar.Search"]" />
+                <select class="thm-control thm-language-select" value="@Culture.CurrentCulture.Name" @onchange="ChangeCulture">
+                    @foreach (var culture in Culture.SupportedCultures)
+                    {
+                        <option value="@culture.Name">@Text[$"Language.{culture.Name}"]</option>
+                    }
+                </select>
+                <button class="thm-primary" @onclick="() => State.DiscoverAsync()" disabled="@State.IsBusy">@Text["Toolbar.Discover"]</button>
+            </div>
+        </header>
+
+        <div class="thm-layout">
+            <aside class="thm-sidebar">
+                <div class="thm-panel-head">
+                    <div class="thm-panel-title">@Text["Devices.Title"]</div>
+                    <div class="thm-muted">@Text["Devices.Hint"]</div>
+                </div>
+
+                <div class="thm-device-list">
+                    @if (!State.FilteredDevices.Any())
+                    {
+                        <p class="thm-empty">@Text["Devices.Empty"]</p>
+                    }
+                    else
+                    {
+                        @foreach (var device in State.FilteredDevices)
+                        {
+                            <button class="thm-device @(State.SelectedDevice?.Key == device.Key ? "thm-device-active" : null)"
+                                    @onclick="() => State.SelectDeviceAsync(device)">
+                                <span class="thm-device-line">
+                                    <span class="thm-device-name">@device.Name</span>
+                                    <span class="thm-chip @(device.Connected ? "thm-chip-on" : null)">
+                                        @(device.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"])
+                                    </span>
+                                </span>
+                                <span class="thm-muted">@device.IpAddress &middot; @device.TypeLabel</span>
+                                @if (device.Modules.Count > 0)
+                                {
+                                    <span class="thm-chip thm-chip-warn">@Text["Devices.Modules"]: @string.Join(", ", device.Modules)</span>
+                                }
+                            </button>
+                        }
+                    }
+
+                </div>
+            </aside>
+
+            <main class="thm-workspace">
+                <section class="thm-metrics">
+                    <div class="thm-metric"><span>@Text["Metric.Devices"]</span><strong>@State.Devices.Count</strong></div>
+                    <div class="thm-metric"><span>@Text["Metric.Connected"]</span><strong>@State.Devices.Count(d => d.Connected)</strong></div>
+                    <div class="thm-metric"><span>@Text["Metric.ActiveCommand"]</span><strong>@(State.CurrentCommandId is null ? "0" : "1")</strong></div>
+                </section>
+
+                @if (State.SelectedDevice is null)
+                {
+                    <section class="thm-empty-state">
+                        <h2>@Text["Workspace.EmptyTitle"]</h2>
+                        <p>@Text["Workspace.EmptyText"]</p>
+                    </section>
+                }
+                else
+                {
+                    <section class="thm-command-bar">
+                        @foreach (var command in Catalog.GetCommands(State.SelectedDevice.Type).Where(c => c.GroupKey is "Group.Operation" or "Group.Connection" or "Group.Diagnostics"))
+                        {
+                            <button class="thm-command @(command.Id == DeviceCapabilityCatalog.ReleaseEntry ? "thm-command-hot" : null)"
+                                    @onclick="() => State.ExecuteAsync(command.Id)"
+                                    disabled="@IsDisabled(command)">
+                                @Text[command.LabelKey]
+                            </button>
+                        }
+                    </section>
+
+                    <section class="thm-detail">
+                        <article class="thm-card thm-config-card">
+                            <header class="thm-config-card-header">
+                                <div>
+                                    <h2>@Text["Group.Settings"]</h2>
+                                </div>
+                                <button class="thm-secondary" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.SelectedDevice?.Connected != true)">
+                                    @Text["Command.GetProperties"]
+                                </button>
+                            </header>
+
+                            @foreach (var group in Catalog.GetConfigurationFields(State.SelectedDevice!.Type).GroupBy(f => f.GroupKey))
+                            {
+                                <section class="thm-field-section">
+                                    <header>
+                                        <h2>@Text[group.Key]</h2>
+                                        <button class="thm-section-submit" @onclick="() => State.SendConfigurationAsync(group.Key)" disabled="@(State.IsBusy || State.SelectedDevice?.Connected != true)">
+                                            @Text["Command.SendConfiguration"]
+                                        </button>
+                                    </header>
+                                    <div class="thm-fields">
+                                        @foreach (var field in group)
+                                        {
+                                            <label class="thm-field">
+                                                <span class="thm-field-label">@Text[field.LabelKey]</span>
+                                                @RenderField(field)
+                                            </label>
+                                        }
+                                    </div>
+                                </section>
+                            }
+                        </article>
+
+                        <article class="thm-card">
+                            @if (State.SelectedDevice?.Modules.Count == 0)
+                            {
+                                <p class="thm-empty">@Text["Modules.Empty"]</p>
+                            }
+
+                            @foreach (var module in State.SelectedDevice?.Modules ?? [])
+                            {
+                                <div class="thm-bio-flow">
+                                    @foreach (var command in Catalog.GetModuleCommands(module))
+                                    {
+                                        <button class="thm-bio-step" @onclick="() => State.ExecuteAsync(command.Id)" disabled="@State.IsBusy">
+                                            <span class="thm-step">SM</span>
+                                            <span>
+                                                <strong>@Text[command.LabelKey]</strong>
+                                                <small>@Text["Modules.Sm25Hint"]</small>
+                                            </span>
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </article>
+                    </section>
+                }
+            </main>
+
+            <aside class="thm-inspector">
+                <div class="thm-panel-head">
+                    <div class="thm-panel-title">@Text["History.Title"]</div>
+                    <button @onclick="History.Clear">@Text["History.Clear"]</button>
+                </div>
+                <div class="thm-log">
+                    @if (History.Items.Count == 0)
+                    {
+                        <p class="thm-empty">@Text["History.Empty"]</p>
+                    }
+                    else
+                    {
+                        @foreach (var item in History.Items)
+                        {
+                            <article class="thm-log-row" data-status="@item.Status.ToString().ToLowerInvariant()">
+                                <time>@item.Timestamp.ToString("HH:mm:ss")</time>
+                                <strong>@Text[item.MessageKey]</strong>
+                                <span>@item.DeviceName</span>
+                                @if (!string.IsNullOrWhiteSpace(item.TechnicalDetails))
+                                {
+                                    <small>@item.TechnicalDetails</small>
+                                }
+                            </article>
+                        }
+                    }
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        State.Changed += StateHasChanged;
+        History.Changed += StateHasChanged;
+        Culture.Changed += StateHasChanged;
+        await State.InitializeAsync();
+    }
+
+    private bool IsDisabled(CommandCapability command) =>
+        State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
+
+    private void ChangeCulture(ChangeEventArgs args)
+    {
+        if (args.Value is string culture)
+            Culture.SetCulture(culture);
+    }
+
+    private RenderFragment RenderField(ConfigurationFieldCapability field) => builder =>
+    {
+        var sequence = 0;
+        switch (field.ControlKind)
+        {
+            case "read":
+                builder.OpenElement(sequence++, "output");
+                builder.AddAttribute(sequence++, "class", "thm-field-value");
+                builder.AddContent(sequence++, GetConfigurationValue(field.Id, field.Id == "firmware_version" ? "-" : "0"));
+                builder.CloseElement();
+                break;
+            case "toggle":
+                builder.OpenElement(sequence++, "input");
+                builder.AddAttribute(sequence++, "type", "checkbox");
+                builder.AddAttribute(sequence++, "checked", GetConfigurationValue(field.Id) == "true");
+                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() == "true" ? "true" : "false")));
+                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+                builder.CloseElement();
+                break;
+            case "select":
+                builder.OpenElement(sequence++, "select");
+                builder.AddAttribute(sequence++, "value", GetConfigurationValue(field.Id));
+                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
+                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+                builder.OpenElement(sequence++, "option");
+                builder.AddAttribute(sequence++, "value", string.Empty);
+                builder.AddContent(sequence++, Text["Field.SelectOption"]);
+                builder.CloseElement();
+                foreach (var option in GetFieldOptions(field.Id))
+                {
+                    builder.OpenElement(sequence++, "option");
+                    builder.AddAttribute(sequence++, "value", option.Value);
+                    builder.AddContent(sequence++, Text[option.LabelKey]);
+                    builder.CloseElement();
+                }
+                builder.CloseElement();
+                break;
+            default:
+                builder.OpenElement(sequence++, "input");
+                builder.AddAttribute(sequence++, "type", field.ControlKind == "password" ? "password" : field.ControlKind == "number" ? "number" : "text");
+                builder.AddAttribute(sequence++, "value", GetConfigurationValue(field.Id));
+                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
+                builder.AddAttribute(sequence++, "placeholder", field.PlaceholderKey is null ? string.Empty : Text[field.PlaceholderKey]);
+                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+                builder.CloseElement();
+                break;
+        }
+    };
+
+    private string GetConfigurationValue(string fieldId, string fallback = "") =>
+        State.ConfigurationValues.TryGetValue(fieldId, out var value) ? value : fallback;
+
+    private void SetConfigurationValue(string fieldId, string value)
+    {
+        State.ConfigurationValues[fieldId] = value;
+    }
+
+    private static IReadOnlyList<(string Value, string LabelKey)> GetFieldOptions(string fieldId) =>
+        fieldId switch
+        {
+            "ip_mode" =>
+            [
+                ("DHCP", "Option.IpMode.Dhcp"),
+                ("Static", "Option.IpMode.Static")
+            ],
+            "flow_mode" =>
+            [
+                ("None", "Option.Flow.None"),
+                ("Entry", "Option.Flow.Entry"),
+                ("Exit", "Option.Flow.Exit"),
+                ("Both", "Option.Flow.Both")
+            ],
+            _ => []
+        };
+
+    public void Dispose()
+    {
+        State.Changed -= StateHasChanged;
+        History.Changed -= StateHasChanged;
+        Culture.Changed -= StateHasChanged;
+    }
+}
