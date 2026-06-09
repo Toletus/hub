@@ -1,11 +1,11 @@
-using Microsoft.Maui.ApplicationModel;
+using Toletus.Hub.DeviceCollectionManager;
 using Toletus.Hub.Manager.UI.Contracts;
 using Toletus.Hub.Manager.UI.Models;
 using Toletus.Hub.Manager.UI.Services;
-using Toletus.Hub.Models;
 using Toletus.Hub.Notifications;
 using Toletus.Hub.Services.NotificationsServices.Base;
 using Toletus.LiteNet2.Command.Enums;
+using Toletus.LiteNet3;
 using Toletus.LiteNet3.Handler.Responses.Base;
 using HubDeviceType = Toletus.Hub.Models.DeviceType;
 
@@ -15,12 +15,17 @@ public sealed class HubNotificationHistoryBridge : IDisposable
 {
     private readonly NotificationHistoryService _history;
     private readonly ICommandHistoryFormatter _formatter;
+    private readonly Dictionary<string, LiteNet3Board> _observedLiteNet3Boards = new(StringComparer.OrdinalIgnoreCase);
 
     public HubNotificationHistoryBridge(NotificationHistoryService history, ICommandHistoryFormatter formatter)
     {
         _history = history;
         _formatter = formatter;
         NotificationBaseService.OnNotification += HandleNotification;
+        LiteNet3Devices.OnBoardReceived += ObserveLiteNet3Board;
+
+        foreach (var board in LiteNet3Devices.Boards ?? [])
+            ObserveLiteNet3Board(board);
     }
 
     private void HandleNotification(Notification notification)
@@ -56,6 +61,66 @@ public sealed class HubNotificationHistoryBridge : IDisposable
                 Data = notification.Response
             }
             : CommandResultViewModel.Success(messageKey, device, notification.Response);
+
+        var item = await Task.Run(() => _formatter.Format(DateTimeOffset.Now, commandId, result));
+
+        MainThread.BeginInvokeOnMainThread(() =>
+            _history.Add(item));
+    }
+
+    private void ObserveLiteNet3Board(LiteNet3Board board)
+    {
+        var key = board.Ip.ToString();
+        if (_observedLiteNet3Boards.TryGetValue(key, out var existing))
+        {
+            if (ReferenceEquals(existing, board))
+                return;
+
+            existing.OnResponse -= Board_OnResponse;
+        }
+
+        _observedLiteNet3Boards[key] = board;
+        board.OnResponse += Board_OnResponse;
+    }
+
+    private void UnobserveLiteNet3Boards()
+    {
+        foreach (var board in _observedLiteNet3Boards.Values)
+        {
+            board.OnResponse -= Board_OnResponse;
+        }
+
+        _observedLiteNet3Boards.Clear();
+    }
+
+    private void Board_OnResponse(LiteNet3BoardBase board, object response)
+    {
+        if (!IsErrorResponse(response))
+            return;
+
+        _ = AddLiteNet3ErrorResponseAsync(board, response);
+    }
+
+    private async Task AddLiteNet3ErrorResponseAsync(LiteNet3BoardBase board, object response)
+    {
+        var device = new DeviceRefViewModel
+        {
+            Key = $"{DeviceTypeKind.LiteNet3}:{board.Ip}:{board.Id}",
+            Name = $"LiteNet3 {board.Id}",
+            IpAddress = board.Ip.ToString(),
+            Type = DeviceTypeKind.LiteNet3,
+            Id = board.Id,
+            Connected = true
+        };
+
+        const string commandId = "notification.litenet3.error";
+        var result = CommandResultViewModel.Error(
+            "Message.NotificationErrorReceived",
+            GetErrorSummary(response),
+            device) with
+        {
+            Data = response
+        };
 
         var item = await Task.Run(() => _formatter.Format(DateTimeOffset.Now, commandId, result));
 
@@ -119,8 +184,12 @@ public sealed class HubNotificationHistoryBridge : IDisposable
         if ((ResponseType)notification.Command == ResponseType.Error)
             return true;
 
-        return notification.Response?.GetType().Name.Contains("ErrorResponse", StringComparison.OrdinalIgnoreCase) == true;
+        return IsErrorResponse(notification.Response) ||
+               IsErrorResponse(notification.Response?.GetType().GetProperty("Data")?.GetValue(notification.Response));
     }
+
+    private static bool IsErrorResponse(object? response) =>
+        response?.GetType().Name.Contains("ErrorResponse", StringComparison.OrdinalIgnoreCase) == true;
 
     private static string? GetErrorSummary(object? response)
     {
@@ -200,5 +269,9 @@ public sealed class HubNotificationHistoryBridge : IDisposable
     public void Dispose()
     {
         NotificationBaseService.OnNotification -= HandleNotification;
+#pragma warning disable CS8601
+        LiteNet3Devices.OnBoardReceived -= ObserveLiteNet3Board;
+#pragma warning restore CS8601
+        UnobserveLiteNet3Boards();
     }
 }

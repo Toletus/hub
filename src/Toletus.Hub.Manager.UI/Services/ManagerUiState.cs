@@ -103,7 +103,11 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
                 }, cancellationToken)
             };
 
-            if (result.Device is not null)
+            if (commandId == "connection.disconnect" && result.IsSuccess)
+            {
+                result = result with { Device = MarkDeviceDisconnected(result.Device) };
+            }
+            else if (result.Device is not null)
             {
                 ReplaceDevice(result.Device);
             }
@@ -112,6 +116,14 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
 
             if (commandId == "connection.connect" && result.IsSuccess && result.Device?.Connected == true)
                 StartConfigurationLoad(cancellationToken);
+            else if (commandId == "connection.disconnect" && result.IsSuccess)
+            {
+                _configurationLoadVersion++;
+                IsConfigurationLoading = false;
+                CurrentConfigurationCommandId = null;
+                ConfigurationValues.Clear();
+                Changed?.Invoke();
+            }
         }, commandId);
     }
 
@@ -222,6 +234,22 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
 
         if (SelectedDevice?.Key == device.Key)
             SelectedDevice = device;
+    }
+
+    private DeviceRefViewModel? MarkDeviceDisconnected(DeviceRefViewModel? device)
+    {
+        var source = device ?? SelectedDevice;
+        if (source is null)
+            return null;
+
+        var disconnected = source with
+        {
+            Connected = false,
+            Modules = Array.Empty<DeviceModuleKind>()
+        };
+
+        ReplaceDevice(disconnected);
+        return disconnected;
     }
 
     private async Task RunBusyAsync(Func<Task> action, string? commandId = null)
