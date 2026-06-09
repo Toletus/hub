@@ -1,5 +1,7 @@
+using SixLabors.ImageSharp.Formats.Png;
 using Toletus.Hub.Manager.UI.Models;
 using Toletus.Hub.Manager.UI.Services;
+using Toletus.LiteNet3.Handler.Biometrics.Images;
 
 namespace Toletus.Hub.Manager.Maui.Services;
 
@@ -21,7 +23,7 @@ public sealed class HubCommandHistoryFormatter : CommandHistoryFormatter
 
         details.Insert(0, new HistoryDetailViewModel("History.Detail.BiometricsSize", biometrics.Length.ToString()));
 
-        var media = TryCreateImageMedia(biometrics);
+        var media = TryCreateImageMedia(biometrics) ?? TryCreateRawBiometricsPngMedia(biometrics);
         if (media is null)
             details.Insert(1, new HistoryDetailViewModel(
                 "History.Detail.BiometricsFormat",
@@ -63,5 +65,22 @@ public sealed class HubCommandHistoryFormatter : CommandHistoryFormatter
             return TryFindByteArray(responseValue, propertyName, allowDirectBytes, out bytes);
 
         return false;
+    }
+
+    private static HistoryMediaViewModel? TryCreateRawBiometricsPngMedia(byte[] payload)
+    {
+
+        var imageProcessor = new ImageProcessor();
+        var image = imageProcessor.CreateImageFromData(payload);
+        
+        using var ms = new MemoryStream();
+        image.Save(ms, new PngEncoder());
+        var byteArray = ms.ToArray();
+
+        return new HistoryMediaViewModel(
+            "image",
+            $"data:image/png;base64,{Convert.ToBase64String(byteArray)}",
+            "History.Media.BiometricsAlt",
+            "History.Media.BiometricsCaption");
     }
 }
