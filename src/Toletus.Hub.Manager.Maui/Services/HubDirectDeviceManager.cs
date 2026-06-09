@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Toletus.Hub.Manager.UI.Capabilities;
 using Toletus.Hub.Manager.UI.Contracts;
 using Toletus.Hub.Manager.UI.Models;
@@ -19,7 +21,8 @@ public sealed class HubDirectDeviceManager(
     LiteNet1CommandService liteNet1CommandService,
     LiteNet2CommandService liteNet2CommandService,
     LiteNet3CommandService liteNet3CommandService,
-    SM25ReaderCommandsService sm25ReaderCommandsService) : IHubDeviceManager
+    SM25ReaderCommandsService sm25ReaderCommandsService,
+    ILogger<HubDirectDeviceManager> logger) : IHubDeviceManager
 {
     private readonly Dictionary<string, HubDevice> _devices = new(StringComparer.OrdinalIgnoreCase);
 
@@ -106,25 +109,50 @@ public sealed class HubDirectDeviceManager(
         DeviceCommandRequestViewModel request,
         CancellationToken cancellationToken = default)
     {
+        var totalTimestamp = Stopwatch.GetTimestamp();
+        logger.LogInformation(
+            "HubManagerDiag HubDirect.ExecuteCommand start command={CommandId} device={DeviceKey} type={DeviceType} thread={ThreadId}",
+            request.CommandId,
+            request.Device.Key,
+            request.Device.Type,
+            Environment.CurrentManagedThreadId);
+
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!_devices.TryGetValue(request.Device.Key, out var device))
+        {
+            logger.LogInformation(
+                "HubManagerDiag HubDirect.ExecuteCommand cache-miss command={CommandId} device={DeviceKey} elapsedMs={ElapsedMs} thread={ThreadId}",
+                request.CommandId,
+                request.Device.Key,
+                Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
             return CommandResultViewModel.Error("Message.CommandFailed", "Device is not present in the adapter cache.", request.Device);
+        }
 
         try
         {
-            return request.CommandId switch
+            var result = request.CommandId switch
             {
-                DeviceCapabilityCatalog.ReleaseEntry => ToResult(
-                    await Task.Run(() => commonCommandService.ReleaseEntry(device, request.Message ?? string.Empty), cancellationToken),
+                DeviceCapabilityCatalog.ReleaseEntry => ToResult(await ExecuteCommonReleaseAsync(
+                        request.CommandId,
+                        request.Device,
+                        () => commonCommandService.ReleaseEntry(device, request.Message ?? string.Empty),
+                        cancellationToken),
                     "Message.CommandSuccess",
                     request.Device),
-                DeviceCapabilityCatalog.ReleaseEntryAndExit => ToResult(
-                    await Task.Run(() => commonCommandService.ReleaseEntryAndExit(device, request.Message ?? string.Empty), cancellationToken),
+                DeviceCapabilityCatalog.ReleaseEntryAndExit => ToResult(await ExecuteCommonReleaseAsync(
+                        request.CommandId,
+                        request.Device,
+                        () => commonCommandService.ReleaseEntryAndExit(device, request.Message ?? string.Empty),
+                        cancellationToken),
                     "Message.CommandSuccess",
                     request.Device),
-                DeviceCapabilityCatalog.ReleaseExit => ToResult(
-                    await Task.Run(() => commonCommandService.ReleaseExit(device, request.Message ?? string.Empty), cancellationToken),
+                DeviceCapabilityCatalog.ReleaseExit => ToResult(await ExecuteCommonReleaseAsync(
+                        request.CommandId,
+                        request.Device,
+                        () => commonCommandService.ReleaseExit(device, request.Message ?? string.Empty),
+                        cancellationToken),
                     "Message.CommandSuccess",
                     request.Device),
                 DeviceCapabilityCatalog.Reset => await ExecuteResetAsync(device, request.Device),
@@ -134,11 +162,74 @@ public sealed class HubDirectDeviceManager(
                 DeviceCapabilityCatalog.Sm25Cancel => await ToResultAsync(sm25ReaderCommandsService.FPCancel(device), request.Device),
                 _ => CommandResultViewModel.Warning("Message.CommandUnsupported", request.CommandId, request.Device)
             };
+
+            logger.LogInformation(
+                "HubManagerDiag HubDirect.ExecuteCommand end command={CommandId} status={Status} elapsedMs={ElapsedMs} thread={ThreadId}",
+                request.CommandId,
+                result.Status,
+                Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
+
+            return result;
         }
         catch (Exception ex)
         {
+            logger.LogInformation(
+                ex,
+                "HubManagerDiag HubDirect.ExecuteCommand exception command={CommandId} elapsedMs={ElapsedMs} thread={ThreadId}",
+                request.CommandId,
+                Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
             return CommandResultViewModel.Error("Message.CommandFailed", ex.Message, request.Device);
         }
+    }
+
+    private async Task<DeviceResponse> ExecuteCommonReleaseAsync(
+        string commandId,
+        DeviceRefViewModel device,
+        Func<DeviceResponse> action,
+        CancellationToken cancellationToken)
+    {
+        var totalTimestamp = Stopwatch.GetTimestamp();
+        logger.LogInformation(
+            "HubManagerDiag HubDirect.CommonRelease schedule command={CommandId} device={DeviceKey} thread={ThreadId}",
+            commandId,
+            device.Key,
+            Environment.CurrentManagedThreadId);
+
+        var response = await Task.Run(() =>
+        {
+            var workerTimestamp = Stopwatch.GetTimestamp();
+            logger.LogInformation(
+                "HubManagerDiag HubDirect.CommonRelease worker-start command={CommandId} device={DeviceKey} thread={ThreadId}",
+                commandId,
+                device.Key,
+                Environment.CurrentManagedThreadId);
+
+            try
+            {
+                return action();
+            }
+            finally
+            {
+                logger.LogInformation(
+                    "HubManagerDiag HubDirect.CommonRelease worker-end command={CommandId} device={DeviceKey} elapsedMs={ElapsedMs} thread={ThreadId}",
+                    commandId,
+                    device.Key,
+                    Stopwatch.GetElapsedTime(workerTimestamp).TotalMilliseconds,
+                    Environment.CurrentManagedThreadId);
+            }
+        }, cancellationToken);
+
+        logger.LogInformation(
+            "HubManagerDiag HubDirect.CommonRelease returned command={CommandId} device={DeviceKey} success={Success} elapsedMs={ElapsedMs} thread={ThreadId}",
+            commandId,
+            device.Key,
+            response.Success,
+            Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+            Environment.CurrentManagedThreadId);
+
+        return response;
     }
 
     public async Task<DeviceConfigurationViewModel> LoadConfigurationAsync(
@@ -415,6 +506,27 @@ public sealed class HubDirectDeviceManager(
                 break;
 
             case "Config.Operation":
+                if (TryGetBool(values, "entry_clockwise", out var entryClockwise))
+                {
+                    await Add(device.Type switch
+                    {
+                        HubDeviceType.LiteNet1 => liteNet1CommandService.SetEntryClockwise(device, entryClockwise),
+                        HubDeviceType.LiteNet2 => liteNet2CommandService.SetEntryClockwise(device, entryClockwise),
+                        _ => UnsupportedNotification(device)
+                    });
+                }
+
+                if (TryGetBool(values, "buzzer_mute", out var buzzerMute))
+                {
+                    await Add(device.Type switch
+                    {
+                        HubDeviceType.LiteNet1 => liteNet1CommandService.SetBuzzerMute(device, buzzerMute),
+                        HubDeviceType.LiteNet2 => liteNet2CommandService.SetBuzzerMute(device, buzzerMute),
+                        HubDeviceType.LiteNet3 => liteNet3CommandService.SetBuzzerMute(device, buzzerMute),
+                        _ => UnsupportedNotification(device)
+                    });
+                }
+
                 if (TryGetInt(values, "release_duration", out var releaseDuration))
                 {
                     await Add(device.Type switch
@@ -436,13 +548,33 @@ public sealed class HubDirectDeviceManager(
                             device,
                             defaultMessage,
                             GetValue(values, "secondary_message"),
-                            null),
+                            GetValue(values, "display_mode")),
                         _ => UnsupportedNotification(device)
                     });
                 }
 
                 if (device.Type == HubDeviceType.LiteNet2 && TryGet(values, "secondary_message", out var secondaryMessage))
                     await Add(liteNet2CommandService.SetMessageLine2(device, secondaryMessage));
+                break;
+
+            case "Config.Biometrics":
+                if (device.Type == HubDeviceType.LiteNet2 &&
+                    TryGet(values, "fingerprint_identification_mode", out var fingerprintMode) &&
+                    Enum.TryParse<FingerprintIdentificationMode>(fingerprintMode, ignoreCase: true, out var parsedFingerprintMode))
+                {
+                    await Add(liteNet2CommandService.SetFingerprintIdentificationMode(device, parsedFingerprintMode));
+                }
+                break;
+
+            case "Config.Notification":
+                if (device.Type == HubDeviceType.LiteNet2)
+                {
+                    var duration = TryGetInt(values, "release_duration", out var notifyDuration) ? notifyDuration * 1000 : 1000;
+                    var tone = TryGetInt(values, "notify_tone", out var notifyTone) ? notifyTone : 0;
+                    var color = TryGetInt(values, "notify_color", out var notifyColor) ? notifyColor : 0;
+                    var showMessage = TryGetBool(values, "notify_show_message", out var notifyShowMessage) && notifyShowMessage ? 1 : 0;
+                    await Add(liteNet2CommandService.Notify(device, duration, tone, color, showMessage));
+                }
                 break;
 
             case "Config.Network":

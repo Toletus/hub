@@ -1,3 +1,5 @@
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Web
 @implements IDisposable
 @inject ManagerUiState State
 @inject DeviceCapabilityCatalog Catalog
@@ -8,242 +10,589 @@
 <div class="thm-page">
     <section class="thm-app">
         <header class="thm-topbar">
-            <div class="thm-controls">
-                <label class="thm-control thm-control-network">
-                    <span>@Text["Toolbar.Network"]</span>
-                    <select @bind="State.SelectedNetwork" disabled="@State.IsBusy">
-                        <option value="">@Text["Toolbar.SelectNetwork"]</option>
-                        @foreach (var network in State.Networks)
-                        {
-                            <option value="@network">@network</option>
-                        }
-                    </select>
-                </label>
-                <label class="thm-control thm-control-language">
-                    <span>@Text["Toolbar.Language"]</span>
-                    <select value="@Culture.CurrentCulture.Name" @onchange="ChangeCulture">
-                        @foreach (var culture in Culture.SupportedCultures)
-                        {
-                            <option value="@culture.Name">@Text[$"Language.{culture.Name}"]</option>
-                        }
-                    </select>
-                </label>
-                <button class="thm-primary" @onclick="() => State.DiscoverAsync()" disabled="@State.IsBusy">@Text["Toolbar.Discover"]</button>
+            <div class="thm-brand">
+                <span class="thm-brand-mark" aria-hidden="true">TH</span>
+                <div>
+                    <strong>Hub Universal Manager</strong>
+                    <span>@Text["App.Subtitle"]</span>
+                </div>
+            </div>
+
+            <div class="thm-top-controls">
+                <select class="thm-select" @bind="State.SelectedNetwork" disabled="@State.IsBusy" aria-label="@Text["Toolbar.Network"]">
+                    <option value="">@Text["Toolbar.SelectNetwork"]</option>
+                    @foreach (var network in State.Networks)
+                    {
+                        <option value="@network">@network</option>
+                    }
+                </select>
+
+                <select class="thm-select" value="@Culture.CurrentCulture.Name" @onchange="ChangeCulture" aria-label="@Text["Toolbar.Language"]">
+                    @foreach (var culture in Culture.SupportedCultures)
+                    {
+                        <option value="@culture.Name">@Text[$"Language.{culture.Name}"]</option>
+                    }
+                </select>
+
+                <button class="thm-primary" @onclick="() => State.DiscoverAsync()" disabled="@State.IsBusy">
+                    @Text["Toolbar.Discover"]
+                </button>
             </div>
         </header>
 
-        <div class="thm-layout" data-inspector-mode="@(ShouldEmbedModuleCommands ? "expanded" : "standard")">
-            <aside class="thm-sidebar">
-                <div class="thm-panel-head">
-                    <input class="thm-control thm-device-filter"
-                           @bind="State.SearchText"
+        <aside class="thm-list">
+            <div class="thm-list-head">
+                <label class="thm-search">
+                    <input @bind="State.SearchText"
                            @bind:event="oninput"
                            aria-label="@Text["Toolbar.Search"]"
                            placeholder="@Text["Toolbar.Search"]" />
-                </div>
+                </label>
 
-                <div class="thm-device-list">
-                    @if (!State.FilteredDevices.Any())
+                <div class="thm-filters" aria-label="@Text["Devices.Filters"]">
+                    @foreach (var filter in DeviceFilters)
                     {
-                        <p class="thm-empty">@Text["Devices.Empty"]</p>
+                        <button class="thm-filter @(ActiveDeviceFilter == filter.Id ? "active" : null)"
+                                type="button"
+                                @onclick="() => ActiveDeviceFilter = filter.Id">
+                            @Text[filter.LabelKey]
+                        </button>
                     }
-                    else
+                </div>
+            </div>
+
+            <div class="thm-devices">
+                @if (!VisibleDevices.Any())
+                {
+                    <p class="thm-empty">@Text["Devices.Empty"]</p>
+                }
+                else
+                {
+                    @foreach (var device in VisibleDevices)
                     {
-                        @foreach (var device in State.FilteredDevices)
-                        {
-                            <button class="thm-device @(State.SelectedDevice?.Key == device.Key ? "thm-device-active" : null)"
-                                    @onclick="() => State.SelectDeviceAsync(device)">
-                                <span class="thm-device-line">
-                                    <span class="thm-device-name">@device.Name</span>
-                                    <span class="thm-chip @(device.Connected ? "thm-chip-on" : null)">
-                                        @(device.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"])
-                                    </span>
+                        <button class="thm-device @(State.SelectedDevice?.Key == device.Key ? "selected" : null)"
+                                type="button"
+                                @onclick="() => SelectDeviceAsync(device)">
+                            <span class="thm-row">
+                                <span class="thm-name">@device.Name</span>
+                                <span class="thm-pill @GetDeviceStatusClass(device)">
+                                    @(device.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"])
                                 </span>
-                                <span class="thm-muted">@device.IpAddress &middot; @device.TypeLabel</span>
-                                @if (device.Modules.Count > 0)
-                                {
-                                    <span class="thm-chip thm-chip-warn">@Text["Devices.Modules"]: @string.Join(", ", device.Modules)</span>
-                                }
-                            </button>
-                        }
+                            </span>
+                            <span class="thm-meta">@device.TypeLabel &middot; @Text["Workspace.Serial"] @(device.SerialNumber ?? "-") &middot; IP @device.IpAddress</span>
+                            @if (device.Modules.Count > 0)
+                            {
+                                <span class="thm-pill module">@string.Join(", ", device.Modules)</span>
+                            }
+                        </button>
                     }
+                }
+            </div>
+        </aside>
 
-                </div>
-            </aside>
+        <main class="thm-work">
+            <div class="thm-section-title">
+                <h2>@Text["Workspace.TechnicalReturn"]</h2>
+                <span class="thm-meta">@Text["Workspace.TechnicalReturnHint"]</span>
+            </div>
 
-            <main class="thm-workspace">
-                <section class="thm-metrics">
-                    <div class="thm-metric"><span>@Text["Metric.Devices"]</span><strong>@State.Devices.Count</strong></div>
-                    <div class="thm-metric"><span>@Text["Metric.Connected"]</span><strong>@State.Devices.Count(d => d.Connected)</strong></div>
-                    <div class="thm-metric"><span>@Text["Metric.ActiveCommand"]</span><strong>@(State.CurrentCommandId is null ? "0" : "1")</strong></div>
+            <div class="thm-center-panels">
+                <section class="thm-console-panel">
+                    <div class="thm-console-head">
+                        <strong>@Text["History.Title"]</strong>
+                        <div class="thm-console-actions">
+                            <span>@Text["History.SelectedDeviceEvents"]</span>
+                            <button class="thm-clear-history" type="button" @onclick="ClearHistory">@Text["History.Clear"]</button>
+                        </div>
+                    </div>
+
+                    <div class="thm-console-body">
+                        <div class="thm-timeline">
+                            @if (History.Items.Count == 0)
+                            {
+                                <p class="thm-empty">@Text["History.Empty"]</p>
+                            }
+                            else
+                            {
+                                @foreach (var item in History.Items)
+                                {
+                                    <article class="thm-event @(SelectedHistoryItem == item ? "selected" : null) @GetHistoryStatusClass(item)"
+                                             role="button"
+                                             tabindex="0"
+                                             @onclick="() => SelectHistoryItem(item)"
+                                             @onkeydown="args => HandleHistoryKey(args, item)">
+                                        <time>@item.Timestamp.ToString("HH:mm:ss")</time>
+                                        <strong>@Text[item.MessageKey]</strong>
+                                        <span class="thm-meta">@GetHistorySummary(item)</span>
+                                    </article>
+                                }
+                            }
+                        </div>
+                    </div>
                 </section>
 
-                @if (State.SelectedDevice is null)
+                <section class="thm-console-panel">
+                    <div class="thm-console-head">
+                        <strong>JSON</strong>
+                        <span>@Text["Workspace.JsonHint"]</span>
+                    </div>
+                    <div class="thm-console-body">
+                        <pre class="thm-json-view">@BuildJsonPayload()</pre>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <aside class="thm-detail">
+            @if (State.SelectedDevice is null)
+            {
+                <section class="thm-empty-state">
+                    <h2>@Text["Workspace.EmptyTitle"]</h2>
+                    <p>@Text["Workspace.EmptyText"]</p>
+                </section>
+            }
+            else
+            {
+                <section class="thm-essentials">
+                    <div class="thm-row">
+                        <div>
+                            <h2>@State.SelectedDevice.Name</h2>
+                            <div class="thm-meta">@State.SelectedDevice.TypeLabel &middot; @(State.SelectedDevice.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"]) &middot; firmware @GetConfigurationValue("firmware_version", "-")</div>
+                        </div>
+                        <span class="thm-pill @GetDeviceStatusClass(State.SelectedDevice)">
+                            @(State.SelectedDevice.Connected ? "Online" : Text["Workspace.Disconnected"])
+                        </span>
+                    </div>
+
+                    <div class="thm-kv">
+                        <div><span>ID</span><strong>@State.SelectedDevice.Id</strong></div>
+                        <div><span>@Text["Workspace.Serial"]</span><strong>@(State.SelectedDevice.SerialNumber ?? "-")</strong></div>
+                        <div><span>IP</span><strong>@State.SelectedDevice.IpAddress</strong></div>
+                        <div><span>MAC</span><strong>@GetConfigurationValue("mac", "-")</strong></div>
+                    </div>
+                </section>
+
+                <div class="thm-tabs">
+                    <button class="thm-tab @(ActiveDetailTab == "config" ? "active" : null)" type="button" @onclick='() => ActiveDetailTab = "config"'>
+                        @Text["Group.Settings"]
+                    </button>
+                    <button class="thm-tab @(ActiveDetailTab == "sm25" ? "active" : null)" type="button" @onclick='() => ActiveDetailTab = "sm25"'>
+                        SM25
+                    </button>
+                </div>
+
+                @if (ActiveDetailTab == "config")
                 {
-                    <section class="thm-empty-state">
-                        <h2>@Text["Workspace.EmptyTitle"]</h2>
-                        <p>@Text["Workspace.EmptyText"]</p>
+                    <section class="thm-card">
+                        <header class="thm-card-head">
+                            <h3>@Text["Config.Edit"]</h3>
+                            <button class="thm-secondary" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
+                                @Text["Command.GetProperties"]
+                            </button>
+                        </header>
+
+                        @foreach (var group in GetConfigurationGroups())
+                        {
+                            <section class="thm-config-group">
+                                <div class="thm-group-title">
+                                    <strong>@Text[group.Key]</strong>
+                                    <span>@GetConfigurationGroupHint(group.Key)</span>
+                                </div>
+
+                                <div class="thm-form">
+                                    @foreach (var field in group)
+                                    {
+                                        @RenderConfigurationField(field)
+                                    }
+                                </div>
+
+                            </section>
+                        }
+
+                        <div class="thm-config-actions">
+                            <button class="thm-cmd brand" @onclick="SendVisibleConfigurationAsync" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
+                                @Text["Command.SendConfiguration"]
+                            </button>
+                            <button class="thm-cmd" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
+                                @Text["Command.GetProperties"]
+                            </button>
+                        </div>
                     </section>
                 }
                 else
                 {
-                    <section class="thm-command-bar">
-                        @foreach (var group in Catalog.GetCommands(State.SelectedDevice.Type)
-                            .Where(c => c.GroupKey is "Group.Operation" or "Group.Connection" or "Group.Diagnostics")
-                            .GroupBy(c => c.GroupKey))
+                    <section class="thm-card">
+                        <h3>@Text["Group.Biometrics"]</h3>
+                        @if (ShouldEmbedModuleCommands || ShouldRenderStandaloneModuleCard)
                         {
-                            <div class="thm-command-group" data-command-group="@GetCommandGroupName(group.Key)">
-                                <div class="thm-command-group-title">@Text[group.Key]</div>
-                                <div class="thm-command-group-actions">
-                                    @foreach (var command in group)
-                                    {
-                                        <button class="@GetCommandClass(command)"
-                                                @onclick="() => State.ExecuteAsync(command.Id)"
-                                                disabled="@IsDisabled(command)">
-                                            @Text[command.LabelKey]
-                                        </button>
-                                    }
-                                </div>
-                            </div>
+                            @RenderModuleCommands()
                         }
-                    </section>
-
-                    <section class="thm-detail">
-                        <article class="thm-card thm-config-card">
-                            <header class="thm-config-card-header">
-                                <div>
-                                    <h2>@Text["Group.Settings"]</h2>
-                                    @if (State.IsConfigurationLoading)
-                                    {
-                                        <span class="thm-config-status">@Text["Message.ConfigurationLoading"]</span>
-                                    }
-                                </div>
-                                <button class="thm-secondary" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
-                                    @Text["Command.GetProperties"]
-                                </button>
-                            </header>
-
-                            @foreach (var group in Catalog.GetConfigurationFields(State.SelectedDevice!.Type).GroupBy(f => f.GroupKey))
-                            {
-                                <section class="thm-field-section">
-                                    <header>
-                                        <h2>@Text[group.Key]</h2>
-                                        <button class="thm-section-submit" @onclick="() => State.SendConfigurationAsync(group.Key)" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
-                                            @Text["Command.SendConfiguration"]
-                                        </button>
-                                    </header>
-                                    <div class="thm-fields">
-                                        @foreach (var field in group)
-                                        {
-                                            <label class="thm-field">
-                                                <span class="thm-field-label">@Text[field.LabelKey]</span>
-                                                @RenderField(field)
-                                            </label>
-                                        }
-                                    </div>
-                                </section>
-                            }
-
-                            @if (ShouldEmbedModuleCommands)
-                            {
-                                @RenderModuleCommands()
-                            }
-                        </article>
-
-                        @if (ShouldRenderStandaloneModuleCard)
+                        else
                         {
-                            <article class="thm-card">
-                                @RenderModuleCommands()
-                            </article>
+                            <p class="thm-empty">@Text["Modules.Empty"]</p>
                         }
                     </section>
                 }
-            </main>
+            }
+        </aside>
 
-            <aside class="thm-inspector">
-                <div class="thm-panel-head">
-                    <div class="thm-panel-title">@Text["History.Title"]</div>
-                    <button @onclick="History.Clear">@Text["History.Clear"]</button>
-                </div>
-                <div class="thm-log">
-                    @if (History.Items.Count == 0)
+        <footer class="thm-actionbar">
+            <div>
+                <strong>@GetActionTitle()</strong>
+                <span>@Text["Actionbar.Hint"]</span>
+            </div>
+            <div class="thm-commands">
+                @if (State.SelectedDevice is null)
+                {
+                    <button class="thm-cmd" disabled>@Text["Workspace.EmptyTitle"]</button>
+                }
+                else
+                {
+                    @foreach (var command in GetFooterCommands())
                     {
-                        <p class="thm-empty">@Text["History.Empty"]</p>
+                        <button class="@GetFooterCommandClass(command)"
+                                @onclick="() => State.ExecuteAsync(command.Id)"
+                                disabled="@IsDisabled(command)">
+                            @Text[command.LabelKey]
+                        </button>
                     }
-                    else
-                    {
-                        @foreach (var item in History.Items)
-                        {
-                            <article class="thm-log-row" data-status="@item.Status.ToString().ToLowerInvariant()">
-                                <time>@item.Timestamp.ToString("HH:mm:ss")</time>
-                                <strong>@Text[item.MessageKey]</strong>
-                                <span>@item.DeviceName</span>
-                                @if (item.Details.Count > 0)
-                                {
-                                    <dl class="thm-log-details">
-                                        @foreach (var detail in item.Details)
-                                        {
-                                            <div>
-                                                <dt>@GetDetailLabel(detail.LabelKey)</dt>
-                                                <dd>@GetDetailValue(detail)</dd>
-                                            </div>
-                                        }
-                                    </dl>
-                                }
-                                @if (item.Media is { Kind: "image" } media)
-                                {
-                                    <figure class="thm-log-media">
-                                        <img src="@media.Source" alt="@Text[media.AltKey ?? "History.Media.ImageAlt"]" />
-                                        @if (!string.IsNullOrWhiteSpace(media.CaptionKey))
-                                        {
-                                            <figcaption>@Text[media.CaptionKey]</figcaption>
-                                        }
-                                    </figure>
-                                }
-                            </article>
-                        }
-                    }
-                </div>
-            </aside>
-        </div>
+                }
+            </div>
+        </footer>
     </section>
 </div>
 
+@if (IsColorDialogOpen)
+{
+    <section class="thm-color-modal" aria-hidden="false" @onclick="CloseColorDialogFromBackdrop">
+        <div class="thm-color-dialog" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle" @onclick:stopPropagation="true">
+            <div class="thm-color-dialog-body">
+                <h2 id="colorModalTitle">@Text["Color.Edit"]</h2>
+                <div class="thm-color-picker-grid">
+                    <div class="thm-spectrum"></div>
+                    <div class="thm-hue-strip"></div>
+                    <div class="thm-tone-strip"></div>
+                    <div class="thm-color-inputs">
+                        <input value="@EditingColor" @onchange="OnColorHexInput" aria-label="Hexadecimal" />
+                        <select aria-label="Formato de cor"><option>RGB</option><option>HEX</option></select>
+                        <div class="thm-rgb-row"><input value="@ColorR" @onchange='args => OnRgbInput(args, "r")' /><span>Vermelho</span></div>
+                        <div class="thm-rgb-row"><input value="@ColorG" @onchange='args => OnRgbInput(args, "g")' /><span>Verde</span></div>
+                        <div class="thm-rgb-row"><input value="@ColorB" @onchange='args => OnRgbInput(args, "b")' /><span>Azul</span></div>
+                    </div>
+                </div>
+
+                <div class="thm-palette-area">
+                    <div>
+                        <div class="thm-palette-title">@Text["Color.Basic"]</div>
+                        <div class="thm-palette">
+                            @foreach (var color in BasicColors)
+                            {
+                                <button class="thm-dot" style="--c:@color" type="button" aria-label="@($"{Text["Color.Select"]} {color}")" @onclick="() => SetEditingColor(color)"></button>
+                            }
+                        </div>
+                    </div>
+                    <div>
+                        <div class="thm-palette-title">@Text["Color.Custom"]</div>
+                        <div class="thm-custom-palette">
+                            @for (var i = 0; i < 24; i++)
+                            {
+                                <i class="thm-empty-dot"></i>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="thm-color-dialog-actions">
+                <button class="thm-ok-color" type="button" @onclick="ApplyColor">OK</button>
+                <button class="thm-cancel-color" type="button" @onclick="CloseColorDialog">Cancelar</button>
+            </div>
+        </div>
+    </section>
+}
+
 @code {
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private string ActiveDeviceFilter { get; set; } = "all";
+    private string ActiveDetailTab { get; set; } = "config";
+    private CommandHistoryItemViewModel? SelectedHistoryItem { get; set; }
+    private bool IsColorDialogOpen { get; set; }
+    private string EditingColorFieldId { get; set; } = "l3_flow_front_wait";
+    private string EditingColor { get; set; } = "#0000FF";
+
+    private static readonly IReadOnlyList<(string Id, string LabelKey)> DeviceFilters =
+    [
+        ("all", "Filter.All"),
+        ("connected", "Filter.Connected"),
+        ("offline", "Filter.Offline"),
+        ("LiteNet3", "Filter.LiteNet3"),
+        ("SM25", "Filter.SM25")
+    ];
+
+    private static readonly IReadOnlyList<string> BasicColors =
+    [
+        "#F87171", "#EF4444", "#7F4545", "#8B1A12",
+        "#FEF08A", "#FACC15", "#FB923C", "#A15C24",
+        "#86EFAC", "#84CC16", "#22C55E", "#4ADE80",
+        "#67E8F9", "#38BDF8", "#2563EB", "#0000FF",
+        "#A78BFA", "#7C3AED", "#D946EF", "#DB2777",
+        "#000000", "#737373", "#D4D4D4", "#FFFFFF"
+    ];
+
     protected override async Task OnInitializedAsync()
     {
         State.Changed += OnStateChanged;
-        History.Changed += OnStateChanged;
+        History.Changed += OnHistoryChanged;
         Culture.Changed += OnStateChanged;
         await State.InitializeAsync();
+    }
+
+    private IEnumerable<DeviceRefViewModel> VisibleDevices =>
+        State.FilteredDevices.Where(device => ActiveDeviceFilter switch
+        {
+            "connected" => device.Connected,
+            "offline" => !device.Connected,
+            "LiteNet3" => device.Type == DeviceTypeKind.LiteNet3,
+            "SM25" => device.Modules.Contains(DeviceModuleKind.SM25),
+            _ => true
+        });
+
+    private int ColorR => HexToRgb(EditingColor).R;
+    private int ColorG => HexToRgb(EditingColor).G;
+    private int ColorB => HexToRgb(EditingColor).B;
+
+    private async Task SelectDeviceAsync(DeviceRefViewModel device)
+    {
+        SelectedHistoryItem = null;
+        ActiveDetailTab = "config";
+        await State.SelectDeviceAsync(device);
     }
 
     private bool IsDisabled(CommandCapability command) =>
         State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
 
-    private string GetCommandClass(CommandCapability command)
+    private IReadOnlyList<IGrouping<string, ConfigurationFieldCapability>> GetConfigurationGroups()
     {
-        var classes = new List<string> { "thm-button", "thm-command" };
+        if (State.SelectedDevice is null)
+            return Array.Empty<IGrouping<string, ConfigurationFieldCapability>>();
 
-        if (command.GroupKey == "Group.Operation")
-            classes.Add("thm-command-important");
+        return Catalog.GetConfigurationFields(State.SelectedDevice.Type)
+            .GroupBy(field => field.GroupKey)
+            .ToList();
+    }
+
+    private IEnumerable<CommandCapability> GetFooterCommands()
+    {
+        if (State.SelectedDevice is null)
+            return Array.Empty<CommandCapability>();
+
+        var commandIds = new[]
+        {
+            DeviceCapabilityCatalog.ReleaseEntry,
+            DeviceCapabilityCatalog.ReleaseExit,
+            DeviceCapabilityCatalog.GetStatus,
+            DeviceCapabilityCatalog.Disconnect,
+            DeviceCapabilityCatalog.Connect
+        };
+
+        return Catalog.GetCommands(State.SelectedDevice.Type)
+            .Where(command => commandIds.Contains(command.Id))
+            .OrderBy(command => Array.IndexOf(commandIds, command.Id));
+    }
+
+    private string GetFooterCommandClass(CommandCapability command)
+    {
+        var classes = new List<string> { "thm-cmd" };
 
         if (command.Id == DeviceCapabilityCatalog.ReleaseEntry)
-            classes.Add("thm-command-hot");
+            classes.Add("brand");
+
+        if (command.Id == DeviceCapabilityCatalog.Disconnect)
+            classes.Add("danger");
 
         if (State.CurrentCommandId == command.Id)
-            classes.Add("thm-command-active");
+            classes.Add("active");
 
         return string.Join(" ", classes);
     }
 
-    private static string GetCommandGroupName(string groupKey) =>
+    private string GetDeviceStatusClass(DeviceRefViewModel device) =>
+        device.Connected ? "ok" : "off";
+
+    private static string GetHistoryStatusClass(CommandHistoryItemViewModel item) =>
+        item.Status switch
+        {
+            CommandStatusKind.Warning => "warn",
+            CommandStatusKind.Error => "warn",
+            CommandStatusKind.Pending => "info",
+            _ => string.Empty
+        };
+
+    private string GetActionTitle() =>
+        State.SelectedDevice is null
+            ? Text["Actionbar.Empty"]
+            : string.Format(Text["Actionbar.ForDevice"], State.SelectedDevice.Name);
+
+    private string GetHistorySummary(CommandHistoryItemViewModel item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.DeviceName))
+            return item.DeviceName;
+
+        if (item.Details.Count > 0)
+            return GetDetailValue(item.Details[0]);
+
+        return Text[item.Status switch
+        {
+            CommandStatusKind.Pending => "History.Result.Pending",
+            CommandStatusKind.Success => "History.Result.Success",
+            CommandStatusKind.Warning => "History.Result.Warning",
+            CommandStatusKind.Error => "History.Result.Error",
+            CommandStatusKind.Canceled => "History.Result.Canceled",
+            _ => "History.Result.Idle"
+        }];
+    }
+
+    private void SelectHistoryItem(CommandHistoryItemViewModel item)
+    {
+        SelectedHistoryItem = item;
+    }
+
+    private void HandleHistoryKey(KeyboardEventArgs args, CommandHistoryItemViewModel item)
+    {
+        if (args.Key is "Enter" or " ")
+            SelectHistoryItem(item);
+    }
+
+    private void ClearHistory()
+    {
+        SelectedHistoryItem = null;
+        History.Clear();
+    }
+
+    private async Task SendVisibleConfigurationAsync()
+    {
+        foreach (var groupKey in GetConfigurationGroups().Select(group => group.Key))
+            await State.SendConfigurationAsync(groupKey);
+    }
+
+    private string BuildJsonPayload()
+    {
+        var selectedDevice = State.SelectedDevice;
+        var selectedHistory = SelectedHistoryItem;
+
+        var payload = new
+        {
+            device = selectedDevice?.Name,
+            type = selectedDevice?.TypeLabel,
+            command = selectedHistory?.CommandId ?? State.CurrentCommandId ?? "GetStatus",
+            status = selectedHistory?.Status.ToString().ToLowerInvariant() ?? (selectedDevice?.Connected == true ? "connected" : "idle"),
+            ip = selectedDevice?.IpAddress,
+            serial = selectedDevice?.SerialNumber,
+            history_event = selectedHistory is null ? null : new
+            {
+                title = Text[selectedHistory.MessageKey],
+                detail = GetHistorySummary(selectedHistory),
+                selected_at = selectedHistory.Timestamp.ToString("HH:mm:ss"),
+                details = selectedHistory.Details.ToDictionary(GetDetailLabel, GetDetailValue),
+                technical = selectedHistory.TechnicalDetails
+            },
+            configuration = State.ConfigurationValues.ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase)
+        };
+
+        return JsonSerializer.Serialize(payload, JsonOptions);
+    }
+
+    private RenderFragment RenderConfigurationField(ConfigurationFieldCapability field) => builder =>
+    {
+        var sequence = 0;
+        var value = GetConfigurationValue(field.Id);
+
+        if (field.ControlKind == "color")
+        {
+            var color = NormalizeHex(string.IsNullOrWhiteSpace(value) ? "#0000FF" : value);
+            builder.OpenElement(sequence++, "div");
+            builder.AddAttribute(sequence++, "class", "thm-color-field");
+            builder.OpenElement(sequence++, "span");
+            builder.AddContent(sequence++, Text[field.LabelKey]);
+            builder.CloseElement();
+            builder.OpenElement(sequence++, "div");
+            builder.AddAttribute(sequence++, "class", "thm-color-well");
+            builder.OpenElement(sequence++, "button");
+            builder.AddAttribute(sequence++, "class", "thm-swatch");
+            builder.AddAttribute(sequence++, "style", $"background:{color};box-shadow:0 0 18px {color}66");
+            builder.AddAttribute(sequence++, "type", "button");
+            builder.AddAttribute(sequence++, "aria-label", $"{Text["Color.Edit"]}: {Text[field.LabelKey]}");
+            builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => OpenColorDialog(field.Id)));
+            builder.CloseElement();
+            builder.OpenElement(sequence++, "input");
+            builder.AddAttribute(sequence++, "value", color);
+            builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, NormalizeHex(args.Value?.ToString()))));
+            builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+            return;
+        }
+
+        builder.OpenElement(sequence++, "label");
+        builder.AddAttribute(sequence++, "class", "thm-field");
+        builder.OpenElement(sequence++, "span");
+        builder.AddAttribute(sequence++, "class", "thm-field-label");
+        builder.AddContent(sequence++, Text[field.LabelKey]);
+        builder.CloseElement();
+
+        switch (field.ControlKind)
+        {
+            case "read":
+                builder.OpenElement(sequence++, "output");
+                builder.AddAttribute(sequence++, "class", "thm-field-value");
+                builder.AddContent(sequence++, GetConfigurationValue(field.Id, field.Id == "firmware_version" ? "-" : "0"));
+                builder.CloseElement();
+                break;
+            case "toggle":
+                builder.OpenElement(sequence++, "input");
+                builder.AddAttribute(sequence++, "type", "checkbox");
+                builder.AddAttribute(sequence++, "checked", IsTrue(value));
+                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() == "true" ? "true" : "false")));
+                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+                builder.CloseElement();
+                break;
+            case "select":
+            case "boolean_select":
+                builder.OpenElement(sequence++, "select");
+                builder.AddAttribute(sequence++, "value", value);
+                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
+                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+                foreach (var option in GetFieldOptions(field.Id, field.ControlKind))
+                {
+                    builder.OpenElement(sequence++, "option");
+                    builder.AddAttribute(sequence++, "value", option.Value);
+                    builder.AddContent(sequence++, Text[option.LabelKey]);
+                    builder.CloseElement();
+                }
+                builder.CloseElement();
+                break;
+            default:
+                builder.OpenElement(sequence++, "input");
+                builder.AddAttribute(sequence++, "type", field.ControlKind == "password" ? "password" : field.ControlKind == "number" ? "number" : "text");
+                builder.AddAttribute(sequence++, "value", value);
+                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
+                builder.AddAttribute(sequence++, "placeholder", field.PlaceholderKey is null ? string.Empty : Text[field.PlaceholderKey]);
+                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
+                builder.CloseElement();
+                break;
+        }
+
+        builder.CloseElement();
+    };
+
+    private string GetConfigurationGroupHint(string groupKey) =>
         groupKey switch
         {
-            "Group.Connection" => "connection",
-            "Group.Operation" => "operation",
-            "Group.Diagnostics" => "diagnostics",
-            _ => "other"
+            "Config.LiteNet3" => "LiteNet3",
+            "Config.Biometrics" => "SM25",
+            "Config.Notification" => "LiteNet2",
+            "Config.Operation" => "comum",
+            _ => "device"
         };
 
     private IReadOnlyList<DeviceModuleKind> SelectedModules =>
@@ -256,22 +605,11 @@
     private bool ShouldRenderStandaloneModuleCard =>
         !ShouldEmbedModuleCommands && SelectedModules.Count > 0;
 
-    private void ChangeCulture(ChangeEventArgs args)
-    {
-        if (args.Value is string culture)
-            Culture.SetCulture(culture);
-    }
-
     private RenderFragment RenderModuleCommands() => builder =>
     {
         var sequence = 0;
         builder.OpenElement(sequence++, "section");
-        builder.AddAttribute(sequence++, "class", "thm-field-section thm-module-section");
-        builder.OpenElement(sequence++, "header");
-        builder.OpenElement(sequence++, "h2");
-        builder.AddContent(sequence++, Text["Group.Biometrics"]);
-        builder.CloseElement();
-        builder.CloseElement();
+        builder.AddAttribute(sequence++, "class", "thm-module-section");
 
         foreach (var module in SelectedModules)
         {
@@ -280,7 +618,7 @@
             foreach (var command in Catalog.GetModuleCommands(module))
             {
                 builder.OpenElement(sequence++, "button");
-                var classes = State.CurrentCommandId == command.Id ? "thm-bio-step thm-command-active" : "thm-bio-step";
+                var classes = State.CurrentCommandId == command.Id ? "thm-bio-step active" : "thm-bio-step";
                 builder.AddAttribute(sequence++, "class", classes);
                 builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => State.ExecuteAsync(command.Id)));
                 builder.AddAttribute(sequence++, "disabled", State.IsBusy || IsDisabled(command));
@@ -304,10 +642,16 @@
         builder.CloseElement();
     };
 
-    private string GetDetailLabel(string labelKey)
+    private void ChangeCulture(ChangeEventArgs args)
     {
-        var localized = Text[labelKey];
-        if (!localized.Equals(labelKey, StringComparison.Ordinal))
+        if (args.Value is string culture)
+            Culture.SetCulture(culture);
+    }
+
+    private string GetDetailLabel(HistoryDetailViewModel detail)
+    {
+        var localized = Text[detail.LabelKey];
+        if (!localized.Equals(detail.LabelKey, StringComparison.Ordinal))
             return localized;
 
         return Text["History.Detail.Value"];
@@ -322,55 +666,6 @@
         return localized.Equals(detail.ValueKey, StringComparison.Ordinal) ? detail.Value : localized;
     }
 
-    private RenderFragment RenderField(ConfigurationFieldCapability field) => builder =>
-    {
-        var sequence = 0;
-        switch (field.ControlKind)
-        {
-            case "read":
-                builder.OpenElement(sequence++, "output");
-                builder.AddAttribute(sequence++, "class", "thm-field-value");
-                builder.AddContent(sequence++, GetConfigurationValue(field.Id, field.Id == "firmware_version" ? "-" : "0"));
-                builder.CloseElement();
-                break;
-            case "toggle":
-                builder.OpenElement(sequence++, "input");
-                builder.AddAttribute(sequence++, "type", "checkbox");
-                builder.AddAttribute(sequence++, "checked", GetConfigurationValue(field.Id) == "true");
-                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() == "true" ? "true" : "false")));
-                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-                builder.CloseElement();
-                break;
-            case "select":
-                builder.OpenElement(sequence++, "select");
-                builder.AddAttribute(sequence++, "value", GetConfigurationValue(field.Id));
-                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
-                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-                builder.OpenElement(sequence++, "option");
-                builder.AddAttribute(sequence++, "value", string.Empty);
-                builder.AddContent(sequence++, Text["Field.SelectOption"]);
-                builder.CloseElement();
-                foreach (var option in GetFieldOptions(field.Id))
-                {
-                    builder.OpenElement(sequence++, "option");
-                    builder.AddAttribute(sequence++, "value", option.Value);
-                    builder.AddContent(sequence++, Text[option.LabelKey]);
-                    builder.CloseElement();
-                }
-                builder.CloseElement();
-                break;
-            default:
-                builder.OpenElement(sequence++, "input");
-                builder.AddAttribute(sequence++, "type", field.ControlKind == "password" ? "password" : field.ControlKind == "number" ? "number" : "text");
-                builder.AddAttribute(sequence++, "value", GetConfigurationValue(field.Id));
-                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
-                builder.AddAttribute(sequence++, "placeholder", field.PlaceholderKey is null ? string.Empty : Text[field.PlaceholderKey]);
-                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-                builder.CloseElement();
-                break;
-        }
-    };
-
     private string GetConfigurationValue(string fieldId, string fallback = "") =>
         State.ConfigurationValues.TryGetValue(fieldId, out var value) ? value : fallback;
 
@@ -379,8 +674,21 @@
         State.ConfigurationValues[fieldId] = value;
     }
 
-    private static IReadOnlyList<(string Value, string LabelKey)> GetFieldOptions(string fieldId) =>
-        fieldId switch
+    private static bool IsTrue(string? value) =>
+        value is "true" or "True" or "Sim" or "1";
+
+    private static IReadOnlyList<(string Value, string LabelKey)> GetFieldOptions(string fieldId, string controlKind)
+    {
+        if (controlKind == "boolean_select")
+        {
+            return
+            [
+                ("false", "Option.No"),
+                ("true", "Option.Yes")
+            ];
+        }
+
+        return fieldId switch
         {
             "ip_mode" =>
             [
@@ -394,18 +702,120 @@
                 ("Exit", "Option.Flow.Exit"),
                 ("Both", "Option.Flow.Both")
             ],
-            _ => []
+            "l3_flow_out" =>
+            [
+                ("Out", "Option.FlowOut.Out"),
+                ("Controls", "Option.FlowOut.Controls")
+            ],
+            "l3_flow_picto_wait_in" or "l3_flow_picto_wait_out" =>
+            [
+                ("0", "Option.Picto.Arrow"),
+                ("1", "Option.Picto.Blocked"),
+                ("2", "Option.Picto.Free")
+            ],
+            "display_mode" =>
+            [
+                ("", "Option.Display.Default"),
+                ("temporary", "Option.Display.Temporary"),
+                ("clear", "Option.Display.Clear")
+            ],
+            "fingerprint_identification_mode" =>
+            [
+                ("CardOrFingerprint", "Option.Fingerprint.CardOrFingerprint"),
+                ("Fingerprint", "Option.Fingerprint.Fingerprint"),
+                ("Card", "Option.Fingerprint.Card")
+            ],
+            "notify_tone" =>
+            [
+                ("0", "Option.NotifyTone.Success"),
+                ("1", "Option.NotifyTone.Alert"),
+                ("2", "Option.NotifyTone.Silent")
+            ],
+            _ =>
+            [
+                ("", "Field.SelectOption")
+            ]
         };
+    }
+
+    private void OpenColorDialog(string fieldId)
+    {
+        EditingColorFieldId = fieldId;
+        EditingColor = NormalizeHex(GetConfigurationValue(fieldId, "#0000FF"));
+        IsColorDialogOpen = true;
+    }
+
+    private void CloseColorDialog() => IsColorDialogOpen = false;
+
+    private void CloseColorDialogFromBackdrop() => CloseColorDialog();
+
+    private void ApplyColor()
+    {
+        SetConfigurationValue(EditingColorFieldId, NormalizeHex(EditingColor));
+        IsColorDialogOpen = false;
+    }
+
+    private void OnColorHexInput(ChangeEventArgs args)
+    {
+        EditingColor = NormalizeHex(args.Value?.ToString());
+    }
+
+    private void OnRgbInput(ChangeEventArgs args, string channel)
+    {
+        var (r, g, b) = HexToRgb(EditingColor);
+        var parsed = int.TryParse(args.Value?.ToString(), out var value) ? Math.Clamp(value, 0, 255) : 0;
+
+        EditingColor = channel switch
+        {
+            "r" => RgbToHex(parsed, g, b),
+            "g" => RgbToHex(r, parsed, b),
+            "b" => RgbToHex(r, g, parsed),
+            _ => EditingColor
+        };
+    }
+
+    private void SetEditingColor(string color)
+    {
+        EditingColor = NormalizeHex(color);
+    }
+
+    private static string NormalizeHex(string? value)
+    {
+        var cleaned = (value ?? string.Empty).Trim().TrimStart('#').ToUpperInvariant();
+        return cleaned.Length == 6 && cleaned.All(Uri.IsHexDigit)
+            ? $"#{cleaned}"
+            : "#0000FF";
+    }
+
+    private static (int R, int G, int B) HexToRgb(string hex)
+    {
+        var clean = NormalizeHex(hex).TrimStart('#');
+        return (
+            Convert.ToInt32(clean[..2], 16),
+            Convert.ToInt32(clean[2..4], 16),
+            Convert.ToInt32(clean[4..6], 16));
+    }
+
+    private static string RgbToHex(int r, int g, int b) =>
+        $"#{Math.Clamp(r, 0, 255):X2}{Math.Clamp(g, 0, 255):X2}{Math.Clamp(b, 0, 255):X2}";
 
     private void OnStateChanged()
     {
         _ = InvokeAsync(StateHasChanged);
     }
 
+    private void OnHistoryChanged()
+    {
+        if (SelectedHistoryItem is not null && !History.Items.Contains(SelectedHistoryItem))
+            SelectedHistoryItem = null;
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
         State.Changed -= OnStateChanged;
-        History.Changed -= OnStateChanged;
+        History.Changed -= OnHistoryChanged;
         Culture.Changed -= OnStateChanged;
     }
 }

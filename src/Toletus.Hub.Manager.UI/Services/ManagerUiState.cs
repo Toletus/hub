@@ -1,9 +1,14 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Toletus.Hub.Manager.UI.Contracts;
 using Toletus.Hub.Manager.UI.Models;
 
 namespace Toletus.Hub.Manager.UI.Services;
 
-public sealed class ManagerUiState(IHubDeviceManager deviceManager, NotificationHistoryService history)
+public sealed class ManagerUiState(
+    IHubDeviceManager deviceManager,
+    NotificationHistoryService history,
+    ILogger<ManagerUiState> logger)
 {
     private readonly List<DeviceRefViewModel> _devices = [];
     private int _configurationLoadVersion;
@@ -26,7 +31,6 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
             ? _devices
             : _devices.Where(d =>
                 d.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                d.IpAddress.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                 d.TypeLabel.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                 (d.SerialNumber?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false));
 
@@ -88,9 +92,26 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
         if (SelectedDevice is null)
             return;
 
+        var totalTimestamp = Stopwatch.GetTimestamp();
+        logger.LogInformation(
+            "HubManagerDiag ExecuteAsync start command={CommandId} device={DeviceKey} type={DeviceType} connected={Connected} thread={ThreadId}",
+            commandId,
+            SelectedDevice.Key,
+            SelectedDevice.Type,
+            SelectedDevice.Connected,
+            Environment.CurrentManagedThreadId);
+
         await RunBusyAsync(async () =>
         {
+            var pendingTimestamp = Stopwatch.GetTimestamp();
             history.Add(commandId, CommandResultViewModel.Pending("Message.CommandPending", SelectedDevice));
+            logger.LogInformation(
+                "HubManagerDiag ExecuteAsync pending-history-added command={CommandId} elapsedMs={ElapsedMs} thread={ThreadId}",
+                commandId,
+                Stopwatch.GetElapsedTime(pendingTimestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
+
+            var deviceManagerTimestamp = Stopwatch.GetTimestamp();
             var result = commandId switch
             {
                 "connection.connect" => await deviceManager.ConnectAsync(SelectedDevice, SelectedNetwork, cancellationToken),
@@ -102,6 +123,12 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
                     Message = "Toletus Hub Manager"
                 }, cancellationToken)
             };
+            logger.LogInformation(
+                "HubManagerDiag ExecuteAsync device-manager-returned command={CommandId} status={Status} elapsedMs={ElapsedMs} thread={ThreadId}",
+                commandId,
+                result.Status,
+                Stopwatch.GetElapsedTime(deviceManagerTimestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
 
             if (commandId == "connection.disconnect" && result.IsSuccess)
             {
@@ -112,7 +139,15 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
                 ReplaceDevice(result.Device);
             }
 
+            var finalHistoryTimestamp = Stopwatch.GetTimestamp();
             history.Add(commandId, result);
+            logger.LogInformation(
+                "HubManagerDiag ExecuteAsync final-history-added command={CommandId} status={Status} elapsedMs={ElapsedMs} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
+                commandId,
+                result.Status,
+                Stopwatch.GetElapsedTime(finalHistoryTimestamp).TotalMilliseconds,
+                Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
 
             if (commandId == "connection.connect" && result.IsSuccess && result.Device?.Connected == true)
                 StartConfigurationLoad(cancellationToken);
@@ -125,6 +160,12 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
                 Changed?.Invoke();
             }
         }, commandId);
+
+        logger.LogInformation(
+            "HubManagerDiag ExecuteAsync end command={CommandId} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
+            commandId,
+            Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+            Environment.CurrentManagedThreadId);
     }
 
     public async Task ConnectSerialAsync(CancellationToken cancellationToken = default)
@@ -254,9 +295,15 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
 
     private async Task RunBusyAsync(Func<Task> action, string? commandId = null)
     {
+        var timestamp = Stopwatch.GetTimestamp();
         IsBusy = true;
         CurrentCommandId = commandId;
         Changed?.Invoke();
+        logger.LogInformation(
+            "HubManagerDiag RunBusyAsync busy-set command={CommandId} elapsedMs={ElapsedMs} thread={ThreadId}",
+            commandId,
+            Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds,
+            Environment.CurrentManagedThreadId);
 
         try
         {
@@ -264,9 +311,16 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
         }
         finally
         {
+            var clearTimestamp = Stopwatch.GetTimestamp();
             IsBusy = false;
             CurrentCommandId = null;
             Changed?.Invoke();
+            logger.LogInformation(
+                "HubManagerDiag RunBusyAsync busy-cleared command={CommandId} clearElapsedMs={ClearElapsedMs} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
+                commandId,
+                Stopwatch.GetElapsedTime(clearTimestamp).TotalMilliseconds,
+                Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds,
+                Environment.CurrentManagedThreadId);
         }
     }
 }

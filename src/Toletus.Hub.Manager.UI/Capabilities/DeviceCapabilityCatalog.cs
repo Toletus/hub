@@ -12,7 +12,6 @@ public sealed class DeviceCapabilityCatalog
     public const string Reset = "common.reset";
     public const string ResetCounters = "common.reset_counters";
     public const string GetStatus = "common.get_status";
-    public const string ConnectSerial = "connection.connect_serial";
     public const string Sm25ReaderInfo = "sm25.reader_info";
     public const string Sm25Cancel = "sm25.cancel";
 
@@ -59,6 +58,7 @@ public sealed class DeviceCapabilityCatalog
             new("firmware_version", "Field.FirmwareVersion", "Config.General", "read"),
             new("device_id", "Field.DeviceId", "Config.General", "number"),
             new("flow_mode", "Field.FlowMode", "Config.Flow", "select"),
+            new("buzzer_mute", "Field.BuzzerMute", "Config.Operation", "boolean_select"),
             new("entered", "Field.Entered", "Config.Counters", "read"),
             new("exited", "Field.Exited", "Config.Counters", "read"),
             new("release_duration", "Field.ReleaseDuration", "Config.Operation", "number")
@@ -67,9 +67,35 @@ public sealed class DeviceCapabilityCatalog
         if (type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2)
         {
             fields.AddRange([
+                new("entry_clockwise", "Field.EntryClockwise", "Config.Operation", "boolean_select"),
                 new("default_message", "Field.DefaultMessage", "Config.Messages", "text", "Placeholder.DefaultMessage"),
                 new("secondary_message", "Field.SecondaryMessage", "Config.Messages", "text", "Placeholder.SecondaryMessage"),
+                new("show_clock", "Field.ShowClock", "Config.Counters", "boolean_select"),
                 new("show_counters", "Field.ShowCounters", "Config.Counters", "toggle")
+            ]);
+        }
+
+        if (type is DeviceTypeKind.LiteNet2)
+        {
+            fields.AddRange([
+                new("fingerprint_identification_mode", "Field.FingerprintMode", "Config.Biometrics", "select"),
+                new("notify_color", "Field.NotifyColor", "Config.Notification", "text"),
+                new("notify_tone", "Field.NotifyTone", "Config.Notification", "select"),
+                new("notify_show_message", "Field.NotifyShowMessage", "Config.Notification", "boolean_select")
+            ]);
+        }
+
+        if (type is DeviceTypeKind.LiteNet3)
+        {
+            fields.AddRange([
+                new("l3_flow_inverted", "Field.FlowInverted", "Config.Flow", "boolean_select"),
+                new("l3_flow_out", "Field.FlowOut", "Config.Flow", "select"),
+                new("l3_flow_front_wait", "Field.LedWait", "Config.LiteNet3", "color"),
+                new("l3_flow_picto_wait_in", "Field.PictoWaitIn", "Config.LiteNet3", "select"),
+                new("l3_flow_picto_wait_out", "Field.PictoWaitOut", "Config.LiteNet3", "select"),
+                new("default_message", "Field.DisplayTop", "Config.Messages", "text", "Placeholder.DefaultMessage"),
+                new("secondary_message", "Field.DisplayBottom", "Config.Messages", "text", "Placeholder.SecondaryMessage"),
+                new("display_mode", "Field.DisplayMode", "Config.Messages", "select")
             ]);
         }
 

@@ -7,15 +7,18 @@
   <data name="App.Title" xml:space="preserve"><value>Hub Universal Manager</value></data>
   <data name="App.Subtitle" xml:space="preserve"><value>Direct control for LiteNet devices and modules exposed by Hub</value></data>
   <data name="Toolbar.Network" xml:space="preserve"><value>Network</value></data>
-  <data name="Toolbar.Search" xml:space="preserve"><value>Search by IP, serial, or type</value></data>
+  <data name="Toolbar.Search" xml:space="preserve"><value>Search by name, serial, or type</value></data>
   <data name="Toolbar.Discover" xml:space="preserve"><value>Discover</value></data>
   <data name="Toolbar.Language" xml:space="preserve"><value>Language</value></data>
   <data name="Toolbar.SelectNetwork" xml:space="preserve"><value>Select network</value></data>
+  <data name="Toolbar.Subtitle" xml:space="preserve"><value>Device console</value></data>
   <data name="Language.pt-BR" xml:space="preserve"><value>Portuguese</value></data>
   <data name="Language.en-US" xml:space="preserve"><value>English</value></data>
   <data name="Devices.Title" xml:space="preserve"><value>Devices exposed by Hub</value></data>
   <data name="Devices.Hint" xml:space="preserve"><value>LiteNet devices discovered by network; SM25 appears as a biometric module.</value></data>
   <data name="Devices.Empty" xml:space="preserve"><value>No devices discovered on this network.</value></data>
+  <data name="Devices.PanelTitle" xml:space="preserve"><value>Devices</value></data>
+  <data name="Devices.Visible" xml:space="preserve"><value>visible</value></data>
   <data name="Devices.Modules" xml:space="preserve"><value>Modules</value></data>
   <data name="Devices.SerialHint" xml:space="preserve"><value>Connect through serial port when applicable.</value></data>
   <data name="Workspace.EmptyTitle" xml:space="preserve"><value>Select a device</value></data>
@@ -135,6 +138,9 @@
   <data name="Metric.Devices" xml:space="preserve"><value>Devices</value></data>
   <data name="Metric.Connected" xml:space="preserve"><value>Connected</value></data>
   <data name="Metric.ActiveCommand" xml:space="preserve"><value>Active commands</value></data>
+  <data name="Metric.DevicesHint" xml:space="preserve"><value>discovered on network</value></data>
+  <data name="Metric.ConnectedHint" xml:space="preserve"><value>ready for commands</value></data>
+  <data name="Metric.ActiveCommandHint" xml:space="preserve"><value>running right now</value></data>
   <data name="Field.FirmwareVersion" xml:space="preserve"><value>Firmware version</value></data>
   <data name="Field.DeviceId" xml:space="preserve"><value>Device ID</value></data>
   <data name="Field.FlowMode" xml:space="preserve"><value>Flow mode</value></data>
@@ -189,4 +195,56 @@
   <data name="Message.BiometricsReceived" xml:space="preserve"><value>Biometrics received.</value></data>
   <data name="Message.NotificationReceived" xml:space="preserve"><value>Event received.</value></data>
   <data name="Message.NotificationErrorReceived" xml:space="preserve"><value>Error received.</value></data>
+  <data name="Devices.Filters" xml:space="preserve"><value>Device filters</value></data>
+  <data name="Filter.All" xml:space="preserve"><value>All</value></data>
+  <data name="Filter.Connected" xml:space="preserve"><value>Connected</value></data>
+  <data name="Filter.Offline" xml:space="preserve"><value>Offline</value></data>
+  <data name="Filter.LiteNet3" xml:space="preserve"><value>LiteNet3</value></data>
+  <data name="Filter.SM25" xml:space="preserve"><value>SM25</value></data>
+  <data name="Workspace.TechnicalReturn" xml:space="preserve"><value>Technical device return</value></data>
+  <data name="Workspace.TechnicalReturnHint" xml:space="preserve"><value>Operational history and raw JSON stay centered for technical users.</value></data>
+  <data name="Workspace.JsonHint" xml:space="preserve"><value>technical payload / Hub response</value></data>
+  <data name="History.SelectedDeviceEvents" xml:space="preserve"><value>selected device events</value></data>
+  <data name="Config.Edit" xml:space="preserve"><value>Edit configuration</value></data>
+  <data name="Config.Biometrics" xml:space="preserve"><value>LiteNet2 / SM25</value></data>
+  <data name="Config.Notification" xml:space="preserve"><value>Notification</value></data>
+  <data name="Config.LiteNet3" xml:space="preserve"><value>LiteNet3</value></data>
+  <data name="Field.EntryClockwise" xml:space="preserve"><value>Entry clockwise</value></data>
+  <data name="Field.BuzzerMute" xml:space="preserve"><value>Mute</value></data>
+  <data name="Field.ShowClock" xml:space="preserve"><value>Show clock</value></data>
+  <data name="Field.FingerprintMode" xml:space="preserve"><value>Identification</value></data>
+  <data name="Field.NotifyColor" xml:space="preserve"><value>Notification LED</value></data>
+  <data name="Field.NotifyTone" xml:space="preserve"><value>Tone</value></data>
+  <data name="Field.NotifyShowMessage" xml:space="preserve"><value>Show message</value></data>
+  <data name="Field.FlowInverted" xml:space="preserve"><value>Inverted flow</value></data>
+  <data name="Field.FlowOut" xml:space="preserve"><value>Exit flow</value></data>
+  <data name="Field.LedWait" xml:space="preserve"><value>Wait LED</value></data>
+  <data name="Field.PictoWaitIn" xml:space="preserve"><value>Entry pictogram</value></data>
+  <data name="Field.PictoWaitOut" xml:space="preserve"><value>Exit pictogram</value></data>
+  <data name="Field.DisplayTop" xml:space="preserve"><value>Top row</value></data>
+  <data name="Field.DisplayBottom" xml:space="preserve"><value>Bottom row</value></data>
+  <data name="Field.DisplayMode" xml:space="preserve"><value>Display</value></data>
+  <data name="Option.Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Option.No" xml:space="preserve"><value>No</value></data>
+  <data name="Option.FlowOut.Out" xml:space="preserve"><value>Exit</value></data>
+  <data name="Option.FlowOut.Controls" xml:space="preserve"><value>Controlled</value></data>
+  <data name="Option.Picto.Arrow" xml:space="preserve"><value>Arrow</value></data>
+  <data name="Option.Picto.Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Option.Picto.Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Option.Display.Default" xml:space="preserve"><value>Fixed message</value></data>
+  <data name="Option.Display.Temporary" xml:space="preserve"><value>Temporary notification</value></data>
+  <data name="Option.Display.Clear" xml:space="preserve"><value>Clear display</value></data>
+  <data name="Option.Fingerprint.CardOrFingerprint" xml:space="preserve"><value>Fingerprint + card</value></data>
+  <data name="Option.Fingerprint.Fingerprint" xml:space="preserve"><value>Fingerprint only</value></data>
+  <data name="Option.Fingerprint.Card" xml:space="preserve"><value>Card only</value></data>
+  <data name="Option.NotifyTone.Success" xml:space="preserve"><value>Success</value></data>
+  <data name="Option.NotifyTone.Alert" xml:space="preserve"><value>Alert</value></data>
+  <data name="Option.NotifyTone.Silent" xml:space="preserve"><value>Silent</value></data>
+  <data name="Actionbar.Empty" xml:space="preserve"><value>Device actions</value></data>
+  <data name="Actionbar.ForDevice" xml:space="preserve"><value>Actions for {0}</value></data>
+  <data name="Actionbar.Hint" xml:space="preserve"><value>Real commands: Connection, Operation, Diagnostics, Maintenance, Settings and SM25 biometrics.</value></data>
+  <data name="Color.Edit" xml:space="preserve"><value>Edit colors</value></data>
+  <data name="Color.Basic" xml:space="preserve"><value>Basic colors</value></data>
+  <data name="Color.Custom" xml:space="preserve"><value>Custom colors</value></data>
+  <data name="Color.Select" xml:space="preserve"><value>Select color</value></data>
 </root>
