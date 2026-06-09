@@ -256,7 +256,7 @@ public sealed class HubDirectDeviceManager(
     {
         var mappedType = ToUiType(device.Type);
         var key = $"{mappedType}:{device.Ip}:{device.Id}";
-        IReadOnlyList<DeviceModuleKind> modules = mappedType == DeviceTypeKind.LiteNet2 && device.Connected
+        IReadOnlyList<DeviceModuleKind> modules = mappedType == DeviceTypeKind.LiteNet2 && HasFingerprintReader(device)
             ? [DeviceModuleKind.SM25]
             : Array.Empty<DeviceModuleKind>();
 
@@ -275,6 +275,30 @@ public sealed class HubDirectDeviceManager(
 
         _devices[key] = device;
         return viewModel;
+    }
+
+    private static bool HasFingerprintReader(HubDevice device)
+    {
+        if (device.Type != HubDeviceType.LiteNet2 || !device.Connected)
+            return false;
+
+        var board = device.Get();
+        if (board is null)
+            return false;
+
+        foreach (var propertyName in new[]
+                 {
+                     "FingerprintReaderConnected",
+                     "IsFingerprintReaderConnected",
+                     "HasFingerprintReader",
+                     "FingerprintConnected"
+                 })
+        {
+            if (ReadProperty(board, propertyName) is bool connected)
+                return connected;
+        }
+
+        return false;
     }
 
     private CommandResultViewModel ToResult(DeviceResponse response, string successKey, DeviceRefViewModel device)
@@ -456,28 +480,13 @@ public sealed class HubDirectDeviceManager(
         if (notification.Response is DeviceResponse { Success: false } response)
             return CommandResultViewModel.Error("Message.CommandFailed", response.Message, device) with
             {
-                TechnicalDetails = Serialize(notification.Response)
+                Data = notification.Response
             };
 
         return CommandResultViewModel.Success("Message.CommandSuccess", device, notification.Response) with
         {
-            TechnicalDetails = Serialize(notification.Response)
+            TechnicalDetails = null
         };
-    }
-
-    private static string? Serialize(object? value)
-    {
-        if (value is null)
-            return null;
-
-        try
-        {
-            return JsonSerializer.Serialize(value);
-        }
-        catch
-        {
-            return value.ToString();
-        }
     }
 
     private static Task<Notification> UnsupportedNotification(HubDevice device) =>
@@ -677,6 +686,7 @@ public sealed class HubDirectDeviceManager(
             HubDeviceType.LiteNet1 => DeviceTypeKind.LiteNet1,
             HubDeviceType.LiteNet2 => DeviceTypeKind.LiteNet2,
             HubDeviceType.LiteNet3 => DeviceTypeKind.LiteNet3,
+            HubDeviceType.SM25 => DeviceTypeKind.SM25,
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
 
@@ -686,6 +696,7 @@ public sealed class HubDirectDeviceManager(
             DeviceTypeKind.LiteNet1 => HubDeviceType.LiteNet1,
             DeviceTypeKind.LiteNet2 => HubDeviceType.LiteNet2,
             DeviceTypeKind.LiteNet3 => HubDeviceType.LiteNet3,
+            DeviceTypeKind.SM25 => HubDeviceType.SM25,
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
 }

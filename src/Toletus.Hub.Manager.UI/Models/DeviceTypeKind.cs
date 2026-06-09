@@ -4,5 +4,6 @@ public enum DeviceTypeKind
 {
     LiteNet1,
     LiteNet2,
-    LiteNet3
+    LiteNet3,
+    SM25
 }

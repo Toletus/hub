@@ -26,6 +26,96 @@
   <data name="History.Title" xml:space="preserve"><value>Hist&#243;rico</value></data>
   <data name="History.Empty" xml:space="preserve"><value>Nenhum comando executado.</value></data>
   <data name="History.Clear" xml:space="preserve"><value>Limpar</value></data>
+  <data name="History.Detail.Message" xml:space="preserve"><value>Mensagem</value></data>
+  <data name="History.Detail.Success" xml:space="preserve"><value>Resultado</value></data>
+  <data name="History.Detail.Result" xml:space="preserve"><value>Resultado</value></data>
+  <data name="History.Detail.Command" xml:space="preserve"><value>Comando</value></data>
+  <data name="History.Detail.Summary" xml:space="preserve"><value>Resumo</value></data>
+  <data name="History.Detail.Value" xml:space="preserve"><value>Detalhe</value></data>
+  <data name="History.Detail.Content" xml:space="preserve"><value>Conte&#250;do</value></data>
+  <data name="History.Detail.Data_Content" xml:space="preserve"><value>Conte&#250;do</value></data>
+  <data name="History.Detail.Action" xml:space="preserve"><value>A&#231;&#227;o</value></data>
+  <data name="History.Detail.Id" xml:space="preserve"><value>ID</value></data>
+  <data name="History.Detail.Name" xml:space="preserve"><value>Nome</value></data>
+  <data name="History.Detail.Ip" xml:space="preserve"><value>IP</value></data>
+  <data name="History.Detail.SerialNumber" xml:space="preserve"><value>S&#233;rie</value></data>
+  <data name="History.Detail.Port" xml:space="preserve"><value>Porta</value></data>
+  <data name="History.Detail.Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="History.Detail.Connected" xml:space="preserve"><value>Conex&#227;o</value></data>
+  <data name="History.Detail.Connection" xml:space="preserve"><value>Conex&#227;o</value></data>
+  <data name="History.Detail.Firmware" xml:space="preserve"><value>Firmware</value></data>
+  <data name="History.Detail.Flow" xml:space="preserve"><value>Fluxo</value></data>
+  <data name="History.Detail.EntryClockwise" xml:space="preserve"><value>Sentido entrada</value></data>
+  <data name="History.Detail.Entered" xml:space="preserve"><value>Entradas</value></data>
+  <data name="History.Detail.Exited" xml:space="preserve"><value>Sa&#237;das</value></data>
+  <data name="History.Detail.FingerprintMode" xml:space="preserve"><value>Modo digital</value></data>
+  <data name="History.Detail.FingerprintReader" xml:space="preserve"><value>Leitor biom&#233;trico</value></data>
+  <data name="History.Detail.Gateway" xml:space="preserve"><value>Gateway</value></data>
+  <data name="History.Detail.Identification" xml:space="preserve"><value>Identifica&#231;&#227;o</value></data>
+  <data name="History.Detail.IpMode" xml:space="preserve"><value>Modo IP</value></data>
+  <data name="History.Detail.Ready" xml:space="preserve"><value>Pronto</value></data>
+  <data name="History.Detail.Mac" xml:space="preserve"><value>MAC</value></data>
+  <data name="History.Detail.MenuPassword" xml:space="preserve"><value>Senha menu</value></data>
+  <data name="History.Detail.DefaultMessage" xml:space="preserve"><value>Mensagem padr&#227;o</value></data>
+  <data name="History.Detail.SecondaryMessage" xml:space="preserve"><value>Mensagem secund&#225;ria</value></data>
+  <data name="History.Detail.Passage" xml:space="preserve"><value>Passagem</value></data>
+  <data name="History.Detail.Payload" xml:space="preserve"><value>Dados recebidos</value></data>
+  <data name="History.Detail.PayloadSize" xml:space="preserve"><value>Tamanho (bytes)</value></data>
+  <data name="History.Detail.ReleaseDuration" xml:space="preserve"><value>Dura&#231;&#227;o</value></data>
+  <data name="History.Detail.ReturnCode" xml:space="preserve"><value>C&#243;digo retorno</value></data>
+  <data name="History.Detail.Rfid" xml:space="preserve"><value>RFID</value></data>
+  <data name="History.Detail.Barcode" xml:space="preserve"><value>C&#243;digo barras</value></data>
+  <data name="History.Detail.Keypad" xml:space="preserve"><value>Teclado</value></data>
+  <data name="History.Detail.ShowCounters" xml:space="preserve"><value>Exibir contadores</value></data>
+  <data name="History.Detail.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="History.Detail.SubnetMask" xml:space="preserve"><value>M&#225;scara</value></data>
+  <data name="History.Detail.Template" xml:space="preserve"><value>Template</value></data>
+  <data name="History.Detail.Timeout" xml:space="preserve"><value>Timeout</value></data>
+  <data name="History.Detail.Biometrics" xml:space="preserve"><value>Biometria</value></data>
+  <data name="History.Detail.Checksum" xml:space="preserve"><value>Checksum</value></data>
+  <data name="History.Detail.BiometricsSize" xml:space="preserve"><value>Tamanho</value></data>
+  <data name="History.Detail.BiometricsFormat" xml:space="preserve"><value>Biometria</value></data>
+  <data name="History.Media.ImageAlt" xml:space="preserve"><value>Imagem do evento</value></data>
+  <data name="History.Media.BiometricsAlt" xml:space="preserve"><value>Imagem da biometria recebida</value></data>
+  <data name="History.Media.BiometricsCaption" xml:space="preserve"><value>Biometria recebida pelo LiteNet3.</value></data>
+  <data name="History.Result.Idle" xml:space="preserve"><value>Aguardando</value></data>
+  <data name="History.Result.Pending" xml:space="preserve"><value>Em andamento</value></data>
+  <data name="History.Result.Success" xml:space="preserve"><value>Conclu&#237;do</value></data>
+  <data name="History.Result.Warning" xml:space="preserve"><value>Aten&#231;&#227;o</value></data>
+  <data name="History.Result.Error" xml:space="preserve"><value>Erro</value></data>
+  <data name="History.Result.Canceled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="History.Value.True" xml:space="preserve"><value>Sim</value></data>
+  <data name="History.Value.False" xml:space="preserve"><value>N&#227;o</value></data>
+  <data name="History.Value.Recognized" xml:space="preserve"><value>Valor reconhecido</value></data>
+  <data name="History.Value.PayloadSummaryUnavailable" xml:space="preserve"><value>Payload recebido sem resumo dispon&#237;vel.</value></data>
+  <data name="History.Value.ImageFormatUnknown" xml:space="preserve"><value>Formato de imagem n&#227;o reconhecido.</value></data>
+  <data name="History.Event.Discovery" xml:space="preserve"><value>Dispositivos atualizados pela descoberta de rede.</value></data>
+  <data name="History.Event.Connect" xml:space="preserve"><value>Conex&#227;o solicitada para o dispositivo selecionado.</value></data>
+  <data name="History.Event.Disconnect" xml:space="preserve"><value>Desconex&#227;o solicitada para o dispositivo selecionado.</value></data>
+  <data name="History.Event.ConnectSerial" xml:space="preserve"><value>Conex&#227;o serial LiteNet3 solicitada.</value></data>
+  <data name="History.Event.ReleaseEntry" xml:space="preserve"><value>Entrada liberada pelo equipamento.</value></data>
+  <data name="History.Event.ReleaseEntryAndExit" xml:space="preserve"><value>Entrada e sa&#237;da liberadas pelo equipamento.</value></data>
+  <data name="History.Event.ReleaseExit" xml:space="preserve"><value>Sa&#237;da liberada pelo equipamento.</value></data>
+  <data name="History.Event.Reset" xml:space="preserve"><value>Reinicializa&#231;&#227;o enviada ao equipamento.</value></data>
+  <data name="History.Event.ResetCounters" xml:space="preserve"><value>Zeramento de contadores enviado.</value></data>
+  <data name="History.Event.Status" xml:space="preserve"><value>Status e diagn&#243;sticos recebidos do equipamento.</value></data>
+  <data name="History.Event.ConfigurationRefresh" xml:space="preserve"><value>Propriedades do dispositivo carregadas.</value></data>
+  <data name="History.Event.ConfigurationSubmit" xml:space="preserve"><value>Configura&#231;&#227;o enviada ao dispositivo.</value></data>
+  <data name="History.Event.Sm25ReaderInfo" xml:space="preserve"><value>Informa&#231;&#245;es do leitor biom&#233;trico recebidas.</value></data>
+  <data name="History.Event.Sm25Cancel" xml:space="preserve"><value>Leitura biom&#233;trica cancelada.</value></data>
+  <data name="History.Event.Biometrics" xml:space="preserve"><value>Imagem biom&#233;trica recebida do LiteNet3.</value></data>
+  <data name="History.Event.Identification" xml:space="preserve"><value>Identifica&#231;&#227;o recebida do equipamento.</value></data>
+  <data name="History.Event.IdentificationRfid" xml:space="preserve"><value>Identifica&#231;&#227;o por RFID recebida.</value></data>
+  <data name="History.Event.IdentificationBarcode" xml:space="preserve"><value>Identifica&#231;&#227;o por c&#243;digo de barras recebida.</value></data>
+  <data name="History.Event.IdentificationKeypad" xml:space="preserve"><value>Identifica&#231;&#227;o por teclado recebida.</value></data>
+  <data name="History.Event.IdentificationFingerprint" xml:space="preserve"><value>Identifica&#231;&#227;o por biometria recebida.</value></data>
+  <data name="History.Event.Passage" xml:space="preserve"><value>Passagem registrada pelo equipamento.</value></data>
+  <data name="History.Event.Timeout" xml:space="preserve"><value>Tempo de passagem esgotado.</value></data>
+  <data name="History.Event.NotificationStatus" xml:space="preserve"><value>Status recebido do equipamento.</value></data>
+  <data name="History.Event.Ready" xml:space="preserve"><value>Estado de prontid&#227;o do equipamento atualizado.</value></data>
+  <data name="History.Event.ConnectionChanged" xml:space="preserve"><value>Estado de conex&#227;o do equipamento atualizado.</value></data>
+  <data name="History.Event.FingerprintReader" xml:space="preserve"><value>Estado do leitor biom&#233;trico atualizado.</value></data>
+  <data name="History.Event.Sm25" xml:space="preserve"><value>Evento do leitor biom&#233;trico SM25 recebido.</value></data>
   <data name="Group.Connection" xml:space="preserve"><value>Conex&#227;o</value></data>
   <data name="Group.Operation" xml:space="preserve"><value>Opera&#231;&#227;o</value></data>
   <data name="Group.Maintenance" xml:space="preserve"><value>Manuten&#231;&#227;o</value></data>
@@ -92,4 +182,6 @@
   <data name="Message.ConfigurationSent" xml:space="preserve"><value>Configuração enviada.</value></data>
   <data name="Message.ConfigurationLoaded" xml:space="preserve"><value>Propriedades obtidas.</value></data>
   <data name="Message.ConfigurationQueued" xml:space="preserve"><value>Configura&#231;&#227;o pronta para envio por comandos espec&#237;ficos.</value></data>
+  <data name="Message.BiometricsReceived" xml:space="preserve"><value>Biometria recebida.</value></data>
+  <data name="Message.NotificationReceived" xml:space="preserve"><value>Evento recebido.</value></data>
 </root>

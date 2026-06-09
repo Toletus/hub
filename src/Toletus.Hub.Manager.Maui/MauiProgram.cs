@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Toletus.Hub.Manager.Maui.Services;
 using Toletus.Hub.Manager.UI;
 using Toletus.Hub.Manager.UI.Contracts;
+using Toletus.Hub.Manager.UI.Services;
 using Toletus.Hub.Services;
 using Toletus.Hub.Services.NotificationsServices;
 
@@ -23,6 +24,7 @@ public static class MauiProgram
 
         builder.Services.AddMauiBlazorWebView();
         builder.Services.AddHubManagerUi();
+        builder.Services.AddSingleton<ICommandHistoryFormatter, HubCommandHistoryFormatter>();
         builder.Services.AddSingleton<DeviceService>();
         builder.Services.AddSingleton<ControllerService>();
         builder.Services.AddSingleton<BasicCommonCommandService>();
@@ -31,13 +33,16 @@ public static class MauiProgram
         builder.Services.AddSingleton<LiteNet3CommandService>();
         builder.Services.AddSingleton<SM25ReaderCommandsService>();
         builder.Services.AddSingleton<IHubDeviceManager, HubDirectDeviceManager>();
+        builder.Services.AddSingleton<HubNotificationHistoryBridge>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+        _ = app.Services.GetRequiredService<HubNotificationHistoryBridge>();
+        return app;
     }
 
     private static void InitializeNotificationServices()

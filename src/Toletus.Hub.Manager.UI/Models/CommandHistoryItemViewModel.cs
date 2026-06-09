@@ -8,4 +8,6 @@ public sealed record CommandHistoryItemViewModel
     public required string MessageKey { get; init; }
     public string? DeviceName { get; init; }
     public string? TechnicalDetails { get; init; }
+    public IReadOnlyList<HistoryDetailViewModel> Details { get; init; } = Array.Empty<HistoryDetailViewModel>();
+    public HistoryMediaViewModel? Media { get; init; }
 }

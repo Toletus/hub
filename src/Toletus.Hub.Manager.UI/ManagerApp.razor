@@ -38,7 +38,7 @@
             </div>
         </header>
 
-        <div class="thm-layout">
+        <div class="thm-layout" data-inspector-mode="@(ShouldEmbedModuleCommands ? "expanded" : "standard")">
             <aside class="thm-sidebar">
                 <div class="thm-panel-head">
                     <div class="thm-panel-title">@Text["Devices.Title"]</div>
@@ -132,30 +132,19 @@
                                     </div>
                                 </section>
                             }
-                        </article>
 
-                        <article class="thm-card">
-                            @if (State.SelectedDevice?.Modules.Count == 0)
+                            @if (ShouldEmbedModuleCommands)
                             {
-                                <p class="thm-empty">@Text["Modules.Empty"]</p>
-                            }
-
-                            @foreach (var module in State.SelectedDevice?.Modules ?? [])
-                            {
-                                <div class="thm-bio-flow">
-                                    @foreach (var command in Catalog.GetModuleCommands(module))
-                                    {
-                                        <button class="thm-bio-step" @onclick="() => State.ExecuteAsync(command.Id)" disabled="@State.IsBusy">
-                                            <span class="thm-step">SM</span>
-                                            <span>
-                                                <strong>@Text[command.LabelKey]</strong>
-                                                <small>@Text["Modules.Sm25Hint"]</small>
-                                            </span>
-                                        </button>
-                                    }
-                                </div>
+                                @RenderModuleCommands()
                             }
                         </article>
+
+                        @if (ShouldRenderStandaloneModuleCard)
+                        {
+                            <article class="thm-card">
+                                @RenderModuleCommands()
+                            </article>
+                        }
                     </section>
                 }
             </main>
@@ -178,9 +167,27 @@
                                 <time>@item.Timestamp.ToString("HH:mm:ss")</time>
                                 <strong>@Text[item.MessageKey]</strong>
                                 <span>@item.DeviceName</span>
-                                @if (!string.IsNullOrWhiteSpace(item.TechnicalDetails))
+                                @if (item.Details.Count > 0)
                                 {
-                                    <small>@item.TechnicalDetails</small>
+                                    <dl class="thm-log-details">
+                                        @foreach (var detail in item.Details)
+                                        {
+                                            <div>
+                                                <dt>@GetDetailLabel(detail.LabelKey)</dt>
+                                                <dd>@GetDetailValue(detail)</dd>
+                                            </div>
+                                        }
+                                    </dl>
+                                }
+                                @if (item.Media is { Kind: "image" } media)
+                                {
+                                    <figure class="thm-log-media">
+                                        <img src="@media.Source" alt="@Text[media.AltKey ?? "History.Media.ImageAlt"]" />
+                                        @if (!string.IsNullOrWhiteSpace(media.CaptionKey))
+                                        {
+                                            <figcaption>@Text[media.CaptionKey]</figcaption>
+                                        }
+                                    </figure>
                                 }
                             </article>
                         }
@@ -194,19 +201,88 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        State.Changed += StateHasChanged;
-        History.Changed += StateHasChanged;
-        Culture.Changed += StateHasChanged;
+        State.Changed += OnStateChanged;
+        History.Changed += OnStateChanged;
+        Culture.Changed += OnStateChanged;
         await State.InitializeAsync();
     }
 
     private bool IsDisabled(CommandCapability command) =>
         State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
 
+    private IReadOnlyList<DeviceModuleKind> SelectedModules =>
+        State.SelectedDevice?.Modules ?? Array.Empty<DeviceModuleKind>();
+
+    private bool ShouldEmbedModuleCommands =>
+        State.SelectedDevice is { Type: DeviceTypeKind.LiteNet2 } &&
+        SelectedModules.Contains(DeviceModuleKind.SM25);
+
+    private bool ShouldRenderStandaloneModuleCard =>
+        !ShouldEmbedModuleCommands && SelectedModules.Count > 0;
+
     private void ChangeCulture(ChangeEventArgs args)
     {
         if (args.Value is string culture)
             Culture.SetCulture(culture);
+    }
+
+    private RenderFragment RenderModuleCommands() => builder =>
+    {
+        var sequence = 0;
+        builder.OpenElement(sequence++, "section");
+        builder.AddAttribute(sequence++, "class", "thm-field-section thm-module-section");
+        builder.OpenElement(sequence++, "header");
+        builder.OpenElement(sequence++, "h2");
+        builder.AddContent(sequence++, Text["Group.Biometrics"]);
+        builder.CloseElement();
+        builder.CloseElement();
+
+        foreach (var module in SelectedModules)
+        {
+            builder.OpenElement(sequence++, "div");
+            builder.AddAttribute(sequence++, "class", "thm-bio-flow");
+            foreach (var command in Catalog.GetModuleCommands(module))
+            {
+                builder.OpenElement(sequence++, "button");
+                builder.AddAttribute(sequence++, "class", "thm-bio-step");
+                builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => State.ExecuteAsync(command.Id)));
+                builder.AddAttribute(sequence++, "disabled", State.IsBusy || IsDisabled(command));
+                builder.OpenElement(sequence++, "span");
+                builder.AddAttribute(sequence++, "class", "thm-step");
+                builder.AddContent(sequence++, module == DeviceModuleKind.SM25 ? "SM" : "MD");
+                builder.CloseElement();
+                builder.OpenElement(sequence++, "span");
+                builder.OpenElement(sequence++, "strong");
+                builder.AddContent(sequence++, Text[command.LabelKey]);
+                builder.CloseElement();
+                builder.OpenElement(sequence++, "small");
+                builder.AddContent(sequence++, Text["Modules.Sm25Hint"]);
+                builder.CloseElement();
+                builder.CloseElement();
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+    private string GetDetailLabel(string labelKey)
+    {
+        var localized = Text[labelKey];
+        if (!localized.Equals(labelKey, StringComparison.Ordinal))
+            return localized;
+
+        return Text["History.Detail.Value"];
+    }
+
+    private string GetDetailValue(HistoryDetailViewModel detail)
+    {
+        if (detail.ValueKey is null)
+            return detail.Value;
+
+        var localized = Text[detail.ValueKey];
+        return localized.Equals(detail.ValueKey, StringComparison.Ordinal) ? detail.Value : localized;
     }
 
     private RenderFragment RenderField(ConfigurationFieldCapability field) => builder =>
@@ -284,10 +360,15 @@
             _ => []
         };
 
+    private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
-        State.Changed -= StateHasChanged;
-        History.Changed -= StateHasChanged;
-        Culture.Changed -= StateHasChanged;
+        State.Changed -= OnStateChanged;
+        History.Changed -= OnStateChanged;
+        Culture.Changed -= OnStateChanged;
     }
 }
