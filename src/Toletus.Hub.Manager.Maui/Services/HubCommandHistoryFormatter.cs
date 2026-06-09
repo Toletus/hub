@@ -67,9 +67,8 @@ public sealed class HubCommandHistoryFormatter : CommandHistoryFormatter
         return false;
     }
 
-    private static HistoryMediaViewModel? TryCreateRawBiometricsPngMedia(byte[] payload)
+    private static HistoryMediaViewModel TryCreateRawBiometricsPngMedia(byte[] payload)
     {
-
         var imageProcessor = new ImageProcessor();
         var image = imageProcessor.CreateImageFromData(payload);
         
