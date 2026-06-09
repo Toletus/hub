@@ -1,4 +1,5 @@
 using Microsoft.Maui.ApplicationModel;
+using Toletus.Hub.Manager.UI.Contracts;
 using Toletus.Hub.Manager.UI.Models;
 using Toletus.Hub.Manager.UI.Services;
 using Toletus.Hub.Models;
@@ -13,14 +14,21 @@ namespace Toletus.Hub.Manager.Maui.Services;
 public sealed class HubNotificationHistoryBridge : IDisposable
 {
     private readonly NotificationHistoryService _history;
+    private readonly ICommandHistoryFormatter _formatter;
 
-    public HubNotificationHistoryBridge(NotificationHistoryService history)
+    public HubNotificationHistoryBridge(NotificationHistoryService history, ICommandHistoryFormatter formatter)
     {
         _history = history;
+        _formatter = formatter;
         NotificationBaseService.OnNotification += HandleNotification;
     }
 
     private void HandleNotification(Notification notification)
+    {
+        _ = FormatAndAddNotificationAsync(notification);
+    }
+
+    private async Task FormatAndAddNotificationAsync(Notification notification)
     {
         if (!TryGetUiType(notification.Type, out var uiType))
             return;
@@ -35,14 +43,24 @@ public sealed class HubNotificationHistoryBridge : IDisposable
             Connected = true
         };
 
+        var isError = IsLiteNet3ErrorResponse(notification);
         var commandId = GetCommandId(notification);
-        var messageKey = HasBiometricsPayload(notification.Response)
+        var messageKey = isError
+            ? "Message.NotificationErrorReceived"
+            : HasBiometricsPayload(notification.Response)
             ? "Message.BiometricsReceived"
             : "Message.NotificationReceived";
-        var result = CommandResultViewModel.Success(messageKey, device, notification.Response);
+        var result = isError
+            ? CommandResultViewModel.Error(messageKey, GetErrorSummary(notification.Response), device) with
+            {
+                Data = notification.Response
+            }
+            : CommandResultViewModel.Success(messageKey, device, notification.Response);
+
+        var item = await Task.Run(() => _formatter.Format(DateTimeOffset.Now, commandId, result));
 
         MainThread.BeginInvokeOnMainThread(() =>
-            _history.Add(commandId, result));
+            _history.Add(item));
     }
 
     private static bool HasBiometricsPayload(object? response)
@@ -57,6 +75,9 @@ public sealed class HubNotificationHistoryBridge : IDisposable
     private static string GetCommandId(Notification notification)
     {
         var response = notification.Response;
+        if (IsLiteNet3ErrorResponse(notification))
+            return "notification.litenet3.error";
+
         if (HasBiometricsPayload(response))
             return "notification.litenet3.biometrics";
 
@@ -89,6 +110,32 @@ public sealed class HubNotificationHistoryBridge : IDisposable
 
     private static bool HasProperty(object? value, string propertyName) =>
         value?.GetType().GetProperty(propertyName)?.GetValue(value) is not null;
+
+    private static bool IsLiteNet3ErrorResponse(Notification notification)
+    {
+        if (notification.Type != HubDeviceType.LiteNet3)
+            return false;
+
+        if ((ResponseType)notification.Command == ResponseType.Error)
+            return true;
+
+        return notification.Response?.GetType().Name.Contains("ErrorResponse", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private static string? GetErrorSummary(object? response)
+    {
+        if (response is null)
+            return "LiteNet3 error notification received.";
+
+        foreach (var propertyName in new[] { "Message", "Error", "Reason", "Description", "Status", "Code" })
+        {
+            var value = response.GetType().GetProperty(propertyName)?.GetValue(response)?.ToString();
+            if (!string.IsNullOrWhiteSpace(value))
+                return value;
+        }
+
+        return response.GetType().Name;
+    }
 
     private static string GetIdentificationCommandId(Notification notification, object? response)
     {

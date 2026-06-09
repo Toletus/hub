@@ -73,6 +73,8 @@
   <data name="History.Detail.Timeout" xml:space="preserve"><value>Timeout</value></data>
   <data name="History.Detail.Biometrics" xml:space="preserve"><value>Biometria</value></data>
   <data name="History.Detail.Checksum" xml:space="preserve"><value>Checksum</value></data>
+  <data name="History.Detail.Code" xml:space="preserve"><value>C&#243;digo</value></data>
+  <data name="History.Detail.Error" xml:space="preserve"><value>Erro</value></data>
   <data name="History.Detail.BiometricsSize" xml:space="preserve"><value>Tamanho</value></data>
   <data name="History.Detail.BiometricsFormat" xml:space="preserve"><value>Biometria</value></data>
   <data name="History.Media.ImageAlt" xml:space="preserve"><value>Imagem do evento</value></data>
@@ -116,6 +118,7 @@
   <data name="History.Event.ConnectionChanged" xml:space="preserve"><value>Estado de conex&#227;o do equipamento atualizado.</value></data>
   <data name="History.Event.FingerprintReader" xml:space="preserve"><value>Estado do leitor biom&#233;trico atualizado.</value></data>
   <data name="History.Event.Sm25" xml:space="preserve"><value>Evento do leitor biom&#233;trico SM25 recebido.</value></data>
+  <data name="History.Event.ErrorResponse" xml:space="preserve"><value>Erro recebido da LiteNet3.</value></data>
   <data name="Group.Connection" xml:space="preserve"><value>Conex&#227;o</value></data>
   <data name="Group.Operation" xml:space="preserve"><value>Opera&#231;&#227;o</value></data>
   <data name="Group.Maintenance" xml:space="preserve"><value>Manuten&#231;&#227;o</value></data>
@@ -180,8 +183,10 @@
   <data name="Message.Connected" xml:space="preserve"><value>Dispositivo conectado.</value></data>
   <data name="Message.Disconnected" xml:space="preserve"><value>Dispositivo desconectado.</value></data>
   <data name="Message.ConfigurationSent" xml:space="preserve"><value>Configuração enviada.</value></data>
+  <data name="Message.ConfigurationLoading" xml:space="preserve"><value>Carregando propriedades...</value></data>
   <data name="Message.ConfigurationLoaded" xml:space="preserve"><value>Propriedades obtidas.</value></data>
   <data name="Message.ConfigurationQueued" xml:space="preserve"><value>Configura&#231;&#227;o pronta para envio por comandos espec&#237;ficos.</value></data>
   <data name="Message.BiometricsReceived" xml:space="preserve"><value>Biometria recebida.</value></data>
   <data name="Message.NotificationReceived" xml:space="preserve"><value>Evento recebido.</value></data>
+  <data name="Message.NotificationErrorReceived" xml:space="preserve"><value>Erro recebido.</value></data>
 </root>

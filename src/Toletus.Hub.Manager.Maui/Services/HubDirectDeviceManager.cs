@@ -116,15 +116,15 @@ public sealed class HubDirectDeviceManager(
             return request.CommandId switch
             {
                 DeviceCapabilityCatalog.ReleaseEntry => ToResult(
-                    commonCommandService.ReleaseEntry(device, request.Message ?? string.Empty),
+                    await Task.Run(() => commonCommandService.ReleaseEntry(device, request.Message ?? string.Empty), cancellationToken),
                     "Message.CommandSuccess",
                     request.Device),
                 DeviceCapabilityCatalog.ReleaseEntryAndExit => ToResult(
-                    commonCommandService.ReleaseEntryAndExit(device, request.Message ?? string.Empty),
+                    await Task.Run(() => commonCommandService.ReleaseEntryAndExit(device, request.Message ?? string.Empty), cancellationToken),
                     "Message.CommandSuccess",
                     request.Device),
                 DeviceCapabilityCatalog.ReleaseExit => ToResult(
-                    commonCommandService.ReleaseExit(device, request.Message ?? string.Empty),
+                    await Task.Run(() => commonCommandService.ReleaseExit(device, request.Message ?? string.Empty), cancellationToken),
                     "Message.CommandSuccess",
                     request.Device),
                 DeviceCapabilityCatalog.Reset => await ExecuteResetAsync(device, request.Device),
@@ -159,11 +159,40 @@ public sealed class HubDirectDeviceManager(
         if (!_devices.TryGetValue(device.Key, out var hubDevice))
             return new DeviceConfigurationViewModel { Device = device, Values = values };
 
+        if (hubDevice.Type == HubDeviceType.LiteNet3)
+        {
+            var statusAndConfigurations = liteNet3CommandService.GetStatusAndConfigurations(hubDevice);
+            await TryPopulateAsync(values, "device_id", statusAndConfigurations);
+            await TryPopulateAsync(values, "firmware_version", statusAndConfigurations);
+            await TryPopulateAsync(values, "release_duration", statusAndConfigurations);
+            await TryPopulateAsync(values, "menu_password", statusAndConfigurations);
+
+            var ethernet = liteNet3CommandService.GetEthernet(hubDevice);
+            await TryPopulateAsync(values, "mac", ethernet);
+            await TryPopulateAsync(values, "static_ip", ethernet);
+            await TryPopulateAsync(values, "subnet_mask", ethernet);
+            await TryPopulateAsync(values, "gateway", ethernet);
+            await TryPopulateAsync(values, "ip_mode", ethernet);
+
+            var flow = liteNet3CommandService.GetFlow(hubDevice);
+            await TryPopulateAsync(values, "flow_mode", flow);
+            await TryPopulateAsync(values, "l3_flow_inverted", flow);
+            await TryPopulateAsync(values, "l3_flow_out", flow);
+            await TryPopulateAsync(values, "l3_flow_front_wait", flow);
+            await TryPopulateAsync(values, "l3_flow_picto_wait_in", flow);
+            await TryPopulateAsync(values, "l3_flow_picto_wait_out", flow);
+
+            var display = liteNet3CommandService.GetDisplay(hubDevice);
+            await TryPopulateAsync(values, "default_message", display);
+            await TryPopulateAsync(values, "secondary_message", display);
+
+            return new DeviceConfigurationViewModel { Device = device, Values = values };
+        }
+
         await TryPopulateAsync(values, "device_id", hubDevice.Type switch
         {
             HubDeviceType.LiteNet1 => liteNet1CommandService.GetId(hubDevice),
             HubDeviceType.LiteNet2 => liteNet2CommandService.GetId(hubDevice),
-            HubDeviceType.LiteNet3 => liteNet3CommandService.GetStatusAndConfigurations(hubDevice),
             _ => Task.FromResult(new Notification(hubDevice.Ip, hubDevice.Id, 0, hubDevice.Type))
         });
 
@@ -171,7 +200,6 @@ public sealed class HubDirectDeviceManager(
         {
             HubDeviceType.LiteNet1 => liteNet1CommandService.GetFirmwareVersion(hubDevice),
             HubDeviceType.LiteNet2 => liteNet2CommandService.GetFirmwareVersion(hubDevice),
-            HubDeviceType.LiteNet3 => liteNet3CommandService.GetStatusAndConfigurations(hubDevice),
             _ => Task.FromResult(new Notification(hubDevice.Ip, hubDevice.Id, 0, hubDevice.Type))
         });
 
@@ -187,25 +215,6 @@ public sealed class HubDirectDeviceManager(
             await TryPopulateAsync(values, "show_counters", liteNet2CommandService.GetShowCounters(hubDevice));
             await TryPopulateAsync(values, "flow_mode", liteNet2CommandService.GetFlowControl(hubDevice));
             await TryPopulateAsync(values, "ip_mode", liteNet2CommandService.GetIpMode(hubDevice));
-        }
-
-        if (hubDevice.Type == HubDeviceType.LiteNet3)
-        {
-            await TryPopulateAsync(values, "release_duration", liteNet3CommandService.GetStatusAndConfigurations(hubDevice));
-            await TryPopulateAsync(values, "menu_password", liteNet3CommandService.GetStatusAndConfigurations(hubDevice));
-            await TryPopulateAsync(values, "mac", liteNet3CommandService.GetEthernet(hubDevice));
-            await TryPopulateAsync(values, "static_ip", liteNet3CommandService.GetEthernet(hubDevice));
-            await TryPopulateAsync(values, "subnet_mask", liteNet3CommandService.GetEthernet(hubDevice));
-            await TryPopulateAsync(values, "gateway", liteNet3CommandService.GetEthernet(hubDevice));
-            await TryPopulateAsync(values, "ip_mode", liteNet3CommandService.GetEthernet(hubDevice));
-            await TryPopulateAsync(values, "flow_mode", liteNet3CommandService.GetFlow(hubDevice));
-            await TryPopulateAsync(values, "l3_flow_inverted", liteNet3CommandService.GetFlow(hubDevice));
-            await TryPopulateAsync(values, "l3_flow_out", liteNet3CommandService.GetFlow(hubDevice));
-            await TryPopulateAsync(values, "l3_flow_front_wait", liteNet3CommandService.GetFlow(hubDevice));
-            await TryPopulateAsync(values, "l3_flow_picto_wait_in", liteNet3CommandService.GetFlow(hubDevice));
-            await TryPopulateAsync(values, "l3_flow_picto_wait_out", liteNet3CommandService.GetFlow(hubDevice));
-            await TryPopulateAsync(values, "default_message", liteNet3CommandService.GetDisplay(hubDevice));
-            await TryPopulateAsync(values, "secondary_message", liteNet3CommandService.GetDisplay(hubDevice));
         }
 
         if (hubDevice.Type == HubDeviceType.LiteNet1)

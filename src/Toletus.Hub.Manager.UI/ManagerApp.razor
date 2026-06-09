@@ -113,8 +113,12 @@
                             <header class="thm-config-card-header">
                                 <div>
                                     <h2>@Text["Group.Settings"]</h2>
+                                    @if (State.IsConfigurationLoading)
+                                    {
+                                        <span class="thm-config-status">@Text["Message.ConfigurationLoading"]</span>
+                                    }
                                 </div>
-                                <button class="thm-secondary" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.SelectedDevice?.Connected != true)">
+                                <button class="thm-secondary" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
                                     @Text["Command.GetProperties"]
                                 </button>
                             </header>
@@ -124,7 +128,7 @@
                                 <section class="thm-field-section">
                                     <header>
                                         <h2>@Text[group.Key]</h2>
-                                        <button class="thm-section-submit" @onclick="() => State.SendConfigurationAsync(group.Key)" disabled="@(State.IsBusy || State.SelectedDevice?.Connected != true)">
+                                        <button class="thm-section-submit" @onclick="() => State.SendConfigurationAsync(group.Key)" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
                                             @Text["Command.SendConfiguration"]
                                         </button>
                                     </header>
@@ -217,7 +221,7 @@
     private bool IsDisabled(CommandCapability command) =>
         State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
 
-    private static string GetCommandClass(CommandCapability command)
+    private string GetCommandClass(CommandCapability command)
     {
         var classes = new List<string> { "thm-button", "thm-command" };
 
@@ -226,6 +230,9 @@
 
         if (command.Id == DeviceCapabilityCatalog.ReleaseEntry)
             classes.Add("thm-command-hot");
+
+        if (State.CurrentCommandId == command.Id)
+            classes.Add("thm-command-active");
 
         return string.Join(" ", classes);
     }
@@ -273,7 +280,8 @@
             foreach (var command in Catalog.GetModuleCommands(module))
             {
                 builder.OpenElement(sequence++, "button");
-                builder.AddAttribute(sequence++, "class", "thm-bio-step");
+                var classes = State.CurrentCommandId == command.Id ? "thm-bio-step thm-command-active" : "thm-bio-step";
+                builder.AddAttribute(sequence++, "class", classes);
                 builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => State.ExecuteAsync(command.Id)));
                 builder.AddAttribute(sequence++, "disabled", State.IsBusy || IsDisabled(command));
                 builder.OpenElement(sequence++, "span");

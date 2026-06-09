@@ -36,7 +36,8 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
         ["notification.ready"] = "History.Event.Ready",
         ["notification.connection"] = "History.Event.ConnectionChanged",
         ["notification.fingerprint_reader"] = "History.Event.FingerprintReader",
-        ["notification.sm25"] = "History.Event.Sm25"
+        ["notification.sm25"] = "History.Event.Sm25",
+        ["notification.litenet3.error"] = "History.Event.ErrorResponse"
     };
 
     private static readonly Dictionary<string, string> CommandLabelKeys = new(StringComparer.OrdinalIgnoreCase)
@@ -63,6 +64,7 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
         ["BoardConnectionStatus"] = "History.Detail.Connection",
         ["BottomRow"] = "History.Detail.SecondaryMessage",
         ["ChecksumIsValid"] = "History.Detail.Checksum",
+        ["Code"] = "History.Detail.Code",
         ["Connected"] = "History.Detail.Connected",
         ["Content"] = "History.Detail.Content",
         ["content"] = "History.Detail.Content",
@@ -71,6 +73,7 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
         ["Data"] = "History.Detail.Content",
         ["DefaultMessage"] = "History.Detail.DefaultMessage",
         ["EntryClockwise"] = "History.Detail.EntryClockwise",
+        ["Error"] = "History.Detail.Error",
         ["Exited"] = "History.Detail.Exited",
         ["Entered"] = "History.Detail.Entered",
         ["Firmware"] = "History.Detail.Firmware",

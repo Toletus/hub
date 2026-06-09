@@ -73,6 +73,8 @@
   <data name="History.Detail.Timeout" xml:space="preserve"><value>Timeout</value></data>
   <data name="History.Detail.Biometrics" xml:space="preserve"><value>Biometrics</value></data>
   <data name="History.Detail.Checksum" xml:space="preserve"><value>Checksum</value></data>
+  <data name="History.Detail.Code" xml:space="preserve"><value>Code</value></data>
+  <data name="History.Detail.Error" xml:space="preserve"><value>Error</value></data>
   <data name="History.Detail.BiometricsSize" xml:space="preserve"><value>Size</value></data>
   <data name="History.Detail.BiometricsFormat" xml:space="preserve"><value>Biometrics</value></data>
   <data name="History.Media.ImageAlt" xml:space="preserve"><value>Event image</value></data>
@@ -116,6 +118,7 @@
   <data name="History.Event.ConnectionChanged" xml:space="preserve"><value>Device connection state updated.</value></data>
   <data name="History.Event.FingerprintReader" xml:space="preserve"><value>Biometric reader state updated.</value></data>
   <data name="History.Event.Sm25" xml:space="preserve"><value>SM25 biometric reader event received.</value></data>
+  <data name="History.Event.ErrorResponse" xml:space="preserve"><value>Error received from LiteNet3.</value></data>
   <data name="Group.Connection" xml:space="preserve"><value>Connection</value></data>
   <data name="Group.Operation" xml:space="preserve"><value>Operation</value></data>
   <data name="Group.Maintenance" xml:space="preserve"><value>Maintenance</value></data>
@@ -180,8 +183,10 @@
   <data name="Message.Connected" xml:space="preserve"><value>Device connected.</value></data>
   <data name="Message.Disconnected" xml:space="preserve"><value>Device disconnected.</value></data>
   <data name="Message.ConfigurationSent" xml:space="preserve"><value>Configuration sent.</value></data>
+  <data name="Message.ConfigurationLoading" xml:space="preserve"><value>Loading properties...</value></data>
   <data name="Message.ConfigurationLoaded" xml:space="preserve"><value>Properties loaded.</value></data>
   <data name="Message.ConfigurationQueued" xml:space="preserve"><value>Configuration is ready to be sent through specific commands.</value></data>
   <data name="Message.BiometricsReceived" xml:space="preserve"><value>Biometrics received.</value></data>
   <data name="Message.NotificationReceived" xml:space="preserve"><value>Event received.</value></data>
+  <data name="Message.NotificationErrorReceived" xml:space="preserve"><value>Error received.</value></data>
 </root>

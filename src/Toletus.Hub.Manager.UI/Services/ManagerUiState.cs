@@ -6,6 +6,7 @@ namespace Toletus.Hub.Manager.UI.Services;
 public sealed class ManagerUiState(IHubDeviceManager deviceManager, NotificationHistoryService history)
 {
     private readonly List<DeviceRefViewModel> _devices = [];
+    private int _configurationLoadVersion;
 
     public event Action? Changed;
 
@@ -13,7 +14,9 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
     public string? SelectedNetwork { get; set; }
     public string SearchText { get; set; } = string.Empty;
     public bool IsBusy { get; private set; }
+    public bool IsConfigurationLoading { get; private set; }
     public string? CurrentCommandId { get; private set; }
+    public string? CurrentConfigurationCommandId { get; private set; }
     public DeviceRefViewModel? SelectedDevice { get; private set; }
     public Dictionary<string, string> ConfigurationValues { get; } = new(StringComparer.OrdinalIgnoreCase);
     public IReadOnlyList<DeviceRefViewModel> Devices => _devices;
@@ -64,12 +67,20 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
     public async Task SelectDeviceAsync(DeviceRefViewModel device, CancellationToken cancellationToken = default)
     {
         SelectedDevice = device;
-        if (device.Connected)
-            await LoadConfigurationAsync(cancellationToken);
-        else
-            ConfigurationValues.Clear();
-
         Changed?.Invoke();
+
+        if (device.Connected)
+            StartConfigurationLoad(cancellationToken);
+        else
+        {
+            _configurationLoadVersion++;
+            IsConfigurationLoading = false;
+            CurrentConfigurationCommandId = null;
+            ConfigurationValues.Clear();
+            Changed?.Invoke();
+        }
+
+        await Task.CompletedTask;
     }
 
     public async Task ExecuteAsync(string commandId, CancellationToken cancellationToken = default)
@@ -95,11 +106,12 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
             if (result.Device is not null)
             {
                 ReplaceDevice(result.Device);
-                if (result.IsSuccess && result.Device.Connected)
-                    await LoadConfigurationAsync(cancellationToken);
             }
 
             history.Add(commandId, result);
+
+            if (commandId == "connection.connect" && result.IsSuccess && result.Device?.Connected == true)
+                StartConfigurationLoad(cancellationToken);
         }, commandId);
     }
 
@@ -115,11 +127,12 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
             {
                 ReplaceDevice(result.Device);
                 SelectedDevice = result.Device;
-                if (result.IsSuccess)
-                    await LoadConfigurationAsync(cancellationToken);
             }
 
             history.Add(commandId, result);
+
+            if (result.IsSuccess && result.Device?.Connected == true)
+                StartConfigurationLoad(cancellationToken);
         }, "connection.connect_serial");
     }
 
@@ -146,32 +159,59 @@ public sealed class ManagerUiState(IHubDeviceManager deviceManager, Notification
         if (SelectedDevice is null || !SelectedDevice.Connected)
             return;
 
-        await RunBusyAsync(async () =>
-        {
-            const string commandId = "configuration.refresh";
-            history.Add(commandId, CommandResultViewModel.Pending("Message.CommandPending", SelectedDevice));
-
-            try
-            {
-                await LoadConfigurationAsync(cancellationToken);
-                history.Add(commandId, CommandResultViewModel.Success("Message.ConfigurationLoaded", SelectedDevice));
-            }
-            catch (Exception ex)
-            {
-                history.Add(commandId, CommandResultViewModel.Error("Message.CommandFailed", ex.Message, SelectedDevice));
-            }
-        }, "configuration.refresh");
+        const string commandId = "configuration.refresh";
+        history.Add(commandId, CommandResultViewModel.Pending("Message.CommandPending", SelectedDevice));
+        await LoadConfigurationAsync(commandId, addHistory: true, cancellationToken);
     }
 
-    private async Task LoadConfigurationAsync(CancellationToken cancellationToken = default)
+    private void StartConfigurationLoad(CancellationToken cancellationToken = default)
+    {
+        _ = LoadConfigurationAsync(null, addHistory: false, cancellationToken);
+    }
+
+    private async Task LoadConfigurationAsync(
+        string? commandId = null,
+        bool addHistory = false,
+        CancellationToken cancellationToken = default)
     {
         if (SelectedDevice is null)
             return;
 
-        var configuration = await deviceManager.LoadConfigurationAsync(SelectedDevice, cancellationToken);
-        ConfigurationValues.Clear();
-        foreach (var item in configuration.Values)
-            ConfigurationValues[item.Key] = item.Value;
+        var device = SelectedDevice;
+        var loadVersion = ++_configurationLoadVersion;
+        IsConfigurationLoading = true;
+        CurrentConfigurationCommandId = commandId ?? "configuration.refresh";
+        Changed?.Invoke();
+
+        try
+        {
+            await Task.Yield();
+            var configuration = await deviceManager.LoadConfigurationAsync(device, cancellationToken);
+
+            if (SelectedDevice?.Key != device.Key || loadVersion != _configurationLoadVersion)
+                return;
+
+            ConfigurationValues.Clear();
+            foreach (var item in configuration.Values)
+                ConfigurationValues[item.Key] = item.Value;
+
+            if (addHistory)
+                history.Add(commandId!, CommandResultViewModel.Success("Message.ConfigurationLoaded", SelectedDevice));
+        }
+        catch (Exception ex)
+        {
+            if (addHistory)
+                history.Add(commandId!, CommandResultViewModel.Error("Message.CommandFailed", ex.Message, device));
+        }
+        finally
+        {
+            if (SelectedDevice?.Key == device.Key && loadVersion == _configurationLoadVersion)
+            {
+                IsConfigurationLoading = false;
+                CurrentConfigurationCommandId = null;
+                Changed?.Invoke();
+            }
+        }
     }
 
     private void ReplaceDevice(DeviceRefViewModel device)
