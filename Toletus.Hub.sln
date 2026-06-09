@@ -4,11 +4,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub", "src\Toletus.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.API", "src\Toletus.Hub.API\Toletus.Hub.API.csproj", "{E9CF38A7-EE6C-46D3-8E09-8E9DD9544893}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.Manager.UI", "src\Toletus.Hub.Manager.UI\Toletus.Hub.Manager.UI.csproj", "{494D60B8-6D01-4E79-B155-253D0EB019DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.Manager.Maui", "src\Toletus.Hub.Manager.Maui\Toletus.Hub.Manager.Maui.csproj", "{598F3C31-6CA3-4DD9-A834-70ED80799F04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{FAE2865E-9D6E-4FCE-9BA5-1B3A316274EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,7 +73,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{494D60B8-6D01-4E79-B155-253D0EB019DC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{598F3C31-6CA3-4DD9-A834-70ED80799F04} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{598F3C31-6CA3-4DD9-A834-70ED80799F04} = {FAE2865E-9D6E-4FCE-9BA5-1B3A316274EE}
+		{494D60B8-6D01-4E79-B155-253D0EB019DC} = {FAE2865E-9D6E-4FCE-9BA5-1B3A316274EE}
 	EndGlobalSection
 EndGlobal
