@@ -70,6 +70,7 @@ public static class CommandHelper
             TimeoutResponse => (int)ResponseType.Timeout,
             
             PingResponse => (int)ResponseType.Ping,
+            ErrorResponse => (int)ResponseType.Error,
 
             _ => throw new ArgumentException("Tipo de resposta não suportado.", nameof(response))
         };
