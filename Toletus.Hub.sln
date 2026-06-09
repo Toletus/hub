@@ -10,10 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.Manager.UI", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.Manager.Maui", "src\Toletus.Hub.Manager.Maui\Toletus.Hub.Manager.Maui.csproj", "{598F3C31-6CA3-4DD9-A834-70ED80799F04}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toletus.Hub.Manager.UI.Tests", "tests\Toletus.Hub.Manager.UI.Tests\Toletus.Hub.Manager.UI.Tests.csproj", "{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,18 +68,6 @@ Global
 		{598F3C31-6CA3-4DD9-A834-70ED80799F04}.Release|x64.Build.0 = Release|Any CPU
 		{598F3C31-6CA3-4DD9-A834-70ED80799F04}.Release|x86.ActiveCfg = Release|Any CPU
 		{598F3C31-6CA3-4DD9-A834-70ED80799F04}.Release|x86.Build.0 = Release|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Debug|x64.Build.0 = Debug|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Debug|x86.Build.0 = Debug|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Release|x64.ActiveCfg = Release|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Release|x64.Build.0 = Release|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Release|x86.ActiveCfg = Release|Any CPU
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +75,5 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{494D60B8-6D01-4E79-B155-253D0EB019DC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{598F3C31-6CA3-4DD9-A834-70ED80799F04} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{E7DA9C15-43C7-4802-98DB-47C6F19CBFC2} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

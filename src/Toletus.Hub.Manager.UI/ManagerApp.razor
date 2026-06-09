@@ -8,14 +8,6 @@
 <div class="thm-page">
     <section class="thm-app">
         <header class="thm-topbar">
-            <div class="thm-brand">
-                <div class="thm-mark">T</div>
-                <div>
-                    <div class="thm-product-name">Toletus Hub Manager</div>
-                    <div class="thm-muted">@Text["App.Subtitle"]</div>
-                </div>
-            </div>
-
             <div class="thm-controls">
                 <label class="thm-control thm-control-network">
                     <span>@Text["Toolbar.Network"]</span>
@@ -27,13 +19,15 @@
                         }
                     </select>
                 </label>
-                <input class="thm-control thm-control-search" @bind="State.SearchText" @bind:event="oninput" placeholder="@Text["Toolbar.Search"]" />
-                <select class="thm-control thm-language-select" value="@Culture.CurrentCulture.Name" @onchange="ChangeCulture">
-                    @foreach (var culture in Culture.SupportedCultures)
-                    {
-                        <option value="@culture.Name">@Text[$"Language.{culture.Name}"]</option>
-                    }
-                </select>
+                <label class="thm-control thm-control-language">
+                    <span>@Text["Toolbar.Language"]</span>
+                    <select value="@Culture.CurrentCulture.Name" @onchange="ChangeCulture">
+                        @foreach (var culture in Culture.SupportedCultures)
+                        {
+                            <option value="@culture.Name">@Text[$"Language.{culture.Name}"]</option>
+                        }
+                    </select>
+                </label>
                 <button class="thm-primary" @onclick="() => State.DiscoverAsync()" disabled="@State.IsBusy">@Text["Toolbar.Discover"]</button>
             </div>
         </header>
@@ -41,8 +35,11 @@
         <div class="thm-layout" data-inspector-mode="@(ShouldEmbedModuleCommands ? "expanded" : "standard")">
             <aside class="thm-sidebar">
                 <div class="thm-panel-head">
-                    <div class="thm-panel-title">@Text["Devices.Title"]</div>
-                    <div class="thm-muted">@Text["Devices.Hint"]</div>
+                    <input class="thm-control thm-device-filter"
+                           @bind="State.SearchText"
+                           @bind:event="oninput"
+                           aria-label="@Text["Toolbar.Search"]"
+                           placeholder="@Text["Toolbar.Search"]" />
                 </div>
 
                 <div class="thm-device-list">
@@ -91,13 +88,23 @@
                 else
                 {
                     <section class="thm-command-bar">
-                        @foreach (var command in Catalog.GetCommands(State.SelectedDevice.Type).Where(c => c.GroupKey is "Group.Operation" or "Group.Connection" or "Group.Diagnostics"))
+                        @foreach (var group in Catalog.GetCommands(State.SelectedDevice.Type)
+                            .Where(c => c.GroupKey is "Group.Operation" or "Group.Connection" or "Group.Diagnostics")
+                            .GroupBy(c => c.GroupKey))
                         {
-                            <button class="thm-command @(command.Id == DeviceCapabilityCatalog.ReleaseEntry ? "thm-command-hot" : null)"
-                                    @onclick="() => State.ExecuteAsync(command.Id)"
-                                    disabled="@IsDisabled(command)">
-                                @Text[command.LabelKey]
-                            </button>
+                            <div class="thm-command-group" data-command-group="@GetCommandGroupName(group.Key)">
+                                <div class="thm-command-group-title">@Text[group.Key]</div>
+                                <div class="thm-command-group-actions">
+                                    @foreach (var command in group)
+                                    {
+                                        <button class="@GetCommandClass(command)"
+                                                @onclick="() => State.ExecuteAsync(command.Id)"
+                                                disabled="@IsDisabled(command)">
+                                            @Text[command.LabelKey]
+                                        </button>
+                                    }
+                                </div>
+                            </div>
                         }
                     </section>
 
@@ -209,6 +216,28 @@
 
     private bool IsDisabled(CommandCapability command) =>
         State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
+
+    private static string GetCommandClass(CommandCapability command)
+    {
+        var classes = new List<string> { "thm-button", "thm-command" };
+
+        if (command.GroupKey == "Group.Operation")
+            classes.Add("thm-command-important");
+
+        if (command.Id == DeviceCapabilityCatalog.ReleaseEntry)
+            classes.Add("thm-command-hot");
+
+        return string.Join(" ", classes);
+    }
+
+    private static string GetCommandGroupName(string groupKey) =>
+        groupKey switch
+        {
+            "Group.Connection" => "connection",
+            "Group.Operation" => "operation",
+            "Group.Diagnostics" => "diagnostics",
+            _ => "other"
+        };
 
     private IReadOnlyList<DeviceModuleKind> SelectedModules =>
         State.SelectedDevice?.Modules ?? Array.Empty<DeviceModuleKind>();

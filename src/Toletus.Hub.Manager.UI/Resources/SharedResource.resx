@@ -165,7 +165,7 @@
   <data name="Command.ReleaseExit" xml:space="preserve"><value>Liberar sa&#237;da</value></data>
   <data name="Command.Reset" xml:space="preserve"><value>Reiniciar</value></data>
   <data name="Command.ResetCounters" xml:space="preserve"><value>Zerar contadores</value></data>
-  <data name="Command.GetStatus" xml:space="preserve"><value>Ler status</value></data>
+  <data name="Command.GetStatus" xml:space="preserve"><value>Atualizar status</value></data>
   <data name="Command.GetProperties" xml:space="preserve"><value>Obter propriedades</value></data>
   <data name="Command.Sm25ReaderInfo" xml:space="preserve"><value>Informa&#231;&#245;es do leitor</value></data>
   <data name="Command.Sm25Cancel" xml:space="preserve"><value>Cancelar leitura</value></data>
