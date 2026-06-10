@@ -2720,27 +2720,6 @@ body,
     background: var(--thm-panel);
 }
 
-.thm-tweak-toggle {
-    position: absolute;
-    right: 18px;
-    top: 114px;
-    z-index: 7;
-    width: 34px;
-    height: 34px;
-    border: 1px solid var(--thm-line);
-    border-radius: 8px;
-    background: var(--thm-panel-strong);
-    color: var(--thm-text);
-    font-size: 12px;
-    font-weight: 900;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, .26);
-}
-
-.thm-tweak-toggle:hover {
-    border-color: #3a3228;
-    background: var(--thm-panel-3);
-}
-
 .thm-console-head {
     min-height: 38px;
     border-bottom-color: var(--thm-soft);
@@ -4159,6 +4138,20 @@ body,
 .chip {
     position: relative;
     z-index: 1;
+}
+
+.chip-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.chip:has(.chip-input:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .seg-item.on,

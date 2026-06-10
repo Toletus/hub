@@ -23,6 +23,7 @@
 
         <!-- Display name -->
         <ApplicationTitle>LiteNet Manager</ApplicationTitle>
+        <ApplicationIcon>Resources\AppIcon\appicon.ico</ApplicationIcon>
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.toletus.hub.manager.maui</ApplicationId>
@@ -45,6 +46,7 @@
     <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\appicon.svg" />
+        <Content Include="Resources\AppIcon\appicon.ico" CopyToOutputDirectory="PreserveNewest" />
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#101114" BaseSize="128,128" />

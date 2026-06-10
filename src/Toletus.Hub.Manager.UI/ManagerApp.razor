@@ -76,23 +76,6 @@
             </div>
         }
 
-        <button type="button"
-                class="thm-tweak-toggle"
-                aria-label="@Text["Tweaks.OpenLabel"]"
-                aria-expanded="@IsTweaksPanelOpen"
-                @onclick="OpenTweaksPanel">
-            @Text["Tweaks.ButtonText"]
-        </button>
-
-        @if (IsTweaksPanelOpen)
-        {
-            <TweaksPanel IsOpen="true"
-                         Theme="Theme"
-                         Text="Text"
-                         Title="@Text["Tweaks.Title"]"
-                         CloseRequested="CloseTweaksPanel" />
-        }
-
         <CommandBar Text="Text"
                     SelectedDevice="State.SelectedDevice"
                     ActionTitle="@GetActionTitle()"
@@ -110,7 +93,6 @@
     private CommandHistoryItemViewModel? SelectedHistoryItem { get; set; }
     private bool IsJsonDrawerOpen { get; set; }
     private bool IsDetailOverlayOpen { get; set; }
-    private bool IsTweaksPanelOpen { get; set; }
     private bool CanPersistTheme { get; set; }
 
     private static readonly IReadOnlyList<(string Id, string LabelKey)> DeviceFilters =
@@ -160,16 +142,6 @@
     {
         ActiveDeviceFilter = filterId;
         StateHasChanged();
-    }
-
-    private void CloseTweaksPanel()
-    {
-        IsTweaksPanelOpen = false;
-    }
-
-    private void OpenTweaksPanel()
-    {
-        IsTweaksPanelOpen = true;
     }
 
     private bool IsDisabled(CommandCapability command) =>

@@ -12,16 +12,19 @@
                    placeholder="@Text["Toolbar.Search"]" />
         </label>
 
-        <div class="chips" aria-label="@Text["Devices.Filters"]">
+        <div class="chips" role="radiogroup" aria-label="@Text["Devices.Filters"]">
             @foreach (var filter in DeviceFilters)
             {
-                <button class="chip @(CurrentDeviceFilter == filter.Id ? "on" : null)"
-                        type="button"
-                        aria-pressed="@(CurrentDeviceFilter == filter.Id)"
-                        @onclick:stopPropagation="true"
-                        @onclick="() => SetActiveFilterAsync(filter.Id)">
+                var isSelected = string.Equals(CurrentDeviceFilter, filter.Id, StringComparison.Ordinal);
+                <label class="chip @(isSelected ? "on" : null)">
+                    <input class="chip-input"
+                           type="radio"
+                           name="device-filter"
+                           value="@filter.Id"
+                           checked="@isSelected"
+                           @onchange="() => SetActiveFilterAsync(filter.Id)" />
                     @Text[filter.LabelKey]
-                </button>
+                </label>
             }
         </div>
     </div>
