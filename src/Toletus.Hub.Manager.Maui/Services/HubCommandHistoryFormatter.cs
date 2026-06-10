@@ -33,7 +33,8 @@ public sealed class HubCommandHistoryFormatter : CommandHistoryFormatter
         return item with
         {
             Details = details,
-            Media = media
+            Media = media,
+            Payload = CreatePayload(timestamp, commandId, result, details, media)
         };
     }
 

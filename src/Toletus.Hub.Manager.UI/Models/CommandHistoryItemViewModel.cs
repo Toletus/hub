@@ -10,4 +10,5 @@ public sealed record CommandHistoryItemViewModel
     public string? TechnicalDetails { get; init; }
     public IReadOnlyList<HistoryDetailViewModel> Details { get; init; } = Array.Empty<HistoryDetailViewModel>();
     public HistoryMediaViewModel? Media { get; init; }
+    public object? Payload { get; init; }
 }

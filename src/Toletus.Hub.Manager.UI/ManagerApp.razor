@@ -478,6 +478,8 @@
     {
         var selectedDevice = State.SelectedDevice;
         var selectedHistory = SelectedHistoryItem;
+        if (selectedHistory?.Payload is not null)
+            return JsonSerializer.Serialize(selectedHistory.Payload, JsonOptions);
 
         var payload = new
         {

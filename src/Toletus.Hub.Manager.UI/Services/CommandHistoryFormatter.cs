@@ -9,6 +9,11 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
 {
     private const int MaxDepth = 3;
     private const int MaxDetails = 12;
+    private static readonly JsonSerializerOptions PayloadJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        MaxDepth = 16
+    };
+
     private static readonly Dictionary<string, string> CommandEventKeys = new(StringComparer.OrdinalIgnoreCase)
     {
         ["discovery"] = "History.Event.Discovery",
@@ -157,7 +162,8 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
             MessageKey = result.MessageKey,
             DeviceName = result.Device?.Name,
             TechnicalDetails = result.TechnicalDetails,
-            Details = details
+            Details = details,
+            Payload = CreatePayload(timestamp, commandId, result, details)
         };
     }
 
@@ -285,6 +291,106 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
         else if (commandId.StartsWith("configuration.submit.", StringComparison.OrdinalIgnoreCase))
         {
             details.Add(new HistoryDetailViewModel("History.Detail.Summary", commandId, "History.Event.ConfigurationSubmit"));
+        }
+    }
+
+    protected static IReadOnlyDictionary<string, object?> CreatePayload(
+        DateTimeOffset timestamp,
+        string commandId,
+        CommandResultViewModel result,
+        IReadOnlyList<HistoryDetailViewModel> details,
+        HistoryMediaViewModel? media = null)
+    {
+        var payload = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["timestamp"] = timestamp,
+            ["command"] = commandId,
+            ["status"] = result.Status.ToString(),
+            ["messageKey"] = result.MessageKey,
+            ["device"] = CreateDevicePayload(result.Device),
+            ["details"] = CreateDetailsPayload(details),
+            ["technicalDetails"] = result.TechnicalDetails
+        };
+
+        if (media is not null && TryCreateJsonSafePayload(media, out var mediaPayload))
+            payload["media"] = mediaPayload;
+
+        if (TryCreateJsonSafePayload(result.Data, out var data))
+            payload["data"] = data;
+        else if (result.Data is not null)
+            payload["data"] = new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["summary"] = "History.Value.PayloadSummaryUnavailable",
+                ["type"] = result.Data.GetType().FullName
+            };
+
+        return payload;
+    }
+
+    private static IReadOnlyDictionary<string, object?>? CreateDevicePayload(DeviceRefViewModel? device)
+    {
+        if (device is null)
+            return null;
+
+        return new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["id"] = device.Id,
+            ["key"] = device.Key,
+            ["name"] = device.Name,
+            ["ipAddress"] = device.IpAddress,
+            ["type"] = device.Type.ToString(),
+            ["serialNumber"] = device.SerialNumber,
+            ["port"] = device.Port,
+            ["connected"] = device.Connected,
+            ["modules"] = device.Modules.Select(module => module.ToString()).ToArray()
+        };
+    }
+
+    private static IReadOnlyList<IReadOnlyDictionary<string, object?>> CreateDetailsPayload(
+        IReadOnlyList<HistoryDetailViewModel> details)
+    {
+        var payload = new List<IReadOnlyDictionary<string, object?>>(details.Count);
+        foreach (var detail in details)
+        {
+            payload.Add(new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                ["labelKey"] = detail.LabelKey,
+                ["value"] = detail.Value,
+                ["valueKey"] = detail.ValueKey
+            });
+        }
+
+        return payload;
+    }
+
+    private static bool TryCreateJsonSafePayload(object? value, out object? payload)
+    {
+        payload = null;
+        if (value is null)
+            return true;
+
+        try
+        {
+            payload = value is JsonElement element
+                ? element.Clone()
+                : JsonSerializer.SerializeToElement(value, value.GetType(), PayloadJsonOptions);
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch
+        {
+            return false;
         }
     }
 
