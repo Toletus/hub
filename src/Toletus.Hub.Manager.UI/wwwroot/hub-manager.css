@@ -1140,7 +1140,7 @@ body,
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 58px;
+    min-height: 52px;
     border-bottom: 1px solid var(--thm-line);
     background: var(--thm-panel);
     padding: var(--thm-p2) var(--thm-p4);
@@ -1349,7 +1349,7 @@ body,
 .thm-work.center {
     min-width: 0;
     min-height: 0;
-    padding: var(--thm-p3);
+    padding: 0;
     background: var(--thm-bg);
 }
 
@@ -1364,10 +1364,14 @@ body,
 }
 
 .thm-center-panels {
-    height: calc(100% - 44px);
+    height: 100%;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) 250px;
+    grid-template-rows: minmax(0, 1fr);
     gap: 0;
+}
+
+.thm-center-panels.has-json {
+    grid-template-rows: minmax(0, 1fr) 250px;
 }
 
 .thm-console-panel {
@@ -1385,6 +1389,27 @@ body,
     border: 1px solid var(--thm-line);
     border-radius: 0;
     background: var(--thm-panel);
+}
+
+.thm-tweak-toggle {
+    position: absolute;
+    right: 18px;
+    top: 114px;
+    z-index: 7;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--thm-line);
+    border-radius: 8px;
+    background: var(--thm-panel-strong);
+    color: var(--thm-text);
+    font-size: 12px;
+    font-weight: 900;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .26);
+}
+
+.thm-tweak-toggle:hover {
+    border-color: #3a3228;
+    background: var(--thm-panel-3);
 }
 
 .thm-console-head {
@@ -1531,13 +1556,16 @@ body,
     min-height: 0;
     border-left: 1px solid var(--thm-line);
     background: var(--thm-panel);
-    padding: var(--thm-p3);
+    padding: 0;
+    overflow-y: auto;
 }
 
 .thm-essentials {
     border-color: var(--thm-soft);
-    border-radius: 9px;
-    background: var(--thm-panel-strong);
+    border-width: 0 0 1px;
+    border-radius: 0;
+    background: transparent;
+    padding: var(--thm-p3);
 }
 
 .thm-essentials h2 {
@@ -1623,10 +1651,11 @@ body,
     display: flex;
     align-items: center;
     gap: var(--thm-p3);
-    min-height: 64px;
+    min-height: 0;
     border-top: 1px solid var(--thm-line);
     background: var(--thm-panel);
     padding: var(--thm-p2) var(--thm-p4);
+    flex-wrap: wrap;
 }
 
 .thm-actionbar.command-bar > div:first-child {
@@ -1646,9 +1675,9 @@ body,
 
 .thm-cmd {
     min-width: 0;
-    min-height: 34px;
+    min-height: 30px;
     height: auto;
-    padding: 8px 14px;
+    padding: 7px 13px;
     white-space: normal;
 }
 

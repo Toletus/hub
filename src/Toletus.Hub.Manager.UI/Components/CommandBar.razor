@@ -4,13 +4,7 @@
         <span>@Text["Actionbar.Hint"]</span>
     </div>
     <div class="thm-commands">
-        @if (SelectedDevice is null)
-        {
-            <button class="thm-cmd" type="button" disabled aria-disabled="true">
-                @Text["Workspace.EmptyTitle"]
-            </button>
-        }
-        else
+        @if (SelectedDevice is not null)
         {
             @foreach (var command in Commands)
             {

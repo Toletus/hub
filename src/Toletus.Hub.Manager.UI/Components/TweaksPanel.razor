@@ -111,7 +111,7 @@
     private string PanelStyle =>
         Left is { } left && Top is { } top
             ? $"position:fixed;left:clamp(8px,{left:0}px,calc(100vw - 328px));top:clamp(8px,{top:0}px,calc(100vh - 360px));width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)"
-            : "position:fixed;right:24px;top:88px;width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)";
+            : "position:fixed;right:16px;bottom:16px;width:320px;max-height:calc(100vh - 32px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)";
 
     private string ResolvedTitle =>
         string.IsNullOrWhiteSpace(Title) ? T("Tweaks.Title") : Title;

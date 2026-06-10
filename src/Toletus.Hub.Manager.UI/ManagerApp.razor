@@ -21,7 +21,7 @@
 
         @if (State.CurrentCommandId == "discovery")
         {
-            <div class="scanbar" aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 68px; z-index: 2"><span></span></div>
+            <div class="scanbar" aria-hidden="true"><span></span></div>
         }
 
         <DeviceStrip Text="Text"
@@ -29,7 +29,7 @@
                      SelectedDevice="State.SelectedDevice"
                      DeviceSelected="SelectDeviceAsync" />
 
-        <div class="main main-grid" style="grid-column: 1 / 4; grid-row: 2 / 3; min-height: 0; display: grid; grid-template-columns: 318px minmax(620px, 1fr) 430px">
+        <div class="main main-grid">
             <DeviceListPanel State="State"
                              Text="Text"
                              DeviceFilters="DeviceFilters"
@@ -39,12 +39,7 @@
                              DeviceStatusClass="GetDeviceStatusClass" />
 
             <main class="thm-work center">
-                <div class="thm-section-title">
-                    <h2>@Text["Workspace.TechnicalReturn"]</h2>
-                    <span class="thm-meta">@Text["Workspace.TechnicalReturnHint"]</span>
-                </div>
-
-                <div class="thm-center-panels">
+                <div class="thm-center-panels @(IsJsonDrawerOpen ? "has-json" : null)">
                     <ActivityTimeline Text="Text"
                                       Items="History.Items"
                                       SelectedItem="SelectedHistoryItem"
@@ -57,7 +52,7 @@
                                       HistoryStatusClass="GetHistoryStatusClass" />
 
                     <JsonDrawer Text="Text"
-                                Payload="BuildJsonPayload()"
+                                Payload="@BuildJsonPayload()"
                                 Open="IsJsonDrawerOpen"
                                 CloseRequested="CloseJsonDrawer" />
                 </div>
@@ -84,10 +79,10 @@
         }
 
         <button type="button"
+                class="thm-tweak-toggle"
                 aria-label="@Text["Tweaks.OpenLabel"]"
                 aria-expanded="@IsTweaksPanelOpen"
-                @onclick="OpenTweaksPanel"
-                style="position:absolute;right:18px;top:82px;z-index:7;width:38px;height:38px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);font-weight:900;box-shadow:0 12px 28px rgba(0,0,0,.26)">
+                @onclick="OpenTweaksPanel">
             @Text["Tweaks.ButtonText"]
         </button>
 
