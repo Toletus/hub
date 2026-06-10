@@ -1,14 +1,159 @@
-<aside class="tweak-panel @(IsOpen ? "open" : "closed")" hidden="@(!IsOpen)">
-    <header>
+<aside class="tweak-panel @(IsOpen ? "open" : "closed")"
+       hidden="@(!IsOpen)"
+       style="@PanelStyle"
+       @onpointermove="HandlePointerMove"
+       @onpointerup="StopDrag"
+       @onpointerleave="StopDrag">
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--thm-line);cursor:move"
+            @onpointerdown="StartDrag">
         <strong>@Title</strong>
-        <button type="button" @onclick="() => CloseRequested.InvokeAsync()">x</button>
+        <button type="button"
+                aria-label="Close tweaks panel"
+                @onclick="() => CloseRequested.InvokeAsync()"
+                style="width:30px;height:30px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel);color:var(--thm-text);font-weight:900">
+            x
+        </button>
     </header>
-    @ChildContent
+
+    <div style="display:grid;gap:18px;padding:16px">
+        <section style="display:grid;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <label for="hubAccent" style="font-size:12px;font-weight:900;text-transform:uppercase;color:var(--thm-muted)">Accent</label>
+                <span style="font-family:monospace;font-size:12px;color:var(--thm-muted)">@Theme.Accent</span>
+            </div>
+            <div style="display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center">
+                <input id="hubAccent"
+                       type="color"
+                       value="@Theme.Accent"
+                       @oninput="SetAccent"
+                       style="width:44px;height:34px;padding:0;border:1px solid var(--thm-line);border-radius:8px;background:transparent" />
+                <input value="@Theme.Accent"
+                       @onchange="SetAccent"
+                       aria-label="Accent hex color"
+                       style="min-width:0;height:34px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel);color:var(--thm-text);padding:0 10px" />
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                @foreach (var color in AccentPresets)
+                {
+                    <button type="button"
+                            aria-label="@($"Set accent {color}")"
+                            @onclick="() => Theme.Accent = color"
+                            style="@GetPresetStyle(color)">
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section style="display:grid;gap:10px">
+            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">Density</strong>
+            <div role="radiogroup" aria-label="Density" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+                @foreach (var density in DensityOptions)
+                {
+                    <button type="button"
+                            aria-pressed="@(Theme.Density == density)"
+                            @onclick="() => Theme.Density = density"
+                            style="@GetOptionStyle(Theme.Density == density)">
+                        @density
+                    </button>
+                }
+            </div>
+        </section>
+
+        <section style="display:grid;gap:10px">
+            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">Time format</strong>
+            <div role="radiogroup" aria-label="Time format" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+                @foreach (var format in TimeFormatOptions)
+                {
+                    <button type="button"
+                            aria-pressed="@(Theme.TimeFormat == format)"
+                            @onclick="() => Theme.TimeFormat = format"
+                            style="@GetOptionStyle(Theme.TimeFormat == format)">
+                        @format
+                    </button>
+                }
+            </div>
+        </section>
+
+        @ChildContent
+    </div>
 </aside>
 
 @code {
     [Parameter] public bool IsOpen { get; set; }
+    [Parameter, EditorRequired] public HubManagerThemeState Theme { get; set; } = default!;
     [Parameter] public string Title { get; set; } = "Tweaks";
     [Parameter] public EventCallback CloseRequested { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private static readonly IReadOnlyList<string> AccentPresets =
+    [
+        "#F9760D",
+        "#38BDF8",
+        "#4FD37B",
+        "#F5BF4F",
+        "#EF5B5B",
+        "#A78BFA"
+    ];
+
+    private static readonly IReadOnlyList<HubManagerDensity> DensityOptions =
+        Enum.GetValues<HubManagerDensity>();
+
+    private static readonly IReadOnlyList<HubManagerTimeFormat> TimeFormatOptions =
+        Enum.GetValues<HubManagerTimeFormat>();
+
+    private bool IsDragging { get; set; }
+    private double DragOffsetX { get; set; }
+    private double DragOffsetY { get; set; }
+    private double? Left { get; set; }
+    private double? Top { get; set; }
+
+    private string PanelStyle =>
+        Left is { } left && Top is { } top
+            ? $"position:fixed;left:clamp(8px,{left:0}px,calc(100vw - 328px));top:clamp(8px,{top:0}px,calc(100vh - 360px));width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)"
+            : "position:fixed;right:24px;top:88px;width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)";
+
+    private void SetAccent(ChangeEventArgs args)
+    {
+        if (args.Value is string value)
+            Theme.Accent = NormalizeHex(value);
+    }
+
+    private void StartDrag(PointerEventArgs args)
+    {
+        IsDragging = true;
+        DragOffsetX = Left.HasValue ? args.ClientX - Left.Value : 296;
+        DragOffsetY = Top.HasValue ? args.ClientY - Top.Value : 16;
+    }
+
+    private void HandlePointerMove(PointerEventArgs args)
+    {
+        if (!IsDragging)
+            return;
+
+        Left = Math.Max(8, args.ClientX - DragOffsetX);
+        Top = Math.Max(8, args.ClientY - DragOffsetY);
+    }
+
+    private void StopDrag()
+    {
+        IsDragging = false;
+    }
+
+    private string GetPresetStyle(string color)
+    {
+        var selected = string.Equals(Theme.Accent, color, StringComparison.OrdinalIgnoreCase);
+        return $"width:28px;height:28px;border:{(selected ? "2px solid var(--thm-text)" : "1px solid var(--thm-line)")};border-radius:50%;background:{color};box-shadow:0 0 0 2px rgba(0,0,0,.18)";
+    }
+
+    private static string GetOptionStyle(bool selected) =>
+        "height:34px;border:1px solid var(--thm-line);border-radius:8px;font-size:12px;font-weight:800;color:" +
+        (selected ? "#1b0b00;background:var(--thm-brand)" : "var(--thm-text);background:var(--thm-panel)");
+
+    private static string NormalizeHex(string value)
+    {
+        var cleaned = value.Trim().TrimStart('#');
+        return cleaned.Length == 6 && cleaned.All(Uri.IsHexDigit)
+            ? $"#{cleaned.ToUpperInvariant()}"
+            : "#F9760D";
+    }
 }

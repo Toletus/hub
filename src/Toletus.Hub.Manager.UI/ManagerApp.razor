@@ -1,5 +1,6 @@
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
 @using Toletus.Hub.Manager.UI.Components
 @implements IDisposable
 @inject ManagerUiState State
@@ -7,9 +8,11 @@
 @inject NotificationHistoryService History
 @inject CultureState Culture
 @inject UiText Text
+@inject HubManagerThemeState Theme
+@inject IJSRuntime JsRuntime
 
 <div class="thm-page">
-    <section class="thm-app app" style="position: relative">
+    <section class="thm-app app" style="@GetAppStyle()" data-density="@GetDensityAttribute()">
         <HubTopbar State="State"
                    Culture="Culture"
                    Text="Text"
@@ -45,115 +48,53 @@
                     <ActivityTimeline Text="Text"
                                       Items="History.Items"
                                       SelectedItem="SelectedHistoryItem"
+                                      TimeFormat="Theme.TimeFormat"
                                       ItemSelected="SelectHistoryItem"
+                                      ViewJsonRequested="ViewJson"
                                       ItemKeyDown="HandleHistoryKey"
                                       ClearRequested="ClearHistory"
                                       HistorySummary="GetHistorySummary"
                                       HistoryStatusClass="GetHistoryStatusClass" />
 
-                    <JsonDrawer Text="Text" Payload="BuildJsonPayload()" />
+                    <JsonDrawer Text="Text"
+                                Payload="BuildJsonPayload()"
+                                Open="IsJsonDrawerOpen"
+                                CloseRequested="CloseJsonDrawer" />
                 </div>
             </main>
 
-            <DeviceDetailPanel>
-                @if (State.SelectedDevice is null)
-                {
-                    <section class="thm-empty-state">
-                        <h2>@Text["Workspace.EmptyTitle"]</h2>
-                        <p>@Text["Workspace.EmptyText"]</p>
-                    </section>
-                }
-                else
-                {
-                    <section class="thm-essentials">
-                        <div class="thm-row">
-                            <div>
-                                <h2>@State.SelectedDevice.Name</h2>
-                                <div class="thm-meta">@State.SelectedDevice.TypeLabel &middot; @(State.SelectedDevice.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"]) &middot; firmware @GetConfigurationValue("firmware_version", "-")</div>
-                            </div>
-                            <span class="thm-pill @GetDeviceStatusClass(State.SelectedDevice)">
-                                @(State.SelectedDevice.Connected ? "Online" : Text["Workspace.Disconnected"])
-                            </span>
-                        </div>
-
-                        <div class="thm-kv">
-                            <div><span>ID</span><strong>@State.SelectedDevice.Id</strong></div>
-                            <div><span>@Text["Workspace.Serial"]</span><strong>@(State.SelectedDevice.SerialNumber ?? "-")</strong></div>
-                            <div><span>IP</span><strong>@State.SelectedDevice.IpAddress</strong></div>
-                            <div><span>MAC</span><strong>@GetConfigurationValue("mac", "-")</strong></div>
-                        </div>
-                    </section>
-
-                    <div class="thm-tabs">
-                        <button class="thm-tab @(ActiveDetailTab == "config" ? "active" : null)" type="button" @onclick='() => ActiveDetailTab = "config"'>
-                            @Text["Group.Settings"]
-                        </button>
-                        <button class="thm-tab @(ActiveDetailTab == "sm25" ? "active" : null)" type="button" @onclick='() => ActiveDetailTab = "sm25"'>
-                            SM25
-                        </button>
-                    </div>
-
-                    @if (ActiveDetailTab == "config")
-                    {
-                        <section class="thm-card">
-                            <header class="thm-card-head">
-                                <h3>@Text["Config.Edit"]</h3>
-                                <button class="thm-secondary" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
-                                    @Text["Command.GetProperties"]
-                                </button>
-                            </header>
-
-                            @foreach (var group in GetConfigurationGroups())
-                            {
-                                <section class="thm-config-group">
-                                    <div class="thm-group-title">
-                                        <strong>@Text[group.Key]</strong>
-                                        <span>@GetConfigurationGroupHint(group.Key)</span>
-                                    </div>
-
-                                    <div class="thm-form">
-                                        @foreach (var field in group)
-                                        {
-                                            @RenderConfigurationField(field)
-                                        }
-                                    </div>
-
-                                </section>
-                            }
-
-                            <div class="thm-config-actions">
-                                <button class="thm-cmd brand" @onclick="SendVisibleConfigurationAsync" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
-                                    @Text["Command.SendConfiguration"]
-                                </button>
-                                <button class="thm-cmd" @onclick="() => State.RefreshConfigurationAsync()" disabled="@(State.IsBusy || State.IsConfigurationLoading || State.SelectedDevice?.Connected != true)">
-                                    @Text["Command.GetProperties"]
-                                </button>
-                            </div>
-                        </section>
-                    }
-                    else
-                    {
-                        <section class="thm-card">
-                            <h3>@Text["Group.Biometrics"]</h3>
-                            @if (ShouldEmbedModuleCommands || ShouldRenderStandaloneModuleCard)
-                            {
-                                @RenderModuleCommands()
-                            }
-                            else
-                            {
-                                <p class="thm-empty">@Text["Modules.Empty"]</p>
-                            }
-                        </section>
-                    }
-                }
-            </DeviceDetailPanel>
+            <DeviceDetailPanel State="State"
+                               Catalog="Catalog"
+                               Text="Text"
+                               DeviceStatusClass="@(State.SelectedDevice is null ? null : GetDeviceStatusClass(State.SelectedDevice))" />
         </div>
 
+        @if (IsDetailOverlayOpen)
+        {
+            <div class="overlay-backdrop"
+                 style="position:absolute;inset:68px 0 84px;z-index:6;background:rgba(0,0,0,.42);display:grid;justify-content:end"
+                 @onclick="CloseDetails">
+                <div style="width:min(430px,100vw);height:100%" @onclick:stopPropagation="true">
+                    <DeviceDetailPanel State="State"
+                                       Catalog="Catalog"
+                                       Text="Text"
+                                       DeviceStatusClass="@(State.SelectedDevice is null ? null : GetDeviceStatusClass(State.SelectedDevice))" />
+                </div>
+            </div>
+        }
+
+        <button type="button"
+                aria-label="Open tweaks panel"
+                aria-expanded="@IsTweaksPanelOpen"
+                @onclick="OpenTweaksPanel"
+                style="position:absolute;right:18px;top:82px;z-index:7;width:38px;height:38px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);font-weight:900;box-shadow:0 12px 28px rgba(0,0,0,.26)">
+            T
+        </button>
+
         <TweaksPanel IsOpen="IsTweaksPanelOpen"
+                     Theme="Theme"
                      Title="Tweaks"
-                     CloseRequested="CloseTweaksPanel">
-            <p class="thm-empty">@Text["Workspace.JsonHint"]</p>
-        </TweaksPanel>
+                     CloseRequested="CloseTweaksPanel" />
 
         <CommandBar Text="Text"
                     SelectedDevice="State.SelectedDevice"
@@ -161,7 +102,8 @@
                     Commands="GetFooterCommands()"
                     CommandRequested="ExecuteCommandAsync"
                     CommandClass="GetFooterCommandClass"
-                    CommandDisabled="IsDisabled" />
+                    CommandDisabled="IsDisabled"
+                    DetailsToggled="OpenDetails" />
     </section>
 </div>
 
@@ -218,8 +160,11 @@
     private string ActiveDeviceFilter { get; set; } = "all";
     private string ActiveDetailTab { get; set; } = "config";
     private CommandHistoryItemViewModel? SelectedHistoryItem { get; set; }
+    private bool IsJsonDrawerOpen { get; set; }
+    private bool IsDetailOverlayOpen { get; set; }
     private bool IsTweaksPanelOpen { get; set; }
     private bool IsColorDialogOpen { get; set; }
+    private bool CanPersistTheme { get; set; }
     private string EditingColorFieldId { get; set; } = "l3_flow_front_wait";
     private string EditingColor { get; set; } = "#0000FF";
 
@@ -247,7 +192,17 @@
         State.Changed += OnStateChanged;
         History.Changed += OnHistoryChanged;
         Culture.Changed += OnStateChanged;
+        Theme.Changed += OnThemeChanged;
         await State.InitializeAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        CanPersistTheme = true;
+        await Theme.LoadAsync(JsRuntime);
     }
 
     private IEnumerable<DeviceRefViewModel> VisibleDevices =>
@@ -289,6 +244,11 @@
     private void CloseTweaksPanel()
     {
         IsTweaksPanelOpen = false;
+    }
+
+    private void OpenTweaksPanel()
+    {
+        IsTweaksPanelOpen = true;
     }
 
     private bool IsDisabled(CommandCapability command) =>
@@ -356,6 +316,12 @@
             ? Text["Actionbar.Empty"]
             : string.Format(Text["Actionbar.ForDevice"], State.SelectedDevice.Name);
 
+    private string GetAppStyle() =>
+        $"position: relative; --thm-brand: {Theme.Accent}; --hub-accent: {Theme.Accent}";
+
+    private string GetDensityAttribute() =>
+        Theme.Density.ToString().ToLowerInvariant();
+
     private string GetHistorySummary(CommandHistoryItemViewModel item)
     {
         if (!string.IsNullOrWhiteSpace(item.DeviceName))
@@ -380,6 +346,27 @@
         SelectedHistoryItem = item;
     }
 
+    private void ViewJson(CommandHistoryItemViewModel item)
+    {
+        SelectedHistoryItem = item;
+        IsJsonDrawerOpen = true;
+    }
+
+    private void CloseJsonDrawer()
+    {
+        IsJsonDrawerOpen = false;
+    }
+
+    private void OpenDetails()
+    {
+        IsDetailOverlayOpen = true;
+    }
+
+    private void CloseDetails()
+    {
+        IsDetailOverlayOpen = false;
+    }
+
     private void HandleHistoryKey(KeyboardEventArgs args, CommandHistoryItemViewModel item)
     {
         if (args.Key is "Enter" or " ")
@@ -394,6 +381,7 @@
     private void ClearHistory()
     {
         SelectedHistoryItem = null;
+        IsJsonDrawerOpen = false;
         History.Clear();
     }
 
@@ -743,10 +731,24 @@
         _ = InvokeAsync(StateHasChanged);
     }
 
+    private void OnThemeChanged()
+    {
+        if (CanPersistTheme)
+            _ = PersistThemeAsync();
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PersistThemeAsync()
+    {
+        await Theme.SaveAsync(JsRuntime);
+    }
+
     public void Dispose()
     {
         State.Changed -= OnStateChanged;
         History.Changed -= OnHistoryChanged;
         Culture.Changed -= OnStateChanged;
+        Theme.Changed -= OnThemeChanged;
     }
 }
