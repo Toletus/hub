@@ -13,7 +13,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<UiText>();
         services.AddSingleton<DeviceCapabilityCatalog>();
         services.AddSingleton<ICommandHistoryFormatter, CommandHistoryFormatter>();
+        services.AddSingleton<DeviceDisplayStatusService>();
+        services.AddSingleton<TimelinePresentationMapper>();
         services.AddSingleton<NotificationHistoryService>();
+        services.AddScoped<HubManagerThemeState>();
         services.AddScoped<ManagerUiState>();
 
         return services;
