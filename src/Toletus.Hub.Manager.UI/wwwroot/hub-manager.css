@@ -1291,7 +1291,9 @@ body,
     border-left: 2px solid transparent;
     border-radius: 0;
     background: transparent;
-    padding: var(--thm-row-pad) var(--thm-p3);
+    padding: 9px var(--thm-p3);
+    gap: 4px;
+    position: relative;
 }
 
 .thm-device:hover {
@@ -1318,8 +1320,9 @@ body,
     border: 1px solid var(--thm-line);
     background: var(--thm-panel-strong);
     color: var(--thm-muted);
-    font-size: 11px;
+    font-size: 10.5px;
     line-height: 1;
+    padding: 3px 6px;
 }
 
 .thm-pill.ok {
@@ -1344,6 +1347,53 @@ body,
     color: var(--thm-info);
     border-color: rgba(91, 155, 217, .35);
     background: rgba(91, 155, 217, .08);
+}
+
+.thm-device-dot {
+    position: absolute;
+    left: 8px;
+    top: 15px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--thm-danger);
+    box-shadow: 0 0 0 2px rgba(229, 96, 76, .12);
+}
+
+.thm-device-dot.ok {
+    background: var(--thm-ok);
+    box-shadow: 0 0 0 2px rgba(76, 174, 94, .12);
+}
+
+.thm-device-dot.warn {
+    background: var(--thm-warn);
+    box-shadow: 0 0 0 2px rgba(217, 165, 20, .12);
+}
+
+.thm-device .thm-row,
+.thm-device > .thm-meta,
+.thm-device > .thm-pill.module {
+    margin-left: 8px;
+}
+
+.thm-device-status {
+    color: var(--thm-muted);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.thm-device-status.ok {
+    color: var(--thm-ok);
+}
+
+.thm-device-status.warn {
+    color: var(--thm-warn);
+}
+
+.thm-device-status.off {
+    color: var(--thm-danger);
 }
 
 .thm-work.center {
@@ -1413,7 +1463,7 @@ body,
 }
 
 .thm-console-head {
-    min-height: 42px;
+    min-height: 38px;
     border-bottom-color: var(--thm-soft);
     background: transparent;
     padding: 0 var(--thm-p3);
@@ -1486,12 +1536,14 @@ body,
 
 .thm-event.error::after,
 .thm-event.err::after,
+.thm-event.sev-error::after,
 .thm-event.sev-err::after {
     background: var(--thm-danger);
 }
 
 .thm-event.info::after,
-.thm-event.sev-info::after {
+.thm-event.sev-info::after,
+.thm-event.sev-run::after {
     background: var(--thm-info);
 }
 
@@ -1503,7 +1555,7 @@ body,
     text-align: right;
 }
 
-.thm-event > strong,
+.thm-event > .thm-event-title,
 .thm-event > .thm-meta,
 .thm-event > .thm-console-actions,
 .thm-event > .thm-kv,
@@ -1512,9 +1564,44 @@ body,
     min-width: 0;
 }
 
-.thm-event > strong {
-    padding-top: var(--thm-row-pad);
+.thm-event > .thm-event-title {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    padding-top: 9px;
+}
+
+.thm-event-tag {
+    flex: 0 0 auto;
+    border-radius: 3px;
+    background: rgba(60, 169, 255, .12);
+    color: var(--thm-info);
+    padding: 2px 5px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.thm-event.tag-config .thm-event-tag,
+.thm-event.tag-discovery .thm-event-tag {
+    background: rgba(76, 174, 94, .12);
+    color: var(--thm-ok);
+}
+
+.thm-event.tag-error .thm-event-tag {
+    background: rgba(229, 96, 76, .12);
+    color: var(--thm-danger);
+}
+
+.thm-event.tag-cmd .thm-event-tag {
+    background: rgba(249, 118, 13, .12);
+    color: var(--thm-brand);
+}
+
+.thm-event-title strong {
     font-size: 12.5px;
+    line-height: 1.25;
 }
 
 .thm-event > .thm-meta {
@@ -1523,8 +1610,26 @@ body,
 }
 
 .thm-event > .thm-console-actions {
-    margin-top: 5px;
-    padding-bottom: var(--thm-row-pad);
+    margin-top: 3px;
+    padding-bottom: 8px;
+    gap: 12px;
+}
+
+.activity-timeline .thm-event .thm-secondary {
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--thm-dim);
+    padding: 0;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.activity-timeline .thm-event .thm-secondary:hover:not(:disabled) {
+    background: transparent;
+    border-color: transparent;
+    color: var(--thm-brand);
 }
 
 .thm-event:hover {
@@ -1565,7 +1670,7 @@ body,
     border-width: 0 0 1px;
     border-radius: 0;
     background: transparent;
-    padding: var(--thm-p3);
+    padding: 12px var(--thm-p3);
 }
 
 .thm-essentials h2 {
@@ -1578,6 +1683,7 @@ body,
 
 .thm-kv {
     gap: 6px;
+    margin-top: 9px;
 }
 
 .thm-kv div,
@@ -1586,6 +1692,7 @@ body,
     border-color: var(--thm-soft);
     border-radius: 7px;
     background: var(--thm-panel-strong);
+    padding: 7px 9px;
 }
 
 .thm-kv strong,
@@ -1600,6 +1707,53 @@ body,
     border-color: var(--thm-soft);
     border-radius: 9px;
     background: var(--thm-panel-strong);
+}
+
+.thm-card {
+    padding: 10px;
+    margin: 0 10px 10px;
+}
+
+.thm-card-head {
+    margin-bottom: 8px;
+}
+
+.thm-config-group {
+    padding: 0;
+    overflow: hidden;
+}
+
+.thm-group-title {
+    margin: 0;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--thm-soft);
+}
+
+.thm-form {
+    padding: 8px 10px 10px;
+    gap: 8px;
+}
+
+.thm-config-empty {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 8px;
+    border: 1px solid rgba(249, 118, 13, .15);
+    border-radius: 7px;
+    background: rgba(249, 118, 13, .06);
+    color: var(--thm-muted);
+    padding: 9px 10px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.thm-config-empty strong {
+    color: var(--thm-text);
+    font-size: 12px;
+}
+
+.device-detail-panel > .thm-tabs {
+    margin: 10px var(--thm-p3);
 }
 
 .thm-field input,
@@ -1655,11 +1809,12 @@ body,
     border-top: 1px solid var(--thm-line);
     background: var(--thm-panel);
     padding: var(--thm-p2) var(--thm-p4);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .thm-actionbar.command-bar > div:first-child {
     min-width: 0;
+    flex: 1 1 auto;
 }
 
 .thm-actionbar.command-bar > div:first-child > strong {
@@ -1669,8 +1824,10 @@ body,
 }
 
 .thm-commands {
+    flex: 0 0 auto;
     margin-left: auto;
     justify-content: end;
+    flex-wrap: nowrap;
 }
 
 .thm-cmd {
@@ -1678,7 +1835,11 @@ body,
     min-height: 30px;
     height: auto;
     padding: 7px 13px;
-    white-space: normal;
+    white-space: nowrap;
+}
+
+.thm-details-toggle {
+    display: none;
 }
 
 .device-strip {

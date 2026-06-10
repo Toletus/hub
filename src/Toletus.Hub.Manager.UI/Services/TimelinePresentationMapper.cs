@@ -24,6 +24,16 @@ public sealed class TimelinePresentationMapper
                 TimelineEventKind.Error => "tag-error",
                 _ => "tag-cmd"
             },
+            KindLabelKey = kind switch
+            {
+                TimelineEventKind.Command => "History.Kind.Command",
+                TimelineEventKind.Connection => "History.Kind.Event",
+                TimelineEventKind.Configuration => "History.Kind.System",
+                TimelineEventKind.Discovery => "History.Kind.System",
+                TimelineEventKind.Notification => "History.Kind.Event",
+                TimelineEventKind.Error => "History.Kind.Error",
+                _ => "History.Kind.Command"
+            },
             SeverityCssClass = severity switch
             {
                 TimelinePresentationSeverity.Idle => "sev-idle",

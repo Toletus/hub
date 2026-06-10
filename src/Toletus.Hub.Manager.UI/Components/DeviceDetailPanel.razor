@@ -56,6 +56,13 @@
                 {
                     <div class="thm-empty">@T("Message.CommandPending")</div>
                 }
+                else if (IsConfigurationEmpty)
+                {
+                    <div class="thm-config-empty">
+                        <strong>@T("Message.ConfigurationEmptyTitle")</strong>
+                        <span>@T("Message.ConfigurationEmptyText")</span>
+                    </div>
+                }
 
                 @foreach (var group in GetConfigurationGroups())
                 {
@@ -134,6 +141,9 @@
     private bool IsBusy => IsBusyOverride ?? State?.IsBusy ?? false;
 
     private bool IsConfigurationLoading => IsConfigurationLoadingOverride ?? State?.IsConfigurationLoading ?? false;
+
+    private bool IsConfigurationEmpty =>
+        Values.Count == 0 || Values.Values.All(string.IsNullOrWhiteSpace);
 
     private string? CurrentCommandId => CurrentCommandIdOverride ?? State?.CurrentCommandId;
 

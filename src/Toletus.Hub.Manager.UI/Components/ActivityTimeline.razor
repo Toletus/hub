@@ -41,7 +41,10 @@
                              @onclick="() => ItemSelected.InvokeAsync(item)"
                              @onkeydown="args => ItemKeyDown.InvokeAsync((args, item))">
                         <time>@FormatTimestamp(item.Timestamp)</time>
-                        <strong>@Text[item.MessageKey]</strong>
+                        <div class="thm-event-title">
+                            <span class="thm-event-tag">@Text[presentation.KindLabelKey]</span>
+                            <strong>@Text[item.MessageKey]</strong>
+                        </div>
                         <span class="thm-meta">@GetSummary(item)</span>
 
                         <div class="thm-console-actions" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">

@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="App.Title" xml:space="preserve"><value>Hub Universal Manager</value></data>
+  <data name="App.Title" xml:space="preserve"><value>Hub Manager</value></data>
   <data name="App.Subtitle" xml:space="preserve"><value>Direct control for LiteNet devices and modules exposed by Hub</value></data>
   <data name="Toolbar.Network" xml:space="preserve"><value>Network</value></data>
   <data name="Toolbar.Search" xml:space="preserve"><value>Search by name, serial, or type</value></data>
@@ -27,7 +27,7 @@
   <data name="Workspace.Connected" xml:space="preserve"><value>Connected</value></data>
   <data name="Workspace.Disconnected" xml:space="preserve"><value>Disconnected</value></data>
   <data name="Workspace.Serial" xml:space="preserve"><value>Serial</value></data>
-  <data name="History.Title" xml:space="preserve"><value>History</value></data>
+  <data name="History.Title" xml:space="preserve"><value>Activity</value></data>
   <data name="History.Empty" xml:space="preserve"><value>No commands executed.</value></data>
   <data name="History.Clear" xml:space="preserve"><value>Clear</value></data>
   <data name="History.Detail.Message" xml:space="preserve"><value>Message</value></data>
@@ -102,7 +102,11 @@
   <data name="History.Filter.Errors" xml:space="preserve"><value>Errors</value></data>
   <data name="History.Action.Collapse" xml:space="preserve"><value>Collapse</value></data>
   <data name="History.Action.Expand" xml:space="preserve"><value>Expand</value></data>
-  <data name="History.Action.ViewJson" xml:space="preserve"><value>JSON</value></data>
+  <data name="History.Action.ViewJson" xml:space="preserve"><value>View JSON</value></data>
+  <data name="History.Kind.Command" xml:space="preserve"><value>COMMAND</value></data>
+  <data name="History.Kind.Event" xml:space="preserve"><value>EVENT</value></data>
+  <data name="History.Kind.System" xml:space="preserve"><value>SYSTEM</value></data>
+  <data name="History.Kind.Error" xml:space="preserve"><value>ERROR</value></data>
   <data name="History.Relative.Now" xml:space="preserve"><value>now</value></data>
   <data name="History.Event.Discovery" xml:space="preserve"><value>Devices updated from network discovery.</value></data>
   <data name="History.Event.Connect" xml:space="preserve"><value>Connection requested for the selected device.</value></data>
@@ -201,6 +205,8 @@
   <data name="Message.ConfigurationSent" xml:space="preserve"><value>Configuration sent.</value></data>
   <data name="Message.ConfigurationLoading" xml:space="preserve"><value>Loading properties...</value></data>
   <data name="Message.ConfigurationLoaded" xml:space="preserve"><value>Properties loaded.</value></data>
+  <data name="Message.ConfigurationEmptyTitle" xml:space="preserve"><value>Properties are not loaded yet.</value></data>
+  <data name="Message.ConfigurationEmptyText" xml:space="preserve"><value>Fields will be filled after reading. LiteNet3 can take a few seconds.</value></data>
   <data name="Message.ConfigurationQueued" xml:space="preserve"><value>Configuration is ready to be sent through specific commands.</value></data>
   <data name="Message.BiometricsReceived" xml:space="preserve"><value>Biometrics received.</value></data>
   <data name="Message.NotificationReceived" xml:space="preserve"><value>Event received.</value></data>

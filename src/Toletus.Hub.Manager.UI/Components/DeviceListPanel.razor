@@ -39,9 +39,10 @@
                 <button class="thm-device @(SelectedDevice?.Key == device.Key ? "selected" : null)"
                         type="button"
                         @onclick="() => DeviceSelected.InvokeAsync(device)">
+                    <span class="thm-device-dot @GetDeviceStatusClass(device, status)" aria-hidden="true"></span>
                     <span class="thm-row">
                         <span class="thm-name">@device.Name</span>
-                        <span class="thm-pill @GetDeviceStatusClass(device, status)">
+                        <span class="thm-device-status @GetDeviceStatusClass(device, status)">
                             @Text[GetDeviceStatusLabelKey(status)]
                         </span>
                     </span>
