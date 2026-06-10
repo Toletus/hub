@@ -137,6 +137,7 @@
   <data name="History.Event.ConnectionChanged" xml:space="preserve"><value>Estado de conex&#227;o do equipamento atualizado.</value></data>
   <data name="History.Event.FingerprintReader" xml:space="preserve"><value>Estado do leitor biom&#233;trico atualizado.</value></data>
   <data name="History.Event.Sm25" xml:space="preserve"><value>Evento do leitor biom&#233;trico SM25 recebido.</value></data>
+  <data name="History.Event.PingResponse" xml:space="preserve"><value>Resposta de ping recebida da LiteNet3.</value></data>
   <data name="History.Event.ErrorResponse" xml:space="preserve"><value>Erro recebido da LiteNet3.</value></data>
   <data name="Group.Connection" xml:space="preserve"><value>Conex&#227;o</value></data>
   <data name="Group.Operation" xml:space="preserve"><value>Opera&#231;&#227;o</value></data>

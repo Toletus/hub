@@ -95,13 +95,34 @@ public sealed class HubNotificationHistoryBridge : IDisposable
 
     private void Board_OnResponse(LiteNet3BoardBase board, object response)
     {
-        if (!IsErrorResponse(response))
+        if (IsErrorResponse(response))
+        {
+            _ = AddLiteNet3ErrorResponseAsync(board, response);
             return;
+        }
 
-        _ = AddLiteNet3ErrorResponseAsync(board, response);
+        if (IsPingResponse(response))
+            _ = AddLiteNet3ResponseAsync(board, response, "notification.litenet3.ping", "Message.NotificationReceived");
     }
 
     private async Task AddLiteNet3ErrorResponseAsync(LiteNet3BoardBase board, object response)
+    {
+        await AddLiteNet3ResponseAsync(
+            board,
+            response,
+            "notification.litenet3.error",
+            "Message.NotificationErrorReceived",
+            GetErrorSummary(response),
+            isError: true);
+    }
+
+    private async Task AddLiteNet3ResponseAsync(
+        LiteNet3BoardBase board,
+        object response,
+        string commandId,
+        string messageKey,
+        string? technicalDetails = null,
+        bool isError = false)
     {
         var device = new DeviceRefViewModel
         {
@@ -113,11 +134,11 @@ public sealed class HubNotificationHistoryBridge : IDisposable
             Connected = true
         };
 
-        const string commandId = "notification.litenet3.error";
-        var result = CommandResultViewModel.Error(
-            "Message.NotificationErrorReceived",
-            GetErrorSummary(response),
-            device) with
+        var result = isError
+            ? CommandResultViewModel.Error(messageKey, technicalDetails, device)
+            : CommandResultViewModel.Success(messageKey, device, response);
+
+        result = result with
         {
             Data = response
         };
@@ -190,6 +211,9 @@ public sealed class HubNotificationHistoryBridge : IDisposable
 
     private static bool IsErrorResponse(object? response) =>
         response?.GetType().Name.Contains("ErrorResponse", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static bool IsPingResponse(object? response) =>
+        response?.GetType().Name.Contains("PingResponse", StringComparison.OrdinalIgnoreCase) == true;
 
     private static string? GetErrorSummary(object? response)
     {

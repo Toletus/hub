@@ -42,6 +42,7 @@ public class CommandHistoryFormatter : ICommandHistoryFormatter
         ["notification.connection"] = "History.Event.ConnectionChanged",
         ["notification.fingerprint_reader"] = "History.Event.FingerprintReader",
         ["notification.sm25"] = "History.Event.Sm25",
+        ["notification.litenet3.ping"] = "History.Event.PingResponse",
         ["notification.litenet3.error"] = "History.Event.ErrorResponse"
     };
 
