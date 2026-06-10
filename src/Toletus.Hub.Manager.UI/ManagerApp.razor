@@ -84,16 +84,17 @@
         }
 
         <button type="button"
-                aria-label="Open tweaks panel"
+                aria-label="@Text["Tweaks.OpenLabel"]"
                 aria-expanded="@IsTweaksPanelOpen"
                 @onclick="OpenTweaksPanel"
                 style="position:absolute;right:18px;top:82px;z-index:7;width:38px;height:38px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);font-weight:900;box-shadow:0 12px 28px rgba(0,0,0,.26)">
-            T
+            @Text["Tweaks.ButtonText"]
         </button>
 
         <TweaksPanel IsOpen="IsTweaksPanelOpen"
                      Theme="Theme"
-                     Title="Tweaks"
+                     Text="Text"
+                     Title="@Text["Tweaks.Title"]"
                      CloseRequested="CloseTweaksPanel" />
 
         <CommandBar Text="Text"
@@ -107,66 +108,14 @@
     </section>
 </div>
 
-@if (IsColorDialogOpen)
-{
-    <section class="thm-color-modal" aria-hidden="false" @onclick="CloseColorDialogFromBackdrop">
-        <div class="thm-color-dialog" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle" @onclick:stopPropagation="true">
-            <div class="thm-color-dialog-body">
-                <h2 id="colorModalTitle">@Text["Color.Edit"]</h2>
-                <div class="thm-color-picker-grid">
-                    <div class="thm-spectrum"></div>
-                    <div class="thm-hue-strip"></div>
-                    <div class="thm-tone-strip"></div>
-                    <div class="thm-color-inputs">
-                        <input value="@EditingColor" @onchange="OnColorHexInput" aria-label="Hexadecimal" />
-                        <select aria-label="Formato de cor"><option>RGB</option><option>HEX</option></select>
-                        <div class="thm-rgb-row"><input value="@ColorR" @onchange='args => OnRgbInput(args, "r")' /><span>Vermelho</span></div>
-                        <div class="thm-rgb-row"><input value="@ColorG" @onchange='args => OnRgbInput(args, "g")' /><span>Verde</span></div>
-                        <div class="thm-rgb-row"><input value="@ColorB" @onchange='args => OnRgbInput(args, "b")' /><span>Azul</span></div>
-                    </div>
-                </div>
-
-                <div class="thm-palette-area">
-                    <div>
-                        <div class="thm-palette-title">@Text["Color.Basic"]</div>
-                        <div class="thm-palette">
-                            @foreach (var color in BasicColors)
-                            {
-                                <button class="thm-dot" style="--c:@color" type="button" aria-label="@($"{Text["Color.Select"]} {color}")" @onclick="() => SetEditingColor(color)"></button>
-                            }
-                        </div>
-                    </div>
-                    <div>
-                        <div class="thm-palette-title">@Text["Color.Custom"]</div>
-                        <div class="thm-custom-palette">
-                            @for (var i = 0; i < 24; i++)
-                            {
-                                <i class="thm-empty-dot"></i>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="thm-color-dialog-actions">
-                <button class="thm-ok-color" type="button" @onclick="ApplyColor">OK</button>
-                <button class="thm-cancel-color" type="button" @onclick="CloseColorDialog">Cancelar</button>
-            </div>
-        </div>
-    </section>
-}
-
 @code {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private string ActiveDeviceFilter { get; set; } = "all";
-    private string ActiveDetailTab { get; set; } = "config";
     private CommandHistoryItemViewModel? SelectedHistoryItem { get; set; }
     private bool IsJsonDrawerOpen { get; set; }
     private bool IsDetailOverlayOpen { get; set; }
     private bool IsTweaksPanelOpen { get; set; }
-    private bool IsColorDialogOpen { get; set; }
     private bool CanPersistTheme { get; set; }
-    private string EditingColorFieldId { get; set; } = "l3_flow_front_wait";
-    private string EditingColor { get; set; } = "#0000FF";
 
     private static readonly IReadOnlyList<(string Id, string LabelKey)> DeviceFilters =
     [
@@ -175,16 +124,6 @@
         ("offline", "Filter.Offline"),
         ("LiteNet3", "Filter.LiteNet3"),
         ("SM25", "Filter.SM25")
-    ];
-
-    private static readonly IReadOnlyList<string> BasicColors =
-    [
-        "#F87171", "#EF4444", "#7F4545", "#8B1A12",
-        "#FEF08A", "#FACC15", "#FB923C", "#A15C24",
-        "#86EFAC", "#84CC16", "#22C55E", "#4ADE80",
-        "#67E8F9", "#38BDF8", "#2563EB", "#0000FF",
-        "#A78BFA", "#7C3AED", "#D946EF", "#DB2777",
-        "#000000", "#737373", "#D4D4D4", "#FFFFFF"
     ];
 
     protected override async Task OnInitializedAsync()
@@ -205,24 +144,9 @@
         await Theme.LoadAsync(JsRuntime);
     }
 
-    private IEnumerable<DeviceRefViewModel> VisibleDevices =>
-        State.FilteredDevices.Where(device => ActiveDeviceFilter switch
-        {
-            "connected" => device.Connected,
-            "offline" => !device.Connected,
-            "LiteNet3" => device.Type == DeviceTypeKind.LiteNet3,
-            "SM25" => device.Modules.Contains(DeviceModuleKind.SM25),
-            _ => true
-        });
-
-    private int ColorR => HexToRgb(EditingColor).R;
-    private int ColorG => HexToRgb(EditingColor).G;
-    private int ColorB => HexToRgb(EditingColor).B;
-
     private async Task SelectDeviceAsync(DeviceRefViewModel device)
     {
         SelectedHistoryItem = null;
-        ActiveDetailTab = "config";
         await State.SelectDeviceAsync(device);
     }
 
@@ -253,16 +177,6 @@
 
     private bool IsDisabled(CommandCapability command) =>
         State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
-
-    private IReadOnlyList<IGrouping<string, ConfigurationFieldCapability>> GetConfigurationGroups()
-    {
-        if (State.SelectedDevice is null)
-            return Array.Empty<IGrouping<string, ConfigurationFieldCapability>>();
-
-        return Catalog.GetConfigurationFields(State.SelectedDevice.Type)
-            .GroupBy(field => field.GroupKey)
-            .ToList();
-    }
 
     private IEnumerable<CommandCapability> GetFooterCommands()
     {
@@ -385,12 +299,6 @@
         History.Clear();
     }
 
-    private async Task SendVisibleConfigurationAsync()
-    {
-        foreach (var groupKey in GetConfigurationGroups().Select(group => group.Key))
-            await State.SendConfigurationAsync(groupKey);
-    }
-
     private string BuildJsonPayload()
     {
         var selectedDevice = State.SelectedDevice;
@@ -420,147 +328,6 @@
         return JsonSerializer.Serialize(payload, JsonOptions);
     }
 
-    private RenderFragment RenderConfigurationField(ConfigurationFieldCapability field) => builder =>
-    {
-        var sequence = 0;
-        var value = GetConfigurationValue(field.Id);
-
-        if (field.ControlKind == "color")
-        {
-            var color = NormalizeHex(string.IsNullOrWhiteSpace(value) ? "#0000FF" : value);
-            builder.OpenElement(sequence++, "div");
-            builder.AddAttribute(sequence++, "class", "thm-color-field");
-            builder.OpenElement(sequence++, "span");
-            builder.AddContent(sequence++, Text[field.LabelKey]);
-            builder.CloseElement();
-            builder.OpenElement(sequence++, "div");
-            builder.AddAttribute(sequence++, "class", "thm-color-well");
-            builder.OpenElement(sequence++, "button");
-            builder.AddAttribute(sequence++, "class", "thm-swatch");
-            builder.AddAttribute(sequence++, "style", $"background:{color};box-shadow:0 0 18px {color}66");
-            builder.AddAttribute(sequence++, "type", "button");
-            builder.AddAttribute(sequence++, "aria-label", $"{Text["Color.Edit"]}: {Text[field.LabelKey]}");
-            builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => OpenColorDialog(field.Id)));
-            builder.CloseElement();
-            builder.OpenElement(sequence++, "input");
-            builder.AddAttribute(sequence++, "value", color);
-            builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, NormalizeHex(args.Value?.ToString()))));
-            builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-            builder.CloseElement();
-            builder.CloseElement();
-            builder.CloseElement();
-            return;
-        }
-
-        builder.OpenElement(sequence++, "label");
-        builder.AddAttribute(sequence++, "class", "thm-field");
-        builder.OpenElement(sequence++, "span");
-        builder.AddAttribute(sequence++, "class", "thm-field-label");
-        builder.AddContent(sequence++, Text[field.LabelKey]);
-        builder.CloseElement();
-
-        switch (field.ControlKind)
-        {
-            case "read":
-                builder.OpenElement(sequence++, "output");
-                builder.AddAttribute(sequence++, "class", "thm-field-value");
-                builder.AddContent(sequence++, GetConfigurationValue(field.Id, field.Id == "firmware_version" ? "-" : "0"));
-                builder.CloseElement();
-                break;
-            case "toggle":
-                builder.OpenElement(sequence++, "input");
-                builder.AddAttribute(sequence++, "type", "checkbox");
-                builder.AddAttribute(sequence++, "checked", IsTrue(value));
-                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() == "true" ? "true" : "false")));
-                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-                builder.CloseElement();
-                break;
-            case "select":
-            case "boolean_select":
-                builder.OpenElement(sequence++, "select");
-                builder.AddAttribute(sequence++, "value", value);
-                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
-                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-                foreach (var option in GetFieldOptions(field.Id, field.ControlKind))
-                {
-                    builder.OpenElement(sequence++, "option");
-                    builder.AddAttribute(sequence++, "value", option.Value);
-                    builder.AddContent(sequence++, Text[option.LabelKey]);
-                    builder.CloseElement();
-                }
-                builder.CloseElement();
-                break;
-            default:
-                builder.OpenElement(sequence++, "input");
-                builder.AddAttribute(sequence++, "type", field.ControlKind == "password" ? "password" : field.ControlKind == "number" ? "number" : "text");
-                builder.AddAttribute(sequence++, "value", value);
-                builder.AddAttribute(sequence++, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, args => SetConfigurationValue(field.Id, args.Value?.ToString() ?? string.Empty)));
-                builder.AddAttribute(sequence++, "placeholder", field.PlaceholderKey is null ? string.Empty : Text[field.PlaceholderKey]);
-                builder.AddAttribute(sequence++, "disabled", State.SelectedDevice?.Connected != true);
-                builder.CloseElement();
-                break;
-        }
-
-        builder.CloseElement();
-    };
-
-    private string GetConfigurationGroupHint(string groupKey) =>
-        groupKey switch
-        {
-            "Config.LiteNet3" => "LiteNet3",
-            "Config.Biometrics" => "SM25",
-            "Config.Notification" => "LiteNet2",
-            "Config.Operation" => "comum",
-            _ => "device"
-        };
-
-    private IReadOnlyList<DeviceModuleKind> SelectedModules =>
-        State.SelectedDevice?.Modules ?? Array.Empty<DeviceModuleKind>();
-
-    private bool ShouldEmbedModuleCommands =>
-        State.SelectedDevice is { Type: DeviceTypeKind.LiteNet2 } &&
-        SelectedModules.Contains(DeviceModuleKind.SM25);
-
-    private bool ShouldRenderStandaloneModuleCard =>
-        !ShouldEmbedModuleCommands && SelectedModules.Count > 0;
-
-    private RenderFragment RenderModuleCommands() => builder =>
-    {
-        var sequence = 0;
-        builder.OpenElement(sequence++, "section");
-        builder.AddAttribute(sequence++, "class", "thm-module-section");
-
-        foreach (var module in SelectedModules)
-        {
-            builder.OpenElement(sequence++, "div");
-            builder.AddAttribute(sequence++, "class", "thm-bio-flow");
-            foreach (var command in Catalog.GetModuleCommands(module))
-            {
-                builder.OpenElement(sequence++, "button");
-                var classes = State.CurrentCommandId == command.Id ? "thm-bio-step active" : "thm-bio-step";
-                builder.AddAttribute(sequence++, "class", classes);
-                builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => State.ExecuteAsync(command.Id)));
-                builder.AddAttribute(sequence++, "disabled", State.IsBusy || IsDisabled(command));
-                builder.OpenElement(sequence++, "span");
-                builder.AddAttribute(sequence++, "class", "thm-step");
-                builder.AddContent(sequence++, module == DeviceModuleKind.SM25 ? "SM" : "MD");
-                builder.CloseElement();
-                builder.OpenElement(sequence++, "span");
-                builder.OpenElement(sequence++, "strong");
-                builder.AddContent(sequence++, Text[command.LabelKey]);
-                builder.CloseElement();
-                builder.OpenElement(sequence++, "small");
-                builder.AddContent(sequence++, Text["Modules.Sm25Hint"]);
-                builder.CloseElement();
-                builder.CloseElement();
-                builder.CloseElement();
-            }
-            builder.CloseElement();
-        }
-
-        builder.CloseElement();
-    };
-
     private void ChangeCulture(ChangeEventArgs args)
     {
         if (args.Value is string culture)
@@ -584,139 +351,6 @@
         var localized = Text[detail.ValueKey];
         return localized.Equals(detail.ValueKey, StringComparison.Ordinal) ? detail.Value : localized;
     }
-
-    private string GetConfigurationValue(string fieldId, string fallback = "") =>
-        State.ConfigurationValues.TryGetValue(fieldId, out var value) ? value : fallback;
-
-    private void SetConfigurationValue(string fieldId, string value)
-    {
-        State.ConfigurationValues[fieldId] = value;
-    }
-
-    private static bool IsTrue(string? value) =>
-        value is "true" or "True" or "Sim" or "1";
-
-    private static IReadOnlyList<(string Value, string LabelKey)> GetFieldOptions(string fieldId, string controlKind)
-    {
-        if (controlKind == "boolean_select")
-        {
-            return
-            [
-                ("false", "Option.No"),
-                ("true", "Option.Yes")
-            ];
-        }
-
-        return fieldId switch
-        {
-            "ip_mode" =>
-            [
-                ("DHCP", "Option.IpMode.Dhcp"),
-                ("Static", "Option.IpMode.Static")
-            ],
-            "flow_mode" =>
-            [
-                ("None", "Option.Flow.None"),
-                ("Entry", "Option.Flow.Entry"),
-                ("Exit", "Option.Flow.Exit"),
-                ("Both", "Option.Flow.Both")
-            ],
-            "l3_flow_out" =>
-            [
-                ("Out", "Option.FlowOut.Out"),
-                ("Controls", "Option.FlowOut.Controls")
-            ],
-            "l3_flow_picto_wait_in" or "l3_flow_picto_wait_out" =>
-            [
-                ("0", "Option.Picto.Arrow"),
-                ("1", "Option.Picto.Blocked"),
-                ("2", "Option.Picto.Free")
-            ],
-            "display_mode" =>
-            [
-                ("", "Option.Display.Default"),
-                ("temporary", "Option.Display.Temporary"),
-                ("clear", "Option.Display.Clear")
-            ],
-            "fingerprint_identification_mode" =>
-            [
-                ("CardOrFingerprint", "Option.Fingerprint.CardOrFingerprint"),
-                ("Fingerprint", "Option.Fingerprint.Fingerprint"),
-                ("Card", "Option.Fingerprint.Card")
-            ],
-            "notify_tone" =>
-            [
-                ("0", "Option.NotifyTone.Success"),
-                ("1", "Option.NotifyTone.Alert"),
-                ("2", "Option.NotifyTone.Silent")
-            ],
-            _ =>
-            [
-                ("", "Field.SelectOption")
-            ]
-        };
-    }
-
-    private void OpenColorDialog(string fieldId)
-    {
-        EditingColorFieldId = fieldId;
-        EditingColor = NormalizeHex(GetConfigurationValue(fieldId, "#0000FF"));
-        IsColorDialogOpen = true;
-    }
-
-    private void CloseColorDialog() => IsColorDialogOpen = false;
-
-    private void CloseColorDialogFromBackdrop() => CloseColorDialog();
-
-    private void ApplyColor()
-    {
-        SetConfigurationValue(EditingColorFieldId, NormalizeHex(EditingColor));
-        IsColorDialogOpen = false;
-    }
-
-    private void OnColorHexInput(ChangeEventArgs args)
-    {
-        EditingColor = NormalizeHex(args.Value?.ToString());
-    }
-
-    private void OnRgbInput(ChangeEventArgs args, string channel)
-    {
-        var (r, g, b) = HexToRgb(EditingColor);
-        var parsed = int.TryParse(args.Value?.ToString(), out var value) ? Math.Clamp(value, 0, 255) : 0;
-
-        EditingColor = channel switch
-        {
-            "r" => RgbToHex(parsed, g, b),
-            "g" => RgbToHex(r, parsed, b),
-            "b" => RgbToHex(r, g, parsed),
-            _ => EditingColor
-        };
-    }
-
-    private void SetEditingColor(string color)
-    {
-        EditingColor = NormalizeHex(color);
-    }
-
-    private static string NormalizeHex(string? value)
-    {
-        var cleaned = (value ?? string.Empty).Trim().TrimStart('#').ToUpperInvariant();
-        return cleaned.Length == 6 && cleaned.All(Uri.IsHexDigit)
-            ? $"#{cleaned}"
-            : "#0000FF";
-    }
-
-    private static (int R, int G, int B) HexToRgb(string hex)
-    {
-        var clean = NormalizeHex(hex).TrimStart('#');
-        return (
-            Convert.ToInt32(clean[..2], 16),
-            Convert.ToInt32(clean[2..4], 16),
-            Convert.ToInt32(clean[4..6], 16));
-    }
-
-    private static string RgbToHex(int r, int g, int b) =>
-        $"#{Math.Clamp(r, 0, 255):X2}{Math.Clamp(g, 0, 255):X2}{Math.Clamp(b, 0, 255):X2}";
 
     private void OnStateChanged()
     {

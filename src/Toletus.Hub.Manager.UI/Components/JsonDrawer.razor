@@ -3,7 +3,7 @@
 
 @if (Open)
 {
-    <section class="thm-console-panel json-drawer" aria-label="JSON payload">
+    <section class="thm-console-panel json-drawer" aria-label="@Text["Json.PayloadLabel"]">
         <div class="thm-console-head">
             <div>
                 <strong>JSON</strong>
@@ -19,14 +19,14 @@
                         type="button"
                         disabled="@isCopying"
                         @onclick="CopyAsync"
-                        aria-label="Copy JSON payload">
-                    @(isCopying ? "..." : "Copy")
+                        aria-label="@Text["Json.CopyLabel"]">
+                    @(isCopying ? "..." : Text["Json.Copy"])
                 </button>
                 <button class="thm-secondary"
                         style="min-height: 28px; min-width: 28px; padding: 0"
                         type="button"
                         @onclick="() => CloseRequested.InvokeAsync()"
-                        aria-label="Close JSON drawer">
+                        aria-label="@Text["Json.CloseLabel"]">
                     x
                 </button>
             </div>
@@ -67,7 +67,7 @@
         copyFeedback = null;
 
         var copied = await Clipboard.CopyTextAsync(FormattedPayload);
-        copyFeedback = copied ? "Copied" : "Copy failed";
+        copyFeedback = copied ? Text["Json.Copied"] : Text["Json.CopyFailed"];
         isCopying = false;
     }
 

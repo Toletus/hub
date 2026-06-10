@@ -17,6 +17,7 @@
   <data name="Devices.Title" xml:space="preserve"><value>Dispositivos expostos pelo Hub</value></data>
   <data name="Devices.Hint" xml:space="preserve"><value>LiteNet descobertos por rede; SM25 aparece como m&#243;dulo biom&#233;trico.</value></data>
   <data name="Devices.Empty" xml:space="preserve"><value>Nenhum dispositivo descoberto nesta rede.</value></data>
+  <data name="Devices.EmptyFiltered" xml:space="preserve"><value>Nenhum dispositivo corresponde aos filtros atuais.</value></data>
   <data name="Devices.PanelTitle" xml:space="preserve"><value>Dispositivos</value></data>
   <data name="Devices.Visible" xml:space="preserve"><value>vis&#237;veis</value></data>
   <data name="Devices.Modules" xml:space="preserve"><value>M&#243;dulos</value></data>
@@ -35,6 +36,7 @@
   <data name="History.Detail.Command" xml:space="preserve"><value>Comando</value></data>
   <data name="History.Detail.Summary" xml:space="preserve"><value>Resumo</value></data>
   <data name="History.Detail.Value" xml:space="preserve"><value>Detalhe</value></data>
+  <data name="History.Detail.Technical" xml:space="preserve"><value>T&#233;cnico</value></data>
   <data name="History.Detail.Content" xml:space="preserve"><value>Conte&#250;do</value></data>
   <data name="History.Detail.Data_Content" xml:space="preserve"><value>Conte&#250;do</value></data>
   <data name="History.Detail.Action" xml:space="preserve"><value>A&#231;&#227;o</value></data>
@@ -94,6 +96,14 @@
   <data name="History.Value.Recognized" xml:space="preserve"><value>Valor reconhecido</value></data>
   <data name="History.Value.PayloadSummaryUnavailable" xml:space="preserve"><value>Payload recebido sem resumo dispon&#237;vel.</value></data>
   <data name="History.Value.ImageFormatUnknown" xml:space="preserve"><value>Formato de imagem n&#227;o reconhecido.</value></data>
+  <data name="History.Filter.All" xml:space="preserve"><value>Todos</value></data>
+  <data name="History.Filter.Commands" xml:space="preserve"><value>Comandos</value></data>
+  <data name="History.Filter.Events" xml:space="preserve"><value>Eventos</value></data>
+  <data name="History.Filter.Errors" xml:space="preserve"><value>Erros</value></data>
+  <data name="History.Action.Collapse" xml:space="preserve"><value>Recolher</value></data>
+  <data name="History.Action.Expand" xml:space="preserve"><value>Expandir</value></data>
+  <data name="History.Action.ViewJson" xml:space="preserve"><value>JSON</value></data>
+  <data name="History.Relative.Now" xml:space="preserve"><value>agora</value></data>
   <data name="History.Event.Discovery" xml:space="preserve"><value>Dispositivos atualizados pela descoberta de rede.</value></data>
   <data name="History.Event.Connect" xml:space="preserve"><value>Conex&#227;o solicitada para o dispositivo selecionado.</value></data>
   <data name="History.Event.Disconnect" xml:space="preserve"><value>Desconex&#227;o solicitada para o dispositivo selecionado.</value></data>
@@ -204,6 +214,12 @@
   <data name="Workspace.TechnicalReturn" xml:space="preserve"><value>Retorno t&#233;cnico do dispositivo</value></data>
   <data name="Workspace.TechnicalReturnHint" xml:space="preserve"><value>Hist&#243;rico operacional e JSON bruto ficam no centro para usu&#225;rios t&#233;cnicos.</value></data>
   <data name="Workspace.JsonHint" xml:space="preserve"><value>payload t&#233;cnico / resposta do Hub</value></data>
+  <data name="Json.PayloadLabel" xml:space="preserve"><value>Payload JSON</value></data>
+  <data name="Json.CopyLabel" xml:space="preserve"><value>Copiar payload JSON</value></data>
+  <data name="Json.CloseLabel" xml:space="preserve"><value>Fechar painel JSON</value></data>
+  <data name="Json.Copy" xml:space="preserve"><value>Copiar</value></data>
+  <data name="Json.Copied" xml:space="preserve"><value>Copiado</value></data>
+  <data name="Json.CopyFailed" xml:space="preserve"><value>Falha ao copiar</value></data>
   <data name="History.SelectedDeviceEvents" xml:space="preserve"><value>eventos do dispositivo selecionado</value></data>
   <data name="Config.Edit" xml:space="preserve"><value>Editar configura&#231;&#227;o</value></data>
   <data name="Config.Biometrics" xml:space="preserve"><value>LiteNet2 / SM25</value></data>
@@ -243,6 +259,21 @@
   <data name="Actionbar.Empty" xml:space="preserve"><value>A&#231;&#245;es do dispositivo</value></data>
   <data name="Actionbar.ForDevice" xml:space="preserve"><value>A&#231;&#245;es para {0}</value></data>
   <data name="Actionbar.Hint" xml:space="preserve"><value>Comandos reais: Conex&#227;o, Opera&#231;&#227;o, Diagn&#243;stico, Manuten&#231;&#227;o, Configura&#231;&#245;es e Biometria SM25.</value></data>
+  <data name="Actionbar.Details" xml:space="preserve"><value>Detalhes</value></data>
+  <data name="Tweaks.Title" xml:space="preserve"><value>Ajustes</value></data>
+  <data name="Tweaks.OpenLabel" xml:space="preserve"><value>Abrir painel de ajustes</value></data>
+  <data name="Tweaks.CloseLabel" xml:space="preserve"><value>Fechar painel de ajustes</value></data>
+  <data name="Tweaks.ButtonText" xml:space="preserve"><value>A</value></data>
+  <data name="Tweaks.Accent" xml:space="preserve"><value>Cor de destaque</value></data>
+  <data name="Tweaks.AccentHexLabel" xml:space="preserve"><value>Cor de destaque em hexadecimal</value></data>
+  <data name="Tweaks.SetAccent" xml:space="preserve"><value>Definir destaque</value></data>
+  <data name="Tweaks.Density" xml:space="preserve"><value>Densidade</value></data>
+  <data name="Tweaks.Density.Compact" xml:space="preserve"><value>Compacta</value></data>
+  <data name="Tweaks.Density.Regular" xml:space="preserve"><value>Regular</value></data>
+  <data name="Tweaks.Density.Comfy" xml:space="preserve"><value>Conforto</value></data>
+  <data name="Tweaks.TimeFormat" xml:space="preserve"><value>Formato de hora</value></data>
+  <data name="Tweaks.TimeFormat.Clock" xml:space="preserve"><value>Rel&#243;gio</value></data>
+  <data name="Tweaks.TimeFormat.Relative" xml:space="preserve"><value>Relativo</value></data>
   <data name="Color.Edit" xml:space="preserve"><value>Editar cores</value></data>
   <data name="Color.Basic" xml:space="preserve"><value>Cores b&#225;sicas</value></data>
   <data name="Color.Custom" xml:space="preserve"><value>Cores personalizadas</value></data>

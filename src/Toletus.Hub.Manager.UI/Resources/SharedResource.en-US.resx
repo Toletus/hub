@@ -17,6 +17,7 @@
   <data name="Devices.Title" xml:space="preserve"><value>Devices exposed by Hub</value></data>
   <data name="Devices.Hint" xml:space="preserve"><value>LiteNet devices discovered by network; SM25 appears as a biometric module.</value></data>
   <data name="Devices.Empty" xml:space="preserve"><value>No devices discovered on this network.</value></data>
+  <data name="Devices.EmptyFiltered" xml:space="preserve"><value>No devices match the current filters.</value></data>
   <data name="Devices.PanelTitle" xml:space="preserve"><value>Devices</value></data>
   <data name="Devices.Visible" xml:space="preserve"><value>visible</value></data>
   <data name="Devices.Modules" xml:space="preserve"><value>Modules</value></data>
@@ -35,6 +36,7 @@
   <data name="History.Detail.Command" xml:space="preserve"><value>Command</value></data>
   <data name="History.Detail.Summary" xml:space="preserve"><value>Summary</value></data>
   <data name="History.Detail.Value" xml:space="preserve"><value>Detail</value></data>
+  <data name="History.Detail.Technical" xml:space="preserve"><value>Technical</value></data>
   <data name="History.Detail.Content" xml:space="preserve"><value>Content</value></data>
   <data name="History.Detail.Data_Content" xml:space="preserve"><value>Content</value></data>
   <data name="History.Detail.Action" xml:space="preserve"><value>Action</value></data>
@@ -94,6 +96,14 @@
   <data name="History.Value.Recognized" xml:space="preserve"><value>Recognized value</value></data>
   <data name="History.Value.PayloadSummaryUnavailable" xml:space="preserve"><value>Payload received without an available summary.</value></data>
   <data name="History.Value.ImageFormatUnknown" xml:space="preserve"><value>Image format not recognized.</value></data>
+  <data name="History.Filter.All" xml:space="preserve"><value>All</value></data>
+  <data name="History.Filter.Commands" xml:space="preserve"><value>Commands</value></data>
+  <data name="History.Filter.Events" xml:space="preserve"><value>Events</value></data>
+  <data name="History.Filter.Errors" xml:space="preserve"><value>Errors</value></data>
+  <data name="History.Action.Collapse" xml:space="preserve"><value>Collapse</value></data>
+  <data name="History.Action.Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="History.Action.ViewJson" xml:space="preserve"><value>JSON</value></data>
+  <data name="History.Relative.Now" xml:space="preserve"><value>now</value></data>
   <data name="History.Event.Discovery" xml:space="preserve"><value>Devices updated from network discovery.</value></data>
   <data name="History.Event.Connect" xml:space="preserve"><value>Connection requested for the selected device.</value></data>
   <data name="History.Event.Disconnect" xml:space="preserve"><value>Disconnection requested for the selected device.</value></data>
@@ -204,6 +214,12 @@
   <data name="Workspace.TechnicalReturn" xml:space="preserve"><value>Technical device return</value></data>
   <data name="Workspace.TechnicalReturnHint" xml:space="preserve"><value>Operational history and raw JSON stay centered for technical users.</value></data>
   <data name="Workspace.JsonHint" xml:space="preserve"><value>technical payload / Hub response</value></data>
+  <data name="Json.PayloadLabel" xml:space="preserve"><value>JSON payload</value></data>
+  <data name="Json.CopyLabel" xml:space="preserve"><value>Copy JSON payload</value></data>
+  <data name="Json.CloseLabel" xml:space="preserve"><value>Close JSON drawer</value></data>
+  <data name="Json.Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Json.Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="Json.CopyFailed" xml:space="preserve"><value>Copy failed</value></data>
   <data name="History.SelectedDeviceEvents" xml:space="preserve"><value>selected device events</value></data>
   <data name="Config.Edit" xml:space="preserve"><value>Edit configuration</value></data>
   <data name="Config.Biometrics" xml:space="preserve"><value>LiteNet2 / SM25</value></data>
@@ -243,6 +259,21 @@
   <data name="Actionbar.Empty" xml:space="preserve"><value>Device actions</value></data>
   <data name="Actionbar.ForDevice" xml:space="preserve"><value>Actions for {0}</value></data>
   <data name="Actionbar.Hint" xml:space="preserve"><value>Real commands: Connection, Operation, Diagnostics, Maintenance, Settings and SM25 biometrics.</value></data>
+  <data name="Actionbar.Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Tweaks.Title" xml:space="preserve"><value>Tweaks</value></data>
+  <data name="Tweaks.OpenLabel" xml:space="preserve"><value>Open tweaks panel</value></data>
+  <data name="Tweaks.CloseLabel" xml:space="preserve"><value>Close tweaks panel</value></data>
+  <data name="Tweaks.ButtonText" xml:space="preserve"><value>T</value></data>
+  <data name="Tweaks.Accent" xml:space="preserve"><value>Accent</value></data>
+  <data name="Tweaks.AccentHexLabel" xml:space="preserve"><value>Accent hex color</value></data>
+  <data name="Tweaks.SetAccent" xml:space="preserve"><value>Set accent</value></data>
+  <data name="Tweaks.Density" xml:space="preserve"><value>Density</value></data>
+  <data name="Tweaks.Density.Compact" xml:space="preserve"><value>Compact</value></data>
+  <data name="Tweaks.Density.Regular" xml:space="preserve"><value>Regular</value></data>
+  <data name="Tweaks.Density.Comfy" xml:space="preserve"><value>Comfy</value></data>
+  <data name="Tweaks.TimeFormat" xml:space="preserve"><value>Time format</value></data>
+  <data name="Tweaks.TimeFormat.Clock" xml:space="preserve"><value>Clock</value></data>
+  <data name="Tweaks.TimeFormat.Relative" xml:space="preserve"><value>Relative</value></data>
   <data name="Color.Edit" xml:space="preserve"><value>Edit colors</value></data>
   <data name="Color.Basic" xml:space="preserve"><value>Basic colors</value></data>
   <data name="Color.Custom" xml:space="preserve"><value>Custom colors</value></data>

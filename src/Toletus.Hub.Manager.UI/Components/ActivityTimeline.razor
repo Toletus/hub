@@ -18,7 +18,7 @@
                         role="tab"
                         aria-selected="@(ActiveFilter == filter.Id)"
                         @onclick="() => SetFilter(filter.Id)">
-                    @filter.Label
+                    @Text[filter.LabelKey]
                 </button>
             }
         </div>
@@ -51,13 +51,13 @@
                                         type="button"
                                         aria-expanded="@isExpanded"
                                         @onclick="() => ToggleExpanded(item)">
-                                    @(isExpanded ? "Collapse" : "Expand")
+                                    @(isExpanded ? Text["History.Action.Collapse"] : Text["History.Action.Expand"])
                                 </button>
                             }
                             <button class="thm-secondary"
                                     type="button"
                                     @onclick="() => ViewJsonRequested.InvokeAsync(item)">
-                                JSON
+                                @Text["History.Action.ViewJson"]
                             </button>
                         </div>
 
@@ -75,7 +75,7 @@
                                 @if (!string.IsNullOrWhiteSpace(item.TechnicalDetails))
                                 {
                                     <div>
-                                        <span>Technical</span>
+                                        <span>@Text["History.Detail.Technical"]</span>
                                         <strong>@item.TechnicalDetails</strong>
                                     </div>
                                 }
@@ -111,12 +111,12 @@
     [Parameter] public Func<CommandHistoryItemViewModel, string>? HistorySummary { get; set; }
     [Parameter] public Func<CommandHistoryItemViewModel, string>? HistoryStatusClass { get; set; }
 
-    private static readonly IReadOnlyList<(string Id, string Label)> Filters =
+    private static readonly IReadOnlyList<(string Id, string LabelKey)> Filters =
     [
-        ("all", "All"),
-        ("commands", "Commands"),
-        ("events", "Events"),
-        ("errors", "Errors")
+        ("all", "History.Filter.All"),
+        ("commands", "History.Filter.Commands"),
+        ("events", "History.Filter.Events"),
+        ("errors", "History.Filter.Errors")
     ];
 
     private readonly HashSet<string> _expandedItems = new(StringComparer.Ordinal);
@@ -175,7 +175,7 @@
 
         var elapsed = DateTimeOffset.Now - timestamp;
         if (elapsed.TotalSeconds < 5)
-            return "now";
+            return Text["History.Relative.Now"];
 
         if (elapsed.TotalSeconds < 60)
             return $"{Math.Max(1, (int)Math.Round(elapsed.TotalSeconds))}s";

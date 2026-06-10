@@ -6,9 +6,9 @@
        @onpointerleave="StopDrag">
     <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--thm-line);cursor:move"
             @onpointerdown="StartDrag">
-        <strong>@Title</strong>
+        <strong>@ResolvedTitle</strong>
         <button type="button"
-                aria-label="Close tweaks panel"
+                aria-label="@T("Tweaks.CloseLabel")"
                 @onclick="() => CloseRequested.InvokeAsync()"
                 style="width:30px;height:30px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel);color:var(--thm-text);font-weight:900">
             x
@@ -18,7 +18,7 @@
     <div style="display:grid;gap:18px;padding:16px">
         <section style="display:grid;gap:10px">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-                <label for="hubAccent" style="font-size:12px;font-weight:900;text-transform:uppercase;color:var(--thm-muted)">Accent</label>
+                <label for="hubAccent" style="font-size:12px;font-weight:900;text-transform:uppercase;color:var(--thm-muted)">@T("Tweaks.Accent")</label>
                 <span style="font-family:monospace;font-size:12px;color:var(--thm-muted)">@Theme.Accent</span>
             </div>
             <div style="display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center">
@@ -29,14 +29,14 @@
                        style="width:44px;height:34px;padding:0;border:1px solid var(--thm-line);border-radius:8px;background:transparent" />
                 <input value="@Theme.Accent"
                        @onchange="SetAccent"
-                       aria-label="Accent hex color"
+                       aria-label="@T("Tweaks.AccentHexLabel")"
                        style="min-width:0;height:34px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel);color:var(--thm-text);padding:0 10px" />
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
                 @foreach (var color in AccentPresets)
                 {
                     <button type="button"
-                            aria-label="@($"Set accent {color}")"
+                            aria-label="@($"{T("Tweaks.SetAccent")} {color}")"
                             @onclick="() => Theme.Accent = color"
                             style="@GetPresetStyle(color)">
                     </button>
@@ -45,30 +45,30 @@
         </section>
 
         <section style="display:grid;gap:10px">
-            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">Density</strong>
-            <div role="radiogroup" aria-label="Density" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">@T("Tweaks.Density")</strong>
+            <div role="radiogroup" aria-label="@T("Tweaks.Density")" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
                 @foreach (var density in DensityOptions)
                 {
                     <button type="button"
                             aria-pressed="@(Theme.Density == density)"
                             @onclick="() => Theme.Density = density"
                             style="@GetOptionStyle(Theme.Density == density)">
-                        @density
+                        @T(GetDensityLabelKey(density))
                     </button>
                 }
             </div>
         </section>
 
         <section style="display:grid;gap:10px">
-            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">Time format</strong>
-            <div role="radiogroup" aria-label="Time format" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">@T("Tweaks.TimeFormat")</strong>
+            <div role="radiogroup" aria-label="@T("Tweaks.TimeFormat")" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
                 @foreach (var format in TimeFormatOptions)
                 {
                     <button type="button"
                             aria-pressed="@(Theme.TimeFormat == format)"
                             @onclick="() => Theme.TimeFormat = format"
                             style="@GetOptionStyle(Theme.TimeFormat == format)">
-                        @format
+                        @T(GetTimeFormatLabelKey(format))
                     </button>
                 }
             </div>
@@ -81,7 +81,8 @@
 @code {
     [Parameter] public bool IsOpen { get; set; }
     [Parameter, EditorRequired] public HubManagerThemeState Theme { get; set; } = default!;
-    [Parameter] public string Title { get; set; } = "Tweaks";
+    [Parameter] public UiText? Text { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public EventCallback CloseRequested { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -111,6 +112,9 @@
         Left is { } left && Top is { } top
             ? $"position:fixed;left:clamp(8px,{left:0}px,calc(100vw - 328px));top:clamp(8px,{top:0}px,calc(100vh - 360px));width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)"
             : "position:fixed;right:24px;top:88px;width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)";
+
+    private string ResolvedTitle =>
+        string.IsNullOrWhiteSpace(Title) ? T("Tweaks.Title") : Title;
 
     private void SetAccent(ChangeEventArgs args)
     {
@@ -148,6 +152,14 @@
     private static string GetOptionStyle(bool selected) =>
         "height:34px;border:1px solid var(--thm-line);border-radius:8px;font-size:12px;font-weight:800;color:" +
         (selected ? "#1b0b00;background:var(--thm-brand)" : "var(--thm-text);background:var(--thm-panel)");
+
+    private string T(string key) => Text?[key] ?? key;
+
+    private static string GetDensityLabelKey(HubManagerDensity density) =>
+        $"Tweaks.Density.{density}";
+
+    private static string GetTimeFormatLabelKey(HubManagerTimeFormat format) =>
+        $"Tweaks.TimeFormat.{format}";
 
     private static string NormalizeHex(string value)
     {
