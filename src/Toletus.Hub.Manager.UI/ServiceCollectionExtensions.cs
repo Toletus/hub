@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<DeviceDisplayStatusService>();
         services.AddSingleton<TimelinePresentationMapper>();
         services.AddSingleton<NotificationHistoryService>();
+        services.AddScoped<IClipboardService, BrowserClipboardService>();
         services.AddScoped<HubManagerThemeState>();
         services.AddScoped<ManagerUiState>();
 

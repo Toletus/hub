@@ -1,14 +1,94 @@
-<section class="thm-console-panel json-drawer">
-    <div class="thm-console-head">
-        <strong>JSON</strong>
-        <span>@Text["Workspace.JsonHint"]</span>
-    </div>
-    <div class="thm-console-body">
-        <pre class="thm-json-view">@Payload</pre>
-    </div>
-</section>
+@using System.Text.Json
+@inject IClipboardService Clipboard
+
+@if (Open)
+{
+    <section class="thm-console-panel json-drawer" aria-label="JSON payload">
+        <div class="thm-console-head">
+            <div>
+                <strong>JSON</strong>
+                <span>@Text["Workspace.JsonHint"]</span>
+            </div>
+            <div class="thm-console-actions" style="gap: 6px">
+                @if (!string.IsNullOrWhiteSpace(copyFeedback))
+                {
+                    <span aria-live="polite">@copyFeedback</span>
+                }
+                <button class="thm-secondary"
+                        style="min-height: 28px; padding: 0 9px"
+                        type="button"
+                        disabled="@isCopying"
+                        @onclick="CopyAsync"
+                        aria-label="Copy JSON payload">
+                    @(isCopying ? "..." : "Copy")
+                </button>
+                <button class="thm-secondary"
+                        style="min-height: 28px; min-width: 28px; padding: 0"
+                        type="button"
+                        @onclick="() => CloseRequested.InvokeAsync()"
+                        aria-label="Close JSON drawer">
+                    x
+                </button>
+            </div>
+        </div>
+        <div class="thm-console-body">
+            <pre class="thm-json-view">@FormattedPayload</pre>
+        </div>
+    </section>
+}
 
 @code {
     [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
     [Parameter] public string Payload { get; set; } = string.Empty;
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback CloseRequested { get; set; }
+
+    private bool isCopying;
+    private string? copyFeedback;
+    private string? previousPayload;
+
+    private string FormattedPayload => FormatJson(Payload);
+
+    protected override void OnParametersSet()
+    {
+        if (!string.Equals(previousPayload, Payload, StringComparison.Ordinal))
+        {
+            previousPayload = Payload;
+            copyFeedback = null;
+        }
+    }
+
+    private async Task CopyAsync()
+    {
+        if (isCopying)
+            return;
+
+        isCopying = true;
+        copyFeedback = null;
+
+        var copied = await Clipboard.CopyTextAsync(FormattedPayload);
+        copyFeedback = copied ? "Copied" : "Copy failed";
+        isCopying = false;
+    }
+
+    private static string FormatJson(string payload)
+    {
+        if (string.IsNullOrWhiteSpace(payload))
+            return string.Empty;
+
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            return JsonSerializer.Serialize(document.RootElement, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            return payload;
+        }
+    }
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true
+    };
 }
