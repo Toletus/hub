@@ -12,21 +12,6 @@
                    placeholder="@Text["Toolbar.Search"]" />
         </label>
 
-        <div class="chips" role="radiogroup" aria-label="@Text["Devices.Filters"]">
-            @foreach (var filter in DeviceFilters)
-            {
-                var isSelected = string.Equals(CurrentDeviceFilter, filter.Id, StringComparison.Ordinal);
-                <label class="chip @(isSelected ? "on" : null)">
-                    <input class="chip-input"
-                           type="radio"
-                           name="device-filter"
-                           value="@filter.Id"
-                           checked="@isSelected"
-                           @onchange="() => SetActiveFilterAsync(filter.Id)" />
-                    @Text[filter.LabelKey]
-                </label>
-            }
-        </div>
     </div>
 
     <div class="list-scroll">
@@ -78,21 +63,10 @@
 @code {
     [Parameter, EditorRequired] public ManagerUiState State { get; set; } = default!;
     [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
-    [Parameter] public IReadOnlyList<(string Id, string LabelKey)> DeviceFilters { get; set; } = Array.Empty<(string, string)>();
-    [Parameter] public string ActiveDeviceFilter { get; set; } = "all";
-    [Parameter] public EventCallback<string> ActiveDeviceFilterChanged { get; set; }
     [Parameter] public EventCallback<DeviceRefViewModel> DeviceSelected { get; set; }
     [Parameter] public Func<DeviceRefViewModel, string>? DeviceStatusClass { get; set; }
 
-    private string CurrentDeviceFilter { get; set; } = "all";
-
-    private IReadOnlyList<DeviceRefViewModel> VisibleDevices =>
-        SearchFilteredDevices.Where(MatchesActiveFilter).ToList();
-
-    protected override void OnParametersSet()
-    {
-        CurrentDeviceFilter = string.IsNullOrWhiteSpace(ActiveDeviceFilter) ? "all" : ActiveDeviceFilter;
-    }
+    private IReadOnlyList<DeviceRefViewModel> VisibleDevices => SearchFilteredDevices.ToList();
 
     private IEnumerable<DeviceRefViewModel> SearchFilteredDevices
     {
@@ -110,23 +84,7 @@
         }
     }
 
-    private bool MatchesActiveFilter(DeviceRefViewModel device) =>
-        CurrentDeviceFilter switch
-        {
-            "connected" => device.Connected,
-            "offline" => !device.Connected,
-            "LiteNet3" => device.Type == DeviceTypeKind.LiteNet3,
-            "SM25" => device.Modules.Contains(DeviceModuleKind.SM25),
-            _ => true
-        };
-
     private DeviceRefViewModel? SelectedDevice => State.SelectedDevice;
-
-    private async Task SetActiveFilterAsync(string filterId)
-    {
-        CurrentDeviceFilter = filterId;
-        await ActiveDeviceFilterChanged.InvokeAsync(filterId);
-    }
 
     private DeviceDisplayStatusViewModel GetDeviceStatus(DeviceRefViewModel device) =>
         DisplayStatus.GetStatus(

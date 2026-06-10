@@ -4130,30 +4130,6 @@ body,
     box-shadow: none !important;
 }
 
-.chips,
-.chip {
-    pointer-events: auto;
-}
-
-.chip {
-    position: relative;
-    z-index: 1;
-}
-
-.chip-input {
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    pointer-events: none;
-}
-
-.chip:has(.chip-input:focus-visible) {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
 .seg-item.on,
 .seg-item.on:hover,
 .seg-item.on:focus-visible {

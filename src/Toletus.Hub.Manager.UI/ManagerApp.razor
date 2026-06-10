@@ -32,9 +32,6 @@
         <div class="main">
             <DeviceListPanel State="State"
                              Text="Text"
-                             DeviceFilters="DeviceFilters"
-                             ActiveDeviceFilter="ActiveDeviceFilter"
-                             ActiveDeviceFilterChanged="SetActiveDeviceFilter"
                              DeviceSelected="SelectDeviceAsync"
                              DeviceStatusClass="GetDeviceStatusClass" />
 
@@ -89,20 +86,10 @@
 
 @code {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-    private string ActiveDeviceFilter { get; set; } = "all";
     private CommandHistoryItemViewModel? SelectedHistoryItem { get; set; }
     private bool IsJsonDrawerOpen { get; set; }
     private bool IsDetailOverlayOpen { get; set; }
     private bool CanPersistTheme { get; set; }
-
-    private static readonly IReadOnlyList<(string Id, string LabelKey)> DeviceFilters =
-    [
-        ("all", "Filter.All"),
-        ("connected", "Filter.Connected"),
-        ("offline", "Filter.Offline"),
-        ("LiteNet3", "Filter.LiteNet3"),
-        ("SM25", "Filter.SM25")
-    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,12 +123,6 @@
     private async Task ExecuteCommandAsync(string commandId)
     {
         await State.ExecuteAsync(commandId);
-    }
-
-    private void SetActiveDeviceFilter(string filterId)
-    {
-        ActiveDeviceFilter = filterId;
-        StateHasChanged();
     }
 
     private bool IsDisabled(CommandCapability command) =>
