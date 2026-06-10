@@ -4256,8 +4256,10 @@ body,
 
 .brand-logo {
     flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
     background: transparent;
-    border-radius: 0;
+    border-radius: 7px;
     color: transparent;
     display: block;
     object-fit: contain;

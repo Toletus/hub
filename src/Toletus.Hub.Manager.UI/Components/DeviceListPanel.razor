@@ -15,9 +15,10 @@
         <div class="chips" aria-label="@Text["Devices.Filters"]">
             @foreach (var filter in DeviceFilters)
             {
-                <button class="chip @(ActiveDeviceFilter == filter.Id ? "on" : null)"
+                <button class="chip @(CurrentDeviceFilter == filter.Id ? "on" : null)"
                         type="button"
-                        aria-pressed="@(ActiveDeviceFilter == filter.Id)"
+                        aria-pressed="@(CurrentDeviceFilter == filter.Id)"
+                        @onclick:stopPropagation="true"
                         @onclick="() => SetActiveFilterAsync(filter.Id)">
                     @Text[filter.LabelKey]
                 </button>
@@ -80,8 +81,15 @@
     [Parameter] public EventCallback<DeviceRefViewModel> DeviceSelected { get; set; }
     [Parameter] public Func<DeviceRefViewModel, string>? DeviceStatusClass { get; set; }
 
+    private string CurrentDeviceFilter { get; set; } = "all";
+
     private IReadOnlyList<DeviceRefViewModel> VisibleDevices =>
         SearchFilteredDevices.Where(MatchesActiveFilter).ToList();
+
+    protected override void OnParametersSet()
+    {
+        CurrentDeviceFilter = string.IsNullOrWhiteSpace(ActiveDeviceFilter) ? "all" : ActiveDeviceFilter;
+    }
 
     private IEnumerable<DeviceRefViewModel> SearchFilteredDevices
     {
@@ -100,7 +108,7 @@
     }
 
     private bool MatchesActiveFilter(DeviceRefViewModel device) =>
-        ActiveDeviceFilter switch
+        CurrentDeviceFilter switch
         {
             "connected" => device.Connected,
             "offline" => !device.Connected,
@@ -111,8 +119,11 @@
 
     private DeviceRefViewModel? SelectedDevice => State.SelectedDevice;
 
-    private Task SetActiveFilterAsync(string filterId) =>
-        ActiveDeviceFilterChanged.InvokeAsync(filterId);
+    private async Task SetActiveFilterAsync(string filterId)
+    {
+        CurrentDeviceFilter = filterId;
+        await ActiveDeviceFilterChanged.InvokeAsync(filterId);
+    }
 
     private DeviceDisplayStatusViewModel GetDeviceStatus(DeviceRefViewModel device) =>
         DisplayStatus.GetStatus(

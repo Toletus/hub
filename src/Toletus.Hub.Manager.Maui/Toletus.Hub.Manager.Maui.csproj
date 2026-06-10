@@ -22,7 +22,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>Toletus Hub Manager</ApplicationTitle>
+        <ApplicationTitle>LiteNet Manager</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.toletus.hub.manager.maui</ApplicationId>
@@ -44,7 +44,7 @@
 
     <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#ff6a00" />
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" />
 
         <!-- Splash Screen -->
         <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#101114" BaseSize="128,128" />

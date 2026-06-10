@@ -120,7 +120,7 @@ public sealed class ManagerUiState(
                 {
                     Device = SelectedDevice,
                     CommandId = commandId,
-                    Message = "Toletus Hub Manager"
+                    Message = "LiteNet Manager"
                 }, cancellationToken)
             };
             logger.LogInformation(
