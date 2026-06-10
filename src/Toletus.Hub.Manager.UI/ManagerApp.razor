@@ -66,12 +66,13 @@
         {
             <div class="overlay-backdrop"
                  @onclick="CloseDetails">
-                <div class="detail-panel as-overlay" @onclick:stopPropagation="true">
-                    <DeviceDetailPanel State="State"
-                                       Catalog="Catalog"
-                                       Text="Text"
-                                       DeviceStatusClass="@(State.SelectedDevice is null ? null : GetDeviceStatusClass(State.SelectedDevice))" />
-                </div>
+                <DeviceDetailPanel State="State"
+                                   Catalog="Catalog"
+                                   Text="Text"
+                                   DeviceStatusClass="@(State.SelectedDevice is null ? null : GetDeviceStatusClass(State.SelectedDevice))"
+                                   IsOverlay="true"
+                                   CloseRequested="CloseDetails"
+                                   @onclick:stopPropagation="true" />
             </div>
         }
 
@@ -178,19 +179,21 @@
         if (State.SelectedDevice is null)
             return Array.Empty<CommandCapability>();
 
-        var commandIds = new[]
+        var commandIds = new List<string>
         {
             DeviceCapabilityCatalog.ReleaseEntry,
             DeviceCapabilityCatalog.ReleaseExit,
             DeviceCapabilityCatalog.ReleaseEntryAndExit,
-            DeviceCapabilityCatalog.GetStatus,
-            DeviceCapabilityCatalog.Disconnect,
-            DeviceCapabilityCatalog.Connect
+            DeviceCapabilityCatalog.GetStatus
         };
+
+        commandIds.Add(State.SelectedDevice.Connected
+            ? DeviceCapabilityCatalog.Disconnect
+            : DeviceCapabilityCatalog.Connect);
 
         return Catalog.GetCommands(State.SelectedDevice.Type)
             .Where(command => commandIds.Contains(command.Id))
-            .OrderBy(command => Array.IndexOf(commandIds, command.Id));
+            .OrderBy(command => commandIds.IndexOf(command.Id));
     }
 
     private string GetFooterCommandClass(CommandCapability command)

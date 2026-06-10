@@ -29,7 +29,11 @@
                         disabled="@IsCommandDisabled(command)"
                         aria-busy="@IsCommandActive(command)"
                         aria-pressed="@IsPrimaryConnectionCommand(command)">
-                    @Text[command.LabelKey]
+                    @if (IsCommandActive(command))
+                    {
+                        <span class="spin" aria-hidden="true"></span>
+                    }
+                    <span>@Text[command.LabelKey]</span>
                 </button>
             }
 
@@ -63,9 +67,6 @@
 
         classes.Add("btn");
 
-        if (IsPrimaryConnectionCommand(command))
-            classes.Add(SelectedDevice?.Connected == true ? "danger" : "brand");
-
         return string.Join(" ", classes);
     }
 
@@ -73,7 +74,7 @@
         (CommandDisabled?.Invoke(command) ?? true) || IsUnavailableConnectionCommand(command);
 
     private bool IsCommandActive(CommandCapability command) =>
-        HasCommandClass(command, "active");
+        HasCommandClass(command, "is-busy");
 
     private bool IsPrimaryConnectionCommand(CommandCapability command) =>
         SelectedDevice is { Connected: false } && command.Id == DeviceCapabilityCatalog.Connect ||

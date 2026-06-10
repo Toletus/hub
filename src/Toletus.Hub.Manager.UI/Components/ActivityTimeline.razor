@@ -1,4 +1,5 @@
 @inject TimelinePresentationMapper PresentationMapper
+@implements IDisposable
 
 <section class="panel tl-panel" data-screen-label="Atividade / Historico">
     <header class="panel-head">
@@ -59,12 +60,14 @@
                                         type="button"
                                         aria-expanded="@isExpanded"
                                         @onclick="() => ToggleExpanded(item)">
+                                    <span class="ev-chev" aria-hidden="true"></span>
                                     @(isExpanded ? Text["History.Action.Collapse"] : Text["History.Action.Expand"])
                                 </button>
                             }
                             <button class="ev-link @(SelectedItem == item ? "on" : null)"
                                     type="button"
                                     @onclick="() => ViewJsonRequested.InvokeAsync(item)">
+                                <span class="mono">{ }</span>
                                 @Text["History.Action.ViewJson"]
                             </button>
                         </div>
@@ -93,11 +96,11 @@
 
                             @if (item.Media is { } media && IsImageMedia(media))
                             {
-                                <figure class="thm-card" @onclick:stopPropagation="true">
-                                    <img src="@media.Source" alt="@GetMediaAlt(media)" />
+                                <figure class="ev-media" @onclick:stopPropagation="true">
+                                    <img class="fp-canvas" src="@media.Source" alt="@GetMediaAlt(media)" />
                                     @if (!string.IsNullOrWhiteSpace(media.CaptionKey))
                                     {
-                                        <figcaption class="thm-meta">@Text[media.CaptionKey]</figcaption>
+                                        <figcaption class="tl-empty-sub">@Text[media.CaptionKey]</figcaption>
                                     }
                                 </figure>
                             }
@@ -130,7 +133,21 @@
     ];
 
     private readonly HashSet<string> _expandedItems = new(StringComparer.Ordinal);
+    private System.Threading.Timer? relativeTimer;
     private string ActiveFilter { get; set; } = "all";
+
+    protected override void OnParametersSet()
+    {
+        if (TimeFormat == HubManagerTimeFormat.Relative)
+        {
+            relativeTimer ??= new System.Threading.Timer(_ => InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+        }
+        else
+        {
+            relativeTimer?.Dispose();
+            relativeTimer = null;
+        }
+    }
 
     private IReadOnlyList<CommandHistoryItemViewModel> VisibleItems =>
         Items.Where(item =>
@@ -195,4 +212,9 @@
 
     private static string GetItemKey(CommandHistoryItemViewModel item) =>
         $"{item.Timestamp:O}|{item.CommandId}|{item.MessageKey}";
+
+    public void Dispose()
+    {
+        relativeTimer?.Dispose();
+    }
 }

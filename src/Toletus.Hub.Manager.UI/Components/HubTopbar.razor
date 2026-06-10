@@ -19,7 +19,6 @@
                     <option value="@network">@network</option>
                 }
             </select>
-            <span aria-hidden="true">⌄</span>
         </span>
     </label>
 
@@ -27,7 +26,11 @@
             @onclick="() => DiscoverRequested.InvokeAsync()"
             disabled="@State.IsBusy"
             aria-busy="@IsDiscovering">
-        <span>@(IsDiscovering ? Text["Message.DiscoveryPending"] : Text["Toolbar.Discover"])</span>
+        @if (IsDiscovering)
+        {
+            <span class="spin" aria-hidden="true"></span>
+        }
+        <span>@DiscoverButtonText</span>
     </button>
 
     <div class="seg" role="group" aria-label="@Text["Toolbar.Language"]">
@@ -54,6 +57,10 @@
     [Parameter] public EventCallback DiscoverRequested { get; set; }
 
     private bool IsDiscovering => State.CurrentCommandId == "discovery";
+    private string DiscoverButtonText =>
+        IsDiscovering ? Text["Message.DiscoveryPending"] :
+        State.Devices.Count > 0 ? Text["Toolbar.DiscoverAgain"] :
+        Text["Toolbar.Discover"];
 
     private Task SelectCultureAsync(string cultureName) =>
         CultureChanged.InvokeAsync(new ChangeEventArgs { Value = cultureName });
@@ -65,5 +72,4 @@
             "en-US" => "EN",
             _ => cultureName
         };
-
 }

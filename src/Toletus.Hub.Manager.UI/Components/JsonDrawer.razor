@@ -1,4 +1,7 @@
 @using System.Text.Json
+@using System.Text.Encodings.Web
+@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Components
 @inject IClipboardService Clipboard
 
 @if (Open)
@@ -11,16 +14,12 @@
                 <span>@Text["Workspace.JsonHint"]</span>
             </div>
             <div class="panel-head-spacer"></div>
-            @if (!string.IsNullOrWhiteSpace(copyFeedback))
-            {
-                <span class="tl-empty-sub" aria-live="polite">@copyFeedback</span>
-            }
                 <button class="ghost-btn"
                         type="button"
                         disabled="@isCopying"
                         @onclick="CopyAsync"
                         aria-label="@Text["Json.CopyLabel"]">
-                    @(isCopying ? "..." : Text["Json.Copy"])
+                    @CopyButtonText
                 </button>
                 <button class="icon-btn"
                         type="button"
@@ -30,7 +29,7 @@
                 </button>
         </header>
         <div class="json-scroll">
-            <pre class="json-block">@FormattedPayload</pre>
+            <pre class="json-block">@HighlightedPayload</pre>
         </div>
     </section>
 }
@@ -46,6 +45,12 @@
     private string? previousPayload;
 
     private string FormattedPayload => FormatJson(Payload);
+    private MarkupString HighlightedPayload => new(HighlightJson(FormattedPayload));
+    private string CopyButtonText =>
+        string.Equals(copyFeedback, Text["Json.Copied"], StringComparison.Ordinal) ? Text["Json.Copied"] :
+        string.Equals(copyFeedback, Text["Json.CopyFailed"], StringComparison.Ordinal) ? Text["Json.CopyFailed"] :
+        isCopying ? "..." :
+        Text["Json.Copy"];
 
     protected override void OnParametersSet()
     {
@@ -67,6 +72,13 @@
         var copied = await Clipboard.CopyTextAsync(FormattedPayload);
         copyFeedback = copied ? Text["Json.Copied"] : Text["Json.CopyFailed"];
         isCopying = false;
+
+        await Task.Delay(1500);
+        if (string.Equals(previousPayload, Payload, StringComparison.Ordinal))
+        {
+            copyFeedback = null;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private static string FormatJson(string payload)
@@ -83,6 +95,16 @@
         {
             return payload;
         }
+    }
+
+    private static string HighlightJson(string payload)
+    {
+        var encoded = HtmlEncoder.Default.Encode(payload);
+        encoded = Regex.Replace(encoded, "&quot;([^&]+)&quot;:", "<span class=\"jk\">&quot;$1&quot;</span>:");
+        encoded = Regex.Replace(encoded, ": &quot;([^&]*)&quot;", ": <span class=\"js\">&quot;$1&quot;</span>");
+        encoded = Regex.Replace(encoded, ": (-?\\d+(?:\\.\\d+)?)", ": <span class=\"jn\">$1</span>");
+        encoded = Regex.Replace(encoded, ": (null|true|false)", ": <span class=\"jb\">$1</span>");
+        return encoded;
     }
 
     private static readonly JsonSerializerOptions JsonOptions = new()

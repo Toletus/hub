@@ -9,6 +9,7 @@
   <data name="Toolbar.Network" xml:space="preserve"><value>Network</value></data>
   <data name="Toolbar.Search" xml:space="preserve"><value>Search by name, serial, or type</value></data>
   <data name="Toolbar.Discover" xml:space="preserve"><value>Discover</value></data>
+  <data name="Toolbar.DiscoverAgain" xml:space="preserve"><value>Discover again</value></data>
   <data name="Toolbar.Language" xml:space="preserve"><value>Language</value></data>
   <data name="Toolbar.SelectNetwork" xml:space="preserve"><value>Select network</value></data>
   <data name="Toolbar.Subtitle" xml:space="preserve"><value>Device console</value></data>
@@ -17,6 +18,7 @@
   <data name="Devices.Title" xml:space="preserve"><value>Devices exposed by Hub</value></data>
   <data name="Devices.Hint" xml:space="preserve"><value>LiteNet devices discovered by network; SM25 appears as a biometric module.</value></data>
   <data name="Devices.Empty" xml:space="preserve"><value>No devices discovered on this network.</value></data>
+  <data name="Devices.EmptyHint" xml:space="preserve"><value>Select the network and click Discover.</value></data>
   <data name="Devices.EmptyFiltered" xml:space="preserve"><value>No devices match the current filters.</value></data>
   <data name="Devices.PanelTitle" xml:space="preserve"><value>Devices</value></data>
   <data name="Devices.Visible" xml:space="preserve"><value>visible</value></data>
@@ -270,6 +272,8 @@
   <data name="Tweaks.OpenLabel" xml:space="preserve"><value>Open tweaks panel</value></data>
   <data name="Tweaks.CloseLabel" xml:space="preserve"><value>Close tweaks panel</value></data>
   <data name="Tweaks.ButtonText" xml:space="preserve"><value>T</value></data>
+  <data name="Tweaks.Appearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Tweaks.Activity" xml:space="preserve"><value>Activity</value></data>
   <data name="Tweaks.Accent" xml:space="preserve"><value>Accent</value></data>
   <data name="Tweaks.AccentHexLabel" xml:space="preserve"><value>Accent hex color</value></data>
   <data name="Tweaks.SetAccent" xml:space="preserve"><value>Set accent</value></data>
@@ -277,7 +281,7 @@
   <data name="Tweaks.Density.Compact" xml:space="preserve"><value>Compact</value></data>
   <data name="Tweaks.Density.Regular" xml:space="preserve"><value>Regular</value></data>
   <data name="Tweaks.Density.Comfy" xml:space="preserve"><value>Comfy</value></data>
-  <data name="Tweaks.TimeFormat" xml:space="preserve"><value>Time format</value></data>
+  <data name="Tweaks.TimeFormat" xml:space="preserve"><value>Time</value></data>
   <data name="Tweaks.TimeFormat.Clock" xml:space="preserve"><value>Clock</value></data>
   <data name="Tweaks.TimeFormat.Relative" xml:space="preserve"><value>Relative</value></data>
   <data name="Color.Edit" xml:space="preserve"><value>Edit colors</value></data>

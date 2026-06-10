@@ -1,73 +1,94 @@
-<aside class="tweak-panel @(IsOpen ? "open" : "closed")"
+<aside class="twk-panel @(IsOpen ? "open" : "closed")"
        hidden="@(!IsOpen)"
        style="@PanelStyle"
+       data-omelette-chrome=""
        @onpointermove="HandlePointerMove"
        @onpointerup="StopDrag"
        @onpointerleave="StopDrag">
-    <header style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--thm-line);cursor:move"
-            @onpointerdown="StartDrag">
-        <strong>@ResolvedTitle</strong>
+    <header class="twk-hd" @onpointerdown="StartDrag">
+        <b>@ResolvedTitle</b>
         <button type="button"
+                class="twk-x"
                 aria-label="@T("Tweaks.CloseLabel")"
-                @onclick="() => CloseRequested.InvokeAsync()"
-                style="width:30px;height:30px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel);color:var(--thm-text);font-weight:900">
-            x
+                @onpointerdown:stopPropagation="true"
+                @onclick="() => CloseRequested.InvokeAsync()">
+            &times;
         </button>
     </header>
 
-    <div style="display:grid;gap:18px;padding:16px">
-        <section style="display:grid;gap:10px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-                <label for="hubAccent" style="font-size:12px;font-weight:900;text-transform:uppercase;color:var(--thm-muted)">@T("Tweaks.Accent")</label>
-                <span style="font-family:monospace;font-size:12px;color:var(--thm-muted)">@Theme.Accent</span>
-            </div>
-            <div style="display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center">
+    <div class="twk-body">
+        <div class="twk-sect">@T("Tweaks.Appearance")</div>
+        <section class="twk-row">
+            <div class="twk-row twk-row-h">
+                <div class="twk-lbl">
+                    <span>@T("Tweaks.Accent")</span>
+                    <span class="twk-val">@Theme.Accent</span>
+                </div>
                 <input id="hubAccent"
                        type="color"
+                       class="twk-swatch"
                        value="@Theme.Accent"
-                       @oninput="SetAccent"
-                       style="width:44px;height:34px;padding:0;border:1px solid var(--thm-line);border-radius:8px;background:transparent" />
-                <input value="@Theme.Accent"
-                       @onchange="SetAccent"
-                       aria-label="@T("Tweaks.AccentHexLabel")"
-                       style="min-width:0;height:34px;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel);color:var(--thm-text);padding:0 10px" />
+                       @oninput="SetAccent" />
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input value="@Theme.Accent"
+                   class="twk-field"
+                   @onchange="SetAccent"
+                   aria-label="@T("Tweaks.AccentHexLabel")" />
+            <div class="twk-chips" role="radiogroup" aria-label="@T("Tweaks.Accent")">
                 @foreach (var color in AccentPresets)
                 {
+                    var selected = IsSelectedAccent(color);
                     <button type="button"
+                            class="twk-chip"
+                            role="radio"
+                            aria-checked="@selected"
+                            data-on="@(selected ? "1" : "0")"
                             aria-label="@($"{T("Tweaks.SetAccent")} {color}")"
-                            @onclick="() => Theme.Accent = color"
-                            style="@GetPresetStyle(color)">
+                            title="@color"
+                            style="@GetChipStyle(color)"
+                            @onclick="() => Theme.Accent = color">
+                        @if (selected)
+                        {
+                            <svg viewBox="0 0 14 14" aria-hidden="true">
+                                <path d="M3 7.2 5.8 10 11 4.2"
+                                      fill="none"
+                                      stroke-width="2.2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke="@GetCheckStroke(color)" />
+                            </svg>
+                        }
                     </button>
                 }
             </div>
         </section>
 
-        <section style="display:grid;gap:10px">
-            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">@T("Tweaks.Density")</strong>
-            <div role="radiogroup" aria-label="@T("Tweaks.Density")" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+        <div class="twk-sect">@T("Tweaks.Density")</div>
+        <section class="twk-row">
+            <div class="twk-seg" role="radiogroup" aria-label="@T("Tweaks.Density")">
+                <div class="twk-seg-thumb" style="@GetSegmentThumbStyle(GetSelectedIndex(DensityOptions, Theme.Density), DensityOptions.Count)"></div>
                 @foreach (var density in DensityOptions)
                 {
                     <button type="button"
-                            aria-pressed="@(Theme.Density == density)"
-                            @onclick="() => Theme.Density = density"
-                            style="@GetOptionStyle(Theme.Density == density)">
+                            role="radio"
+                            aria-checked="@(Theme.Density == density)"
+                            @onclick="() => Theme.Density = density">
                         @T(GetDensityLabelKey(density))
                     </button>
                 }
             </div>
         </section>
 
-        <section style="display:grid;gap:10px">
-            <strong style="font-size:12px;text-transform:uppercase;color:var(--thm-muted)">@T("Tweaks.TimeFormat")</strong>
-            <div role="radiogroup" aria-label="@T("Tweaks.TimeFormat")" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+        <div class="twk-sect">@T("Tweaks.Activity")</div>
+        <section class="twk-row">
+            <div class="twk-seg" role="radiogroup" aria-label="@T("Tweaks.TimeFormat")">
+                <div class="twk-seg-thumb" style="@GetSegmentThumbStyle(GetSelectedIndex(TimeFormatOptions, Theme.TimeFormat), TimeFormatOptions.Count)"></div>
                 @foreach (var format in TimeFormatOptions)
                 {
                     <button type="button"
-                            aria-pressed="@(Theme.TimeFormat == format)"
-                            @onclick="() => Theme.TimeFormat = format"
-                            style="@GetOptionStyle(Theme.TimeFormat == format)">
+                            role="radio"
+                            aria-checked="@(Theme.TimeFormat == format)"
+                            @onclick="() => Theme.TimeFormat = format">
                         @T(GetTimeFormatLabelKey(format))
                     </button>
                 }
@@ -89,15 +110,16 @@
     private static readonly IReadOnlyList<string> AccentPresets =
     [
         "#F9760D",
-        "#38BDF8",
-        "#4FD37B",
-        "#F5BF4F",
-        "#EF5B5B",
-        "#A78BFA"
+        "#FF8C2E",
+        "#E85D04",
+        "#D9A514"
     ];
 
     private static readonly IReadOnlyList<HubManagerDensity> DensityOptions =
-        Enum.GetValues<HubManagerDensity>();
+    [
+        HubManagerDensity.Compact,
+        HubManagerDensity.Regular
+    ];
 
     private static readonly IReadOnlyList<HubManagerTimeFormat> TimeFormatOptions =
         Enum.GetValues<HubManagerTimeFormat>();
@@ -110,8 +132,8 @@
 
     private string PanelStyle =>
         Left is { } left && Top is { } top
-            ? $"position:fixed;left:clamp(8px,{left:0}px,calc(100vw - 328px));top:clamp(8px,{top:0}px,calc(100vh - 360px));width:320px;max-height:calc(100vh - 16px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)"
-            : "position:fixed;right:16px;bottom:16px;width:320px;max-height:calc(100vh - 32px);overflow:auto;z-index:20;border:1px solid var(--thm-line);border-radius:8px;background:var(--thm-panel-strong);color:var(--thm-text);box-shadow:0 18px 60px rgba(0,0,0,.42)";
+            ? $"left:clamp(16px,{left:0}px,calc(100vw - 296px));top:clamp(16px,{top:0}px,calc(100vh - 360px));right:auto;bottom:auto"
+            : string.Empty;
 
     private string ResolvedTitle =>
         string.IsNullOrWhiteSpace(Title) ? T("Tweaks.Title") : Title;
@@ -125,8 +147,8 @@
     private void StartDrag(PointerEventArgs args)
     {
         IsDragging = true;
-        DragOffsetX = Left.HasValue ? args.ClientX - Left.Value : 296;
-        DragOffsetY = Top.HasValue ? args.ClientY - Top.Value : 16;
+        DragOffsetX = Left.HasValue ? args.ClientX - Left.Value : args.ClientX - (args.ClientX - 140);
+        DragOffsetY = Left.HasValue ? args.ClientY - Top.GetValueOrDefault(16) : 16;
     }
 
     private void HandlePointerMove(PointerEventArgs args)
@@ -143,15 +165,42 @@
         IsDragging = false;
     }
 
-    private string GetPresetStyle(string color)
+    private bool IsSelectedAccent(string color) =>
+        string.Equals(Theme.Accent, color, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetChipStyle(string color) => $"background:{color}";
+
+    private static string GetSegmentThumbStyle(int index, int count) =>
+        $"left:calc(2px + {Math.Max(0, index)} * (100% - 4px) / {count});width:calc((100% - 4px) / {count})";
+
+    private static int GetSelectedIndex<T>(IReadOnlyList<T> options, T value)
     {
-        var selected = string.Equals(Theme.Accent, color, StringComparison.OrdinalIgnoreCase);
-        return $"width:28px;height:28px;border:{(selected ? "2px solid var(--thm-text)" : "1px solid var(--thm-line)")};border-radius:50%;background:{color};box-shadow:0 0 0 2px rgba(0,0,0,.18)";
+        for (var i = 0; i < options.Count; i++)
+        {
+            if (EqualityComparer<T>.Default.Equals(options[i], value))
+                return i;
+        }
+
+        return 0;
     }
 
-    private static string GetOptionStyle(bool selected) =>
-        "height:34px;border:1px solid var(--thm-line);border-radius:8px;font-size:12px;font-weight:800;color:" +
-        (selected ? "#1b0b00;background:var(--thm-brand)" : "var(--thm-text);background:var(--thm-panel)");
+    private static string GetCheckStroke(string color) =>
+        IsLight(color) ? "rgba(0,0,0,.78)" : "#fff";
+
+    private static bool IsLight(string color)
+    {
+        var hex = color.Trim().TrimStart('#');
+        if (hex.Length == 3)
+            hex = string.Concat(hex.Select(c => $"{c}{c}"));
+
+        if (hex.Length < 6 || !int.TryParse(hex[..6], System.Globalization.NumberStyles.HexNumber, null, out var value))
+            return true;
+
+        var r = (value >> 16) & 255;
+        var g = (value >> 8) & 255;
+        var b = value & 255;
+        return r * 299 + g * 587 + b * 114 > 148000;
+    }
 
     private string T(string key) => Text?[key] ?? key;
 

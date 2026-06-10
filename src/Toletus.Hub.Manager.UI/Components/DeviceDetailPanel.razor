@@ -1,4 +1,4 @@
-<aside class="panel detail-panel" data-screen-label="Detalhes do dispositivo">
+<aside class="panel detail-panel @(IsOverlay ? "as-overlay" : null)" data-screen-label="Detalhes do dispositivo">
     @if (ShouldRenderChildContentFallback)
     {
         @ChildContent
@@ -19,6 +19,12 @@
                     <span class="badge-dot"></span>
                     @(SelectedDevice.Connected ? T("Workspace.Connected") : T("Workspace.Disconnected"))
                 </span>
+                @if (IsOverlay && CloseRequested.HasDelegate)
+                {
+                    <button type="button" class="icon-btn" @onclick="() => CloseRequested.InvokeAsync()" aria-label="@T("Json.CloseLabel")">
+                        x
+                    </button>
+                }
             </div>
 
             <div class="detail-sub">
@@ -126,6 +132,8 @@
     [Parameter] public bool? IsBusyOverride { get; set; }
     [Parameter] public bool? IsConfigurationLoadingOverride { get; set; }
     [Parameter] public string? CurrentCommandIdOverride { get; set; }
+    [Parameter] public bool IsOverlay { get; set; }
+    [Parameter] public EventCallback CloseRequested { get; set; }
 
     private DeviceRefViewModel? SelectedDevice => Device ?? State?.SelectedDevice;
 
