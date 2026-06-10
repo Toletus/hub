@@ -17,7 +17,8 @@
             {
                 <button class="chip @(ActiveDeviceFilter == filter.Id ? "on" : null)"
                         type="button"
-                        @onclick="() => ActiveDeviceFilterChanged.InvokeAsync(filter.Id)">
+                        aria-pressed="@(ActiveDeviceFilter == filter.Id)"
+                        @onclick="() => SetActiveFilterAsync(filter.Id)">
                     @Text[filter.LabelKey]
                 </button>
             }
@@ -109,6 +110,9 @@
         };
 
     private DeviceRefViewModel? SelectedDevice => State.SelectedDevice;
+
+    private Task SetActiveFilterAsync(string filterId) =>
+        ActiveDeviceFilterChanged.InvokeAsync(filterId);
 
     private DeviceDisplayStatusViewModel GetDeviceStatus(DeviceRefViewModel device) =>
         DisplayStatus.GetStatus(

@@ -1,6 +1,6 @@
 <header class="topbar" data-screen-label="Topbar">
     <div class="brand">
-        <span class="brand-mark" aria-hidden="true">TH</span>
+        <img class="brand-mark brand-logo" src="brand/toletus-mark.svg" alt="" aria-hidden="true" />
         <div class="brand-text">
             <strong>@Text["App.Title"]</strong>
             <span>@Text["App.Subtitle"]</span>
@@ -40,7 +40,6 @@
             <button type="button"
                     class="seg-item @(isSelected ? "on" : null)"
                     @onclick="() => SelectCultureAsync(culture.Name)"
-                    disabled="@isSelected"
                     aria-pressed="@isSelected"
                     title="@Text[$"Language.{culture.Name}"]">
                 @GetCultureSegmentLabel(culture.Name)

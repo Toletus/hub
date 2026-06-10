@@ -4138,3 +4138,70 @@ body,
 .sev-warn .ev-title {
     color: var(--text);
 }
+
+.search {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.search-input,
+.search-input:focus,
+.search-input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.chips,
+.chip {
+    pointer-events: auto;
+}
+
+.chip {
+    position: relative;
+    z-index: 1;
+}
+
+.seg-item.on,
+.seg-item.on:hover,
+.seg-item.on:focus-visible {
+    background: var(--panel3);
+    color: var(--text);
+    opacity: 1;
+}
+
+.detail-panel {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.detail-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.cfg-group {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+}
+
+.cfg-fields {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    grid-auto-rows: auto;
+}
+
+.brand-logo {
+    flex: 0 0 32px;
+    background: transparent;
+    border-radius: 0;
+    color: transparent;
+    display: block;
+    object-fit: contain;
+    padding: 0;
+}
