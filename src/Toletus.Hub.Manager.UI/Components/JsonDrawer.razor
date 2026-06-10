@@ -3,36 +3,34 @@
 
 @if (Open)
 {
-    <section class="thm-console-panel json-drawer" aria-label="@Text["Json.PayloadLabel"]">
-        <div class="thm-console-head">
-            <div>
-                <strong>JSON</strong>
+    <section class="json-drawer" aria-label="@Text["Json.PayloadLabel"]">
+        <header class="json-head">
+            <span class="mono json-braces">{ }</span>
+            <div class="json-head-text">
+                <strong>@Text["Json.PayloadLabel"]</strong>
                 <span>@Text["Workspace.JsonHint"]</span>
             </div>
-            <div class="thm-console-actions" style="gap: 6px">
-                @if (!string.IsNullOrWhiteSpace(copyFeedback))
-                {
-                    <span aria-live="polite">@copyFeedback</span>
-                }
-                <button class="thm-secondary"
-                        style="min-height: 28px; padding: 0 9px"
+            <div class="panel-head-spacer"></div>
+            @if (!string.IsNullOrWhiteSpace(copyFeedback))
+            {
+                <span class="tl-empty-sub" aria-live="polite">@copyFeedback</span>
+            }
+                <button class="ghost-btn"
                         type="button"
                         disabled="@isCopying"
                         @onclick="CopyAsync"
                         aria-label="@Text["Json.CopyLabel"]">
                     @(isCopying ? "..." : Text["Json.Copy"])
                 </button>
-                <button class="thm-secondary"
-                        style="min-height: 28px; min-width: 28px; padding: 0"
+                <button class="icon-btn"
                         type="button"
                         @onclick="() => CloseRequested.InvokeAsync()"
                         aria-label="@Text["Json.CloseLabel"]">
                     x
                 </button>
-            </div>
-        </div>
-        <div class="thm-console-body">
-            <pre class="thm-json-view">@FormattedPayload</pre>
+        </header>
+        <div class="json-scroll">
+            <pre class="json-block">@FormattedPayload</pre>
         </div>
     </section>
 }

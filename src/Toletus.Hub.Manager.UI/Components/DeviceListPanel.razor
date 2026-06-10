@@ -1,19 +1,21 @@
 @inject DeviceDisplayStatusService DisplayStatus
 @inject NotificationHistoryService History
 
-<aside class="thm-list">
-    <div class="thm-list-head">
-        <label class="thm-search">
+<aside class="panel list-panel" data-screen-label="Lista de dispositivos">
+    <div class="list-tools">
+        <label class="search">
+            <span aria-hidden="true">search</span>
             <input @bind="State.SearchText"
                    @bind:event="oninput"
+                   class="search-input"
                    aria-label="@Text["Toolbar.Search"]"
                    placeholder="@Text["Toolbar.Search"]" />
         </label>
 
-        <div class="thm-filters" aria-label="@Text["Devices.Filters"]">
+        <div class="chips" aria-label="@Text["Devices.Filters"]">
             @foreach (var filter in DeviceFilters)
             {
-                <button class="thm-filter @(ActiveDeviceFilter == filter.Id ? "active" : null)"
+                <button class="chip @(ActiveDeviceFilter == filter.Id ? "on" : null)"
                         type="button"
                         @onclick="() => ActiveDeviceFilterChanged.InvokeAsync(filter.Id)">
                     @Text[filter.LabelKey]
@@ -22,39 +24,50 @@
         </div>
     </div>
 
-    <div class="thm-devices">
+    <div class="list-scroll">
         @if (State.Devices.Count == 0)
         {
-            <p class="thm-empty">@Text["Devices.Empty"]</p>
+            <div class="tl-empty">
+                <div class="tl-empty-title">@Text["Devices.Empty"]</div>
+                <div class="tl-empty-sub">@Text["Devices.EmptyFiltered"]</div>
+            </div>
         }
         else if (VisibleDevices.Count == 0)
         {
-            <p class="thm-empty">@Text["Devices.EmptyFiltered"]</p>
+            <div class="tl-empty"><div class="tl-empty-sub">@Text["Devices.EmptyFiltered"]</div></div>
         }
         else
         {
             @foreach (var device in VisibleDevices)
             {
                 var status = GetDeviceStatus(device);
-                <button class="thm-device @(SelectedDevice?.Key == device.Key ? "selected" : null)"
+                <button class="dev-item @(SelectedDevice?.Key == device.Key ? "sel" : null)"
                         type="button"
                         @onclick="() => DeviceSelected.InvokeAsync(device)">
-                    <span class="thm-device-dot @GetDeviceStatusClass(device, status)" aria-hidden="true"></span>
-                    <span class="thm-row">
-                        <span class="thm-name">@device.Name</span>
-                        <span class="thm-device-status @GetDeviceStatusClass(device, status)">
-                            @Text[GetDeviceStatusLabelKey(status)]
+                    <span class="dev-dot @GetDeviceStatusClass(device, status)" aria-hidden="true"></span>
+                    <span class="dev-main">
+                        <span class="dev-row1">
+                            <strong class="dev-name">@device.Name</strong>
+                            <span class="type-chip">@device.TypeLabel</span>
+                            @foreach (var module in device.Modules)
+                            {
+                                <span class="type-chip">@module</span>
+                            }
                         </span>
+                        <span class="dev-row2 mono">@(device.SerialNumber ?? "-") - @device.IpAddress</span>
                     </span>
-                    <span class="thm-meta">@device.TypeLabel &middot; @Text["Workspace.Serial"] @(device.SerialNumber ?? "-") &middot; IP @device.IpAddress</span>
-                    @if (device.Modules.Count > 0)
-                    {
-                        <span class="thm-pill module">@string.Join(", ", device.Modules)</span>
-                    }
+                    <span class="dev-status @GetDeviceStatusClass(device, status)">
+                        @Text[GetDeviceStatusLabelKey(status)]
+                    </span>
                 </button>
             }
         }
     </div>
+
+    @if (State.Devices.Count > 0)
+    {
+        <div class="list-foot mono">@State.Devices.Count dispositivos</div>
+    }
 </aside>
 
 @code {
@@ -107,11 +120,11 @@
     {
         var displayClass = status.Status switch
         {
-            DeviceDisplayStatusKind.Connected => "ok",
-            DeviceDisplayStatusKind.Connecting => "ok",
-            DeviceDisplayStatusKind.Busy => "ok",
-            DeviceDisplayStatusKind.Error => "warn",
-            _ => "off"
+            DeviceDisplayStatusKind.Connected => "st-connected",
+            DeviceDisplayStatusKind.Connecting => "st-connecting",
+            DeviceDisplayStatusKind.Busy => "st-connecting",
+            DeviceDisplayStatusKind.Error => "st-offline",
+            _ => "st-disconnected"
         };
 
         return string.Join(" ", new[]

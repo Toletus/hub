@@ -12,7 +12,7 @@
 @inject IJSRuntime JsRuntime
 
 <div class="thm-page">
-    <section class="thm-app app" style="@GetAppStyle()" data-density="@GetDensityAttribute()">
+    <section class="app" style="@GetAppStyle()" data-density="@GetDensityAttribute()">
         <HubTopbar State="State"
                    Culture="Culture"
                    Text="Text"
@@ -29,7 +29,7 @@
                      SelectedDevice="State.SelectedDevice"
                      DeviceSelected="SelectDeviceAsync" />
 
-        <div class="main main-grid">
+        <div class="main">
             <DeviceListPanel State="State"
                              Text="Text"
                              DeviceFilters="DeviceFilters"
@@ -38,8 +38,7 @@
                              DeviceSelected="SelectDeviceAsync"
                              DeviceStatusClass="GetDeviceStatusClass" />
 
-            <main class="thm-work center">
-                <div class="thm-center-panels @(IsJsonDrawerOpen ? "has-json" : null)">
+            <main class="center">
                     <ActivityTimeline Text="Text"
                                       Items="History.Items"
                                       SelectedItem="SelectedHistoryItem"
@@ -55,7 +54,6 @@
                                 Payload="@BuildJsonPayload()"
                                 Open="IsJsonDrawerOpen"
                                 CloseRequested="CloseJsonDrawer" />
-                </div>
             </main>
 
             <DeviceDetailPanel State="State"
@@ -67,9 +65,8 @@
         @if (IsDetailOverlayOpen)
         {
             <div class="overlay-backdrop"
-                 style="position:absolute;inset:68px 0 84px;z-index:6;background:rgba(0,0,0,.42);display:grid;justify-content:end"
                  @onclick="CloseDetails">
-                <div style="width:min(430px,100vw);height:100%" @onclick:stopPropagation="true">
+                <div class="detail-panel as-overlay" @onclick:stopPropagation="true">
                     <DeviceDetailPanel State="State"
                                        Catalog="Catalog"
                                        Text="Text"
@@ -185,6 +182,7 @@
         {
             DeviceCapabilityCatalog.ReleaseEntry,
             DeviceCapabilityCatalog.ReleaseExit,
+            DeviceCapabilityCatalog.ReleaseEntryAndExit,
             DeviceCapabilityCatalog.GetStatus,
             DeviceCapabilityCatalog.Disconnect,
             DeviceCapabilityCatalog.Connect
@@ -197,30 +195,36 @@
 
     private string GetFooterCommandClass(CommandCapability command)
     {
-        var classes = new List<string> { "thm-cmd" };
+        var classes = new List<string> { "btn", "btn-soft" };
 
         if (command.Id == DeviceCapabilityCatalog.ReleaseEntry)
-            classes.Add("brand");
+        {
+            classes.Remove("btn-soft");
+            classes.Add("btn-primary");
+        }
 
         if (command.Id == DeviceCapabilityCatalog.Disconnect)
-            classes.Add("danger");
+        {
+            classes.Remove("btn-soft");
+            classes.Add("btn-danger");
+        }
 
         if (State.CurrentCommandId == command.Id)
-            classes.Add("active");
+            classes.Add("is-busy");
 
         return string.Join(" ", classes);
     }
 
     private string GetDeviceStatusClass(DeviceRefViewModel device) =>
-        device.Connected ? "ok" : "off";
+        device.Connected ? "st-connected" : "st-disconnected";
 
     private static string GetHistoryStatusClass(CommandHistoryItemViewModel item) =>
         item.Status switch
         {
-            CommandStatusKind.Warning => "warn",
-            CommandStatusKind.Error => "warn",
-            CommandStatusKind.Pending => "info",
-            _ => string.Empty
+            CommandStatusKind.Warning => "sev-warn",
+            CommandStatusKind.Error => "sev-err",
+            CommandStatusKind.Pending => "sev-run",
+            _ => "sev-ok"
         };
 
     private string GetActionTitle() =>
@@ -229,7 +233,7 @@
             : string.Format(Text["Actionbar.ForDevice"], State.SelectedDevice.Name);
 
     private string GetAppStyle() =>
-        $"position: relative; --thm-brand: {Theme.Accent}; --hub-accent: {Theme.Accent}";
+        $"position: relative; --accent: {Theme.Accent}; --thm-brand: {Theme.Accent}; --hub-accent: {Theme.Accent}";
 
     private string GetDensityAttribute() =>
         Theme.Density.ToString().ToLowerInvariant();

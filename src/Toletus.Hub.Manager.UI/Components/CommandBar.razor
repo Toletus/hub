@@ -1,13 +1,28 @@
-<footer class="thm-actionbar command-bar">
-    <div>
-        <strong>@ActionTitle</strong>
-        <span>@Text["Actionbar.Hint"]</span>
-    </div>
-    <div class="thm-commands">
+<footer class="cmdbar" data-screen-label="Barra de comandos">
+    @if (SelectedDevice is null)
+    {
+        <span class="cmdbar-hint">@Text["Actionbar.Empty"]</span>
+    }
+    else
+    {
+        <div class="cmdbar-label">
+            <strong>@ActionTitle</strong>
+            @if (SelectedDevice.Connected != true)
+            {
+                <span class="cmdbar-note">@Text["Actionbar.Hint"]</span>
+            }
+        </div>
+    }
+    <div class="cmdbar-btns">
         @if (SelectedDevice is not null)
         {
             @foreach (var command in Commands)
             {
+                @if (IsConnectionCommand(command))
+                {
+                    <span class="cmdbar-sep" aria-hidden="true"></span>
+                }
+
                 <button class="@GetCommandClass(command)"
                         type="button"
                         @onclick="() => CommandRequested.InvokeAsync(command.Id)"
@@ -20,7 +35,7 @@
 
             @if (DetailsToggled.HasDelegate)
             {
-                <button class="thm-cmd thm-details-toggle"
+                <button class="ghost-btn details-toggle"
                         type="button"
                         @onclick="() => DetailsToggled.InvokeAsync()">
                     @Text["Actionbar.Details"]
@@ -43,10 +58,10 @@
     private string GetCommandClass(CommandCapability command)
     {
         var classes = new HashSet<string>(
-            (CommandClass?.Invoke(command) ?? "thm-cmd").Split(' ', StringSplitOptions.RemoveEmptyEntries),
+            (CommandClass?.Invoke(command) ?? "btn btn-soft").Split(' ', StringSplitOptions.RemoveEmptyEntries),
             StringComparer.Ordinal);
 
-        classes.Add("thm-cmd");
+        classes.Add("btn");
 
         if (IsPrimaryConnectionCommand(command))
             classes.Add(SelectedDevice?.Connected == true ? "danger" : "brand");
@@ -63,6 +78,9 @@
     private bool IsPrimaryConnectionCommand(CommandCapability command) =>
         SelectedDevice is { Connected: false } && command.Id == DeviceCapabilityCatalog.Connect ||
         SelectedDevice is { Connected: true } && command.Id == DeviceCapabilityCatalog.Disconnect;
+
+    private static bool IsConnectionCommand(CommandCapability command) =>
+        command.Id is DeviceCapabilityCatalog.Connect or DeviceCapabilityCatalog.Disconnect;
 
     private bool IsUnavailableConnectionCommand(CommandCapability command) =>
         SelectedDevice is { Connected: true } && command.Id == DeviceCapabilityCatalog.Connect ||

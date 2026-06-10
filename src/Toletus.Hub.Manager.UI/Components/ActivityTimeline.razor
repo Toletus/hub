@@ -1,19 +1,12 @@
 @inject TimelinePresentationMapper PresentationMapper
 
-<section class="thm-console-panel activity-timeline">
-    <div class="thm-console-head">
-        <strong>@Text["History.Title"]</strong>
-        <div class="thm-console-actions">
-            <span>@Text["History.SelectedDeviceEvents"]</span>
-            <button class="thm-clear-history" type="button" @onclick="() => ClearRequested.InvokeAsync()">@Text["History.Clear"]</button>
-        </div>
-    </div>
-
-    <div class="thm-console-body">
-        <div class="thm-tabs" role="tablist" aria-label="@Text["History.Title"]">
+<section class="panel tl-panel" data-screen-label="Atividade / Historico">
+    <header class="panel-head">
+        <h2 class="panel-title">@Text["History.Title"]</h2>
+        <div class="seg" role="tablist" aria-label="@Text["History.Title"]">
             @foreach (var filter in Filters)
             {
-                <button class="thm-tab @(ActiveFilter == filter.Id ? "active" : null)"
+                <button class="seg-item @(ActiveFilter == filter.Id ? "on" : null)"
                         type="button"
                         role="tab"
                         aria-selected="@(ActiveFilter == filter.Id)"
@@ -22,11 +15,17 @@
                 </button>
             }
         </div>
+        <div class="panel-head-spacer"></div>
+        <button class="ghost-btn" type="button" disabled="@(Items.Count == 0)" @onclick="() => ClearRequested.InvokeAsync()">@Text["History.Clear"]</button>
+    </header>
 
-        <div class="thm-timeline">
+    <div class="tl-scroll">
             @if (VisibleItems.Count == 0)
             {
-                <p class="thm-empty">@Text["History.Empty"]</p>
+                <div class="tl-empty">
+                    <div class="tl-empty-title">@Text["History.Empty"]</div>
+                    <div class="tl-empty-sub">@Text["History.SelectedDeviceEvents"]</div>
+                </div>
             }
             else
             {
@@ -35,29 +34,35 @@
                     var presentation = PresentationMapper.Map(item);
                     var isExpanded = IsExpanded(item);
 
-                    <article class="thm-event @(SelectedItem == item ? "selected" : null) @GetHistoryStatusClass(item) @presentation.KindCssClass @presentation.SeverityCssClass"
+                    <article class="ev @GetHistoryStatusClass(item) @presentation.KindCssClass @presentation.SeverityCssClass @(isExpanded ? "open" : null)"
                              role="button"
                              tabindex="0"
                              @onclick="() => ItemSelected.InvokeAsync(item)"
                              @onkeydown="args => ItemKeyDown.InvokeAsync((args, item))">
-                        <time>@FormatTimestamp(item.Timestamp)</time>
-                        <div class="thm-event-title">
-                            <span class="thm-event-tag">@Text[presentation.KindLabelKey]</span>
-                            <strong>@Text[item.MessageKey]</strong>
+                        <time class="ev-time mono">@FormatTimestamp(item.Timestamp)</time>
+                        <div class="ev-rail"><span class="ev-dot"></span></div>
+                        <div class="ev-body">
+                        <div class="ev-head">
+                            <span class="ev-tag @presentation.KindCssClass">@Text[presentation.KindLabelKey]</span>
+                            <span class="ev-title">@Text[item.MessageKey]</span>
+                            @if (!string.IsNullOrWhiteSpace(item.DeviceName))
+                            {
+                                <span class="ev-dev mono">@item.DeviceName</span>
+                            }
                         </div>
-                        <span class="thm-meta">@GetSummary(item)</span>
+                        <div class="ev-sum">@GetSummary(item)</div>
 
-                        <div class="thm-console-actions" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                        <div class="ev-actions" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
                             @if (HasExpandableContent(item))
                             {
-                                <button class="thm-secondary"
+                                <button class="ev-link"
                                         type="button"
                                         aria-expanded="@isExpanded"
                                         @onclick="() => ToggleExpanded(item)">
                                     @(isExpanded ? Text["History.Action.Collapse"] : Text["History.Action.Expand"])
                                 </button>
                             }
-                            <button class="thm-secondary"
+                            <button class="ev-link @(SelectedItem == item ? "on" : null)"
                                     type="button"
                                     @onclick="() => ViewJsonRequested.InvokeAsync(item)">
                                 @Text["History.Action.ViewJson"]
@@ -66,22 +71,24 @@
 
                         @if (isExpanded)
                         {
-                            <div class="thm-kv" @onclick:stopPropagation="true">
+                            <div class="ev-detail" @onclick:stopPropagation="true">
+                            <div class="kv-grid">
                                 @foreach (var detail in item.Details)
                                 {
-                                    <div>
-                                        <span>@Text[detail.LabelKey]</span>
-                                        <strong>@GetDetailValue(detail)</strong>
+                                    <div class="kv-row">
+                                        <span class="kv-k">@Text[detail.LabelKey]</span>
+                                        <span class="kv-v">@GetDetailValue(detail)</span>
                                     </div>
                                 }
 
                                 @if (!string.IsNullOrWhiteSpace(item.TechnicalDetails))
                                 {
-                                    <div>
-                                        <span>@Text["History.Detail.Technical"]</span>
-                                        <strong>@item.TechnicalDetails</strong>
+                                    <div class="kv-row">
+                                        <span class="kv-k">@Text["History.Detail.Technical"]</span>
+                                        <span class="kv-v mono">@item.TechnicalDetails</span>
                                     </div>
                                 }
+                            </div>
                             </div>
 
                             @if (item.Media is { } media && IsImageMedia(media))
@@ -95,10 +102,10 @@
                                 </figure>
                             }
                         }
+                        </div>
                     </article>
                 }
             }
-        </div>
     </div>
 </section>
 

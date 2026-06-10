@@ -1,25 +1,21 @@
-<section class="device-strip" aria-label="@Text["Devices.Filters"]" role="listbox">
-    @if (VisibleDevices.Count == 0)
-    {
-        <span class="thm-empty">@Text["Devices.Empty"]</span>
-    }
-    else
-    {
+@if (VisibleDevices.Count > 0)
+{
+    <section class="dev-strip" aria-label="@Text["Devices.Filters"]" role="listbox">
         @foreach (var device in VisibleDevices)
         {
             var isSelected = SelectedDevice?.Key == device.Key;
-            <button class="thm-filter @(isSelected ? "active" : null)"
+            <button class="strip-chip @(isSelected ? "on" : null)"
                     type="button"
                     role="option"
                     aria-selected="@isSelected"
                     title="@($"{device.Name} - {device.TypeLabel} - IP {device.IpAddress}")"
                     @onclick="() => DeviceSelected.InvokeAsync(device)">
-                <span>@device.Name</span>
-                <small>@device.TypeLabel &middot; IP @device.IpAddress</small>
+                <span class="dev-dot @(device.Connected ? "st-connected" : "st-disconnected")" aria-hidden="true"></span>
+                @device.Name
             </button>
         }
-    }
-</section>
+    </section>
+}
 
 @code {
     [Parameter, EditorRequired] public UiText Text { get; set; } = default!;

@@ -1,78 +1,78 @@
-<aside class="thm-detail device-detail-panel">
+<aside class="panel detail-panel" data-screen-label="Detalhes do dispositivo">
     @if (ShouldRenderChildContentFallback)
     {
         @ChildContent
     }
     else if (SelectedDevice is null)
     {
-        <section class="thm-empty-state">
-            <h2>@T("Workspace.EmptyTitle")</h2>
-            <p>@T("Workspace.EmptyText")</p>
+        <section class="detail-empty">
+            <div class="tl-empty-title">@T("Workspace.EmptyTitle")</div>
+            <div class="tl-empty-sub">@T("Workspace.EmptyText")</div>
         </section>
     }
     else
     {
-        <section class="thm-essentials">
-            <div class="thm-row">
-                <div>
-                    <h2>@SelectedDevice.Name</h2>
-                    <div class="thm-meta">
-                        @SelectedDevice.TypeLabel &middot; @(SelectedDevice.Connected ? T("Workspace.Connected") : T("Workspace.Disconnected")) &middot; firmware @GetConfigurationValue("firmware_version", "-")
-                    </div>
-                </div>
-                <span class="thm-pill @ResolvedDeviceStatusClass">
-                    @(SelectedDevice.Connected ? "Online" : T("Workspace.Disconnected"))
+        <header class="detail-head">
+            <div class="detail-head-row">
+                <h2 class="detail-name">@SelectedDevice.Name</h2>
+                <span class="badge @ResolvedDeviceStatusClass">
+                    <span class="badge-dot"></span>
+                    @(SelectedDevice.Connected ? T("Workspace.Connected") : T("Workspace.Disconnected"))
                 </span>
             </div>
 
-            <div class="thm-kv">
-                <div><span>ID</span><strong>@SelectedDevice.Id</strong></div>
-                <div><span>@T("Workspace.Serial")</span><strong>@(SelectedDevice.SerialNumber ?? "-")</strong></div>
-                <div><span>IP</span><strong>@SelectedDevice.IpAddress</strong></div>
-                <div><span>MAC</span><strong>@GetConfigurationValue("mac", "-")</strong></div>
+            <div class="detail-sub">
+                <span class="type-chip">@SelectedDevice.TypeLabel</span>
+                @foreach (var module in SelectedModules)
+                {
+                    <span class="type-chip">@module</span>
+                }
+                <span class="detail-fw mono">@T("Config.General") @GetConfigurationValue("firmware_version", "-")</span>
             </div>
-        </section>
 
-        <div class="thm-tabs">
-            <button class="thm-tab @(ActiveDetailTab == "config" ? "active" : null)" type="button" @onclick='() => ActiveDetailTab = "config"'>
-                @T("Group.Settings")
-            </button>
-            <button class="thm-tab @(ActiveDetailTab == "sm25" ? "active" : null)" type="button" @onclick='() => ActiveDetailTab = "sm25"'>
-                SM25
-            </button>
-        </div>
+            <div class="ident-grid">
+                <div class="ident-cell"><span>ID</span><strong class="mono">@SelectedDevice.Id</strong></div>
+                <div class="ident-cell"><span>@T("Workspace.Serial")</span><strong class="mono">@(SelectedDevice.SerialNumber ?? "-")</strong></div>
+                <div class="ident-cell"><span>IP</span><strong class="mono">@SelectedDevice.IpAddress</strong></div>
+                <div class="ident-cell"><span>MAC</span><strong class="mono">@GetConfigurationValue("mac", "-")</strong></div>
+            </div>
+        </header>
 
-        @if (ActiveDetailTab == "config")
-        {
-            <section class="thm-card">
-                <header class="thm-card-head">
-                    <h3>@T("Config.Edit")</h3>
-                    <button class="thm-secondary" @onclick="RefreshConfigurationAsync" disabled="@IsConfigurationActionDisabled">
+        <div class="detail-scroll">
+            <div class="cfg-toolbar">
+                <h3>@T("Config.Edit")</h3>
+                <div class="panel-head-spacer"></div>
+                    <button class="btn btn-soft" @onclick="RefreshConfigurationAsync" disabled="@IsConfigurationActionDisabled">
                         @T("Command.GetProperties")
                     </button>
-                </header>
+            </div>
 
                 @if (IsConfigurationLoading)
                 {
-                    <div class="thm-empty">@T("Message.CommandPending")</div>
+                    <div class="props-progress">
+                        <div class="props-progress-bar"><span style="width:55%"></span></div>
+                        <span class="mono">@T("Message.CommandPending")</span>
+                    </div>
                 }
                 else if (IsConfigurationEmpty)
                 {
-                    <div class="thm-config-empty">
-                        <strong>@T("Message.ConfigurationEmptyTitle")</strong>
-                        <span>@T("Message.ConfigurationEmptyText")</span>
+                    <div class="props-banner">
+                        <div>
+                            <strong>@T("Message.ConfigurationEmptyTitle")</strong>
+                            <span>@T("Message.ConfigurationEmptyText")</span>
+                        </div>
                     </div>
                 }
 
                 @foreach (var group in GetConfigurationGroups())
                 {
-                    <section class="thm-config-group">
-                        <div class="thm-group-title">
-                            <strong>@T(group.Key)</strong>
-                            <span>@GetConfigurationGroupHint(group.Key)</span>
+                    <section class="cfg-group">
+                        <div class="cfg-group-head">
+                            <h4>@T(group.Key)</h4>
+                            <span class="scope-tag mono">@GetConfigurationGroupHint(group.Key)</span>
                         </div>
 
-                        <div class="thm-form" aria-busy="@IsConfigurationLoading">
+                        <div class="cfg-fields" aria-busy="@IsConfigurationLoading">
                             @foreach (var field in group)
                             {
                                 <ConfigurationField Field="field"
@@ -85,20 +85,8 @@
                     </section>
                 }
 
-                <div class="thm-config-actions">
-                    <button class="thm-cmd brand" @onclick="SendVisibleConfigurationAsync" disabled="@IsConfigurationActionDisabled">
-                        @T("Command.SendConfiguration")
-                    </button>
-                    <button class="thm-cmd" @onclick="RefreshConfigurationAsync" disabled="@IsConfigurationActionDisabled">
-                        @T("Command.GetProperties")
-                    </button>
-                </div>
-            </section>
-        }
-        else
-        {
-            <section class="thm-card">
-                <h3>@T("Group.Biometrics")</h3>
+                @if (SelectedModules.Contains(DeviceModuleKind.SM25))
+                {
                 <Sm25Section Modules="SelectedModules"
                              Catalog="Catalog"
                              Text="Text"
@@ -106,14 +94,22 @@
                              IsBusy="IsBusy"
                              IsConnected="SelectedDevice.Connected"
                              CommandRequested="ExecuteModuleCommandAsync" />
-            </section>
-        }
+                }
+
+                <div class="cfg-footer">
+                    <button class="btn btn-primary" @onclick="SendVisibleConfigurationAsync" disabled="@IsConfigurationActionDisabled">
+                        @T("Command.SendConfiguration")
+                    </button>
+                    @if (SelectedDevice.Connected != true)
+                    {
+                        <div class="cfg-hint">@T("Actionbar.Hint")</div>
+                    }
+                </div>
+        </div>
     }
 </aside>
 
 @code {
-    private string ActiveDetailTab { get; set; } = "config";
-
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public DeviceRefViewModel? Device { get; set; }
     [Parameter] public ManagerUiState? State { get; set; }

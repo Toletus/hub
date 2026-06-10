@@ -1,43 +1,41 @@
 @if (Field.ControlKind == "color")
 {
     var color = NormalizeHex(string.IsNullOrWhiteSpace(Value) ? "#0000FF" : Value);
-    <div class="thm-color-field">
-        <span>@T(Field.LabelKey)</span>
-        <div class="thm-color-well">
-            <button class="thm-swatch"
-                    style="@($"background:{color};box-shadow:0 0 18px {color}66")"
-                    type="button"
-                    aria-label="@($"{T("Color.Edit")}: {T(Field.LabelKey)}")"
-                    disabled="@Disabled">
-            </button>
-            <input value="@color" @onchange="args => SetValueAsync(NormalizeHex(args.Value?.ToString()))" disabled="@Disabled" />
-        </div>
-    </div>
+    <label class="field">
+        <span class="field-label">@T(Field.LabelKey)</span>
+        <span class="color-wrap">
+            <input type="color" class="color-swatch" value="@color" @onchange="args => SetValueAsync(NormalizeHex(args.Value?.ToString()))" disabled="@Disabled" />
+            <input class="input mono" value="@color" @onchange="args => SetValueAsync(NormalizeHex(args.Value?.ToString()))" disabled="@Disabled" />
+        </span>
+    </label>
 }
 else
 {
-    <label class="thm-field">
-        <span class="thm-field-label">@T(Field.LabelKey)</span>
+    <label class="field">
+        <span class="field-label">@T(Field.LabelKey)</span>
 
         @switch (Field.ControlKind)
         {
             case "read":
-                <output class="thm-field-value">@DisplayValue</output>
+                <input class="input @(Field.Id is "firmware_version" or "mac" ? "mono" : null)" value="@DisplayValue" readonly />
                 break;
             case "toggle":
                 <input type="checkbox" checked="@IsTrue(Value)" @onchange="SetToggleValueAsync" disabled="@Disabled" />
                 break;
             case "select":
             case "boolean_select":
-                <select value="@Value" @onchange="args => SetValueAsync(args.Value?.ToString() ?? string.Empty)" disabled="@Disabled">
+                <span class="select-wrap">
+                <select class="input" value="@Value" @onchange="args => SetValueAsync(args.Value?.ToString() ?? string.Empty)" disabled="@Disabled">
                     @foreach (var option in GetFieldOptions(Field.Id, Field.ControlKind))
                     {
                         <option value="@option.Value">@T(option.LabelKey)</option>
                     }
                 </select>
+                </span>
                 break;
             default:
-                <input type="@InputType"
+                <input class="input @(Field.ControlKind == "number" ? "mono" : null)"
+                       type="@InputType"
                        value="@Value"
                        @onchange="args => SetValueAsync(args.Value?.ToString() ?? string.Empty)"
                        placeholder="@(Field.PlaceholderKey is null ? string.Empty : T(Field.PlaceholderKey))"

@@ -1,45 +1,48 @@
-<header class="thm-topbar topbar">
-    <div class="thm-brand">
-        <span class="thm-brand-mark" aria-hidden="true">TH</span>
-        <div>
+<header class="topbar" data-screen-label="Topbar">
+    <div class="brand">
+        <span class="brand-mark" aria-hidden="true">TH</span>
+        <div class="brand-text">
             <strong>@Text["App.Title"]</strong>
             <span>@Text["App.Subtitle"]</span>
         </div>
     </div>
 
-    <div class="thm-top-controls">
-        <label style="display: grid; gap: 4px">
-            <span style="color: var(--thm-muted); font-size: 11px; font-weight: 800; text-transform: uppercase">@Text["Toolbar.Network"]</span>
-            <select class="thm-select" @bind="State.SelectedNetwork" disabled="@State.IsBusy" aria-label="@Text["Toolbar.Network"]">
+    <div class="panel-head-spacer"></div>
+
+    <label class="net-select">
+        <span class="field-label">@Text["Toolbar.Network"]</span>
+        <span class="select-wrap">
+            <select class="input" @bind="State.SelectedNetwork" disabled="@State.IsBusy" aria-label="@Text["Toolbar.Network"]">
                 <option value="">@Text["Toolbar.SelectNetwork"]</option>
                 @foreach (var network in State.Networks)
                 {
                     <option value="@network">@network</option>
                 }
             </select>
-        </label>
+            <span aria-hidden="true">⌄</span>
+        </span>
+    </label>
 
-        <div role="group" aria-label="@Text["Toolbar.Language"]" style="display: flex; align-items: stretch; height: 36px; overflow: hidden; border: 1px solid var(--thm-line); border-radius: 8px; background: var(--thm-panel)">
-            @foreach (var culture in Culture.SupportedCultures)
-            {
-                var isSelected = string.Equals(culture.Name, Culture.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase);
-                <button type="button"
-                        @onclick="() => SelectCultureAsync(culture.Name)"
-                        disabled="@isSelected"
-                        aria-pressed="@isSelected"
-                        title="@Text[$"Language.{culture.Name}"]"
-                        style="@GetCultureButtonStyle(isSelected)">
-                    @GetCultureSegmentLabel(culture.Name)
-                </button>
-            }
-        </div>
+    <button class="btn btn-primary"
+            @onclick="() => DiscoverRequested.InvokeAsync()"
+            disabled="@State.IsBusy"
+            aria-busy="@IsDiscovering">
+        <span>@(IsDiscovering ? Text["Message.DiscoveryPending"] : Text["Toolbar.Discover"])</span>
+    </button>
 
-        <button class="thm-primary"
-                @onclick="() => DiscoverRequested.InvokeAsync()"
-                disabled="@State.IsBusy"
-                aria-busy="@IsDiscovering">
-            @(IsDiscovering ? Text["Message.DiscoveryPending"] : Text["Toolbar.Discover"])
-        </button>
+    <div class="seg" role="group" aria-label="@Text["Toolbar.Language"]">
+        @foreach (var culture in Culture.SupportedCultures)
+        {
+            var isSelected = string.Equals(culture.Name, Culture.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase);
+            <button type="button"
+                    class="seg-item @(isSelected ? "on" : null)"
+                    @onclick="() => SelectCultureAsync(culture.Name)"
+                    disabled="@isSelected"
+                    aria-pressed="@isSelected"
+                    title="@Text[$"Language.{culture.Name}"]">
+                @GetCultureSegmentLabel(culture.Name)
+            </button>
+        }
     </div>
 </header>
 
@@ -63,7 +66,4 @@
             _ => cultureName
         };
 
-    private static string GetCultureButtonStyle(bool isSelected) =>
-        "border: 0; border-left: 1px solid var(--thm-line); padding: 0 12px; font-size: 12px; font-weight: 900; color: " +
-        (isSelected ? "#1b0b00; background: var(--thm-brand)" : "var(--thm-text); background: transparent");
 }

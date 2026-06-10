@@ -1,28 +1,28 @@
 @if (!Modules.Contains(DeviceModuleKind.SM25))
 {
-    <p class="thm-empty">@T("Modules.Empty")</p>
+    <p class="tl-empty-sub">@T("Modules.Empty")</p>
 }
 else if (Catalog is null)
 {
-    <p class="thm-empty">@T("Modules.Empty")</p>
+    <p class="tl-empty-sub">@T("Modules.Empty")</p>
 }
 else
 {
-    <section class="thm-module-section">
+    <section class="cfg-group sm25-group">
+        <div class="cfg-group-head">
+            <h4>@T("Group.Biometrics")</h4>
+            <span class="scope-tag mono">SM25</span>
+        </div>
         @foreach (var module in Modules)
         {
-            <div class="thm-bio-flow">
+            <div class="sm25-cmds">
                 @foreach (var command in Catalog.GetModuleCommands(module))
                 {
-                    <button class="@(CurrentCommandId == command.Id ? "thm-bio-step active" : "thm-bio-step")"
+                    <button class="@(CurrentCommandId == command.Id ? "btn btn-soft is-busy" : "btn btn-soft")"
                             type="button"
                             @onclick="() => CommandRequested.InvokeAsync(command.Id)"
                             disabled="@(IsBusy || (command.RequiresConnection && !IsConnected))">
-                        <span class="thm-step">@(module == DeviceModuleKind.SM25 ? "SM" : "MD")</span>
-                        <span>
-                            <strong>@T(command.LabelKey)</strong>
-                            <small>@T("Modules.Sm25Hint")</small>
-                        </span>
+                        <span>@T(command.LabelKey)</span>
                     </button>
                 }
             </div>
