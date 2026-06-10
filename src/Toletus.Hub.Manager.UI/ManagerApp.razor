@@ -91,15 +91,18 @@
             @Text["Tweaks.ButtonText"]
         </button>
 
-        <TweaksPanel IsOpen="IsTweaksPanelOpen"
-                     Theme="Theme"
-                     Text="Text"
-                     Title="@Text["Tweaks.Title"]"
-                     CloseRequested="CloseTweaksPanel" />
+        @if (IsTweaksPanelOpen)
+        {
+            <TweaksPanel IsOpen="true"
+                         Theme="Theme"
+                         Text="Text"
+                         Title="@Text["Tweaks.Title"]"
+                         CloseRequested="CloseTweaksPanel" />
+        }
 
         <CommandBar Text="Text"
                     SelectedDevice="State.SelectedDevice"
-                    ActionTitle="GetActionTitle()"
+                    ActionTitle="@GetActionTitle()"
                     Commands="GetFooterCommands()"
                     CommandRequested="ExecuteCommandAsync"
                     CommandClass="GetFooterCommandClass"
