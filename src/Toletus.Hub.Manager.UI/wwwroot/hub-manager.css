@@ -4211,6 +4211,49 @@ body,
     overflow: visible !important;
 }
 
+.input,
+.input:focus,
+.input:focus-visible,
+.select-wrap select,
+.select-wrap select:focus,
+.select-wrap select:focus-visible,
+.color-swatch,
+.color-swatch:focus,
+.color-swatch:focus-visible,
+.color-wrap input,
+.color-wrap input:focus,
+.color-wrap input:focus-visible,
+.field input,
+.field input:focus,
+.field input:focus-visible,
+.field select,
+.field select:focus,
+.field select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.input:focus,
+.input:focus-visible,
+.select-wrap select:focus,
+.select-wrap select:focus-visible,
+.color-wrap input:focus,
+.color-wrap input:focus-visible,
+.field input:focus,
+.field input:focus-visible,
+.field select:focus,
+.field select:focus-visible {
+    border-color: var(--accent) !important;
+}
+
+.field input.valid.modified:not([type=checkbox]),
+.field input.invalid:not([type=checkbox]),
+.field select.valid.modified,
+.field select.invalid {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 .brand-logo {
     flex: 0 0 32px;
     background: transparent;
