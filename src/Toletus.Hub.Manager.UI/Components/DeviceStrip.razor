@@ -1,16 +1,21 @@
-<section class="device-strip" aria-label="@Text["Devices.Filters"]">
-    @if (!Devices.Any())
+<section class="device-strip" aria-label="@Text["Devices.Filters"]" role="listbox">
+    @if (VisibleDevices.Count == 0)
     {
         <span class="thm-empty">@Text["Devices.Empty"]</span>
     }
     else
     {
-        @foreach (var device in Devices)
+        @foreach (var device in VisibleDevices)
         {
-            <button class="thm-filter @(SelectedDevice?.Key == device.Key ? "active" : null)"
+            var isSelected = SelectedDevice?.Key == device.Key;
+            <button class="thm-filter @(isSelected ? "active" : null)"
                     type="button"
+                    role="option"
+                    aria-selected="@isSelected"
+                    title="@($"{device.Name} - {device.TypeLabel} - IP {device.IpAddress}")"
                     @onclick="() => DeviceSelected.InvokeAsync(device)">
-                @device.Name
+                <span>@device.Name</span>
+                <small>@device.TypeLabel &middot; IP @device.IpAddress</small>
             </button>
         }
     }
@@ -21,4 +26,6 @@
     [Parameter] public IEnumerable<DeviceRefViewModel> Devices { get; set; } = Array.Empty<DeviceRefViewModel>();
     [Parameter] public DeviceRefViewModel? SelectedDevice { get; set; }
     [Parameter] public EventCallback<DeviceRefViewModel> DeviceSelected { get; set; }
+
+    private IReadOnlyList<DeviceRefViewModel> VisibleDevices => Devices.ToList();
 }

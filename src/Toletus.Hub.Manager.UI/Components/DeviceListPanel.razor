@@ -1,3 +1,6 @@
+@inject DeviceDisplayStatusService DisplayStatus
+@inject NotificationHistoryService History
+
 <aside class="thm-list">
     <div class="thm-list-head">
         <label class="thm-search">
@@ -20,21 +23,26 @@
     </div>
 
     <div class="thm-devices">
-        @if (!VisibleDevices.Any())
+        @if (State.Devices.Count == 0)
         {
             <p class="thm-empty">@Text["Devices.Empty"]</p>
+        }
+        else if (VisibleDevices.Count == 0)
+        {
+            <p class="thm-empty">Nenhum dispositivo corresponde aos filtros atuais.</p>
         }
         else
         {
             @foreach (var device in VisibleDevices)
             {
+                var status = GetDeviceStatus(device);
                 <button class="thm-device @(SelectedDevice?.Key == device.Key ? "selected" : null)"
                         type="button"
                         @onclick="() => DeviceSelected.InvokeAsync(device)">
                     <span class="thm-row">
                         <span class="thm-name">@device.Name</span>
-                        <span class="thm-pill @GetDeviceStatusClass(device)">
-                            @(device.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"])
+                        <span class="thm-pill @GetDeviceStatusClass(device, status)">
+                            @Text[GetDeviceStatusLabelKey(status)]
                         </span>
                     </span>
                     <span class="thm-meta">@device.TypeLabel &middot; @Text["Workspace.Serial"] @(device.SerialNumber ?? "-") &middot; IP @device.IpAddress</span>
@@ -57,18 +65,68 @@
     [Parameter] public EventCallback<DeviceRefViewModel> DeviceSelected { get; set; }
     [Parameter] public Func<DeviceRefViewModel, string>? DeviceStatusClass { get; set; }
 
-    private IEnumerable<DeviceRefViewModel> VisibleDevices =>
-        State.FilteredDevices.Where(device => ActiveDeviceFilter switch
+    private IReadOnlyList<DeviceRefViewModel> VisibleDevices =>
+        SearchFilteredDevices.Where(MatchesActiveFilter).ToList();
+
+    private IEnumerable<DeviceRefViewModel> SearchFilteredDevices
+    {
+        get
+        {
+            var searchText = State.SearchText?.Trim();
+            if (string.IsNullOrWhiteSpace(searchText))
+                return State.Devices;
+
+            return State.Devices.Where(device =>
+                device.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                device.TypeLabel.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                device.IpAddress.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                (device.SerialNumber?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+    }
+
+    private bool MatchesActiveFilter(DeviceRefViewModel device) =>
+        ActiveDeviceFilter switch
         {
             "connected" => device.Connected,
             "offline" => !device.Connected,
             "LiteNet3" => device.Type == DeviceTypeKind.LiteNet3,
             "SM25" => device.Modules.Contains(DeviceModuleKind.SM25),
             _ => true
-        });
+        };
 
     private DeviceRefViewModel? SelectedDevice => State.SelectedDevice;
 
-    private string GetDeviceStatusClass(DeviceRefViewModel device) =>
-        DeviceStatusClass?.Invoke(device) ?? string.Empty;
+    private DeviceDisplayStatusViewModel GetDeviceStatus(DeviceRefViewModel device) =>
+        DisplayStatus.GetStatus(
+            device,
+            SelectedDevice?.Key == device.Key ? State.CurrentCommandId : null,
+            History.Items.FirstOrDefault(item => string.Equals(item.DeviceName, device.Name, StringComparison.Ordinal)));
+
+    private string GetDeviceStatusClass(DeviceRefViewModel device, DeviceDisplayStatusViewModel status)
+    {
+        var displayClass = status.Status switch
+        {
+            DeviceDisplayStatusKind.Connected => "ok",
+            DeviceDisplayStatusKind.Connecting => "ok",
+            DeviceDisplayStatusKind.Busy => "ok",
+            DeviceDisplayStatusKind.Error => "warn",
+            _ => "off"
+        };
+
+        return string.Join(" ", new[]
+        {
+            DeviceStatusClass?.Invoke(device),
+            displayClass,
+            status.CssClass
+        }.Where(cssClass => !string.IsNullOrWhiteSpace(cssClass)).Distinct());
+    }
+
+    private static string GetDeviceStatusLabelKey(DeviceDisplayStatusViewModel status) =>
+        status.LabelKey.StartsWith("Device.Status.", StringComparison.Ordinal)
+            ? status.Status switch
+            {
+                DeviceDisplayStatusKind.Error => "History.Result.Error",
+                _ => "History.Result.Pending"
+            }
+            : status.LabelKey;
 }
