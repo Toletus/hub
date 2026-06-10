@@ -1,0 +1,43 @@
+@if (!Modules.Contains(DeviceModuleKind.SM25))
+{
+    <p class="thm-empty">@T("Modules.Empty")</p>
+}
+else if (Catalog is null)
+{
+    <p class="thm-empty">@T("Modules.Empty")</p>
+}
+else
+{
+    <section class="thm-module-section">
+        @foreach (var module in Modules)
+        {
+            <div class="thm-bio-flow">
+                @foreach (var command in Catalog.GetModuleCommands(module))
+                {
+                    <button class="@(CurrentCommandId == command.Id ? "thm-bio-step active" : "thm-bio-step")"
+                            type="button"
+                            @onclick="() => CommandRequested.InvokeAsync(command.Id)"
+                            disabled="@(IsBusy || (command.RequiresConnection && !IsConnected))">
+                        <span class="thm-step">@(module == DeviceModuleKind.SM25 ? "SM" : "MD")</span>
+                        <span>
+                            <strong>@T(command.LabelKey)</strong>
+                            <small>@T("Modules.Sm25Hint")</small>
+                        </span>
+                    </button>
+                }
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<DeviceModuleKind> Modules { get; set; } = Array.Empty<DeviceModuleKind>();
+    [Parameter] public DeviceCapabilityCatalog? Catalog { get; set; }
+    [Parameter] public UiText? Text { get; set; }
+    [Parameter] public string? CurrentCommandId { get; set; }
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public bool IsConnected { get; set; }
+    [Parameter] public EventCallback<string> CommandRequested { get; set; }
+
+    private string T(string key) => Text?[key] ?? key;
+}

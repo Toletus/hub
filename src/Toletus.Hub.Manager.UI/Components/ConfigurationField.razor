@@ -1,0 +1,143 @@
+@if (Field.ControlKind == "color")
+{
+    var color = NormalizeHex(string.IsNullOrWhiteSpace(Value) ? "#0000FF" : Value);
+    <div class="thm-color-field">
+        <span>@T(Field.LabelKey)</span>
+        <div class="thm-color-well">
+            <button class="thm-swatch"
+                    style="@($"background:{color};box-shadow:0 0 18px {color}66")"
+                    type="button"
+                    aria-label="@($"{T("Color.Edit")}: {T(Field.LabelKey)}")"
+                    disabled="@Disabled">
+            </button>
+            <input value="@color" @onchange="args => SetValueAsync(NormalizeHex(args.Value?.ToString()))" disabled="@Disabled" />
+        </div>
+    </div>
+}
+else
+{
+    <label class="thm-field">
+        <span class="thm-field-label">@T(Field.LabelKey)</span>
+
+        @switch (Field.ControlKind)
+        {
+            case "read":
+                <output class="thm-field-value">@DisplayValue</output>
+                break;
+            case "toggle":
+                <input type="checkbox" checked="@IsTrue(Value)" @onchange="SetToggleValueAsync" disabled="@Disabled" />
+                break;
+            case "select":
+            case "boolean_select":
+                <select value="@Value" @onchange="args => SetValueAsync(args.Value?.ToString() ?? string.Empty)" disabled="@Disabled">
+                    @foreach (var option in GetFieldOptions(Field.Id, Field.ControlKind))
+                    {
+                        <option value="@option.Value">@T(option.LabelKey)</option>
+                    }
+                </select>
+                break;
+            default:
+                <input type="@InputType"
+                       value="@Value"
+                       @onchange="args => SetValueAsync(args.Value?.ToString() ?? string.Empty)"
+                       placeholder="@(Field.PlaceholderKey is null ? string.Empty : T(Field.PlaceholderKey))"
+                       disabled="@Disabled" />
+                break;
+        }
+    </label>
+}
+
+@code {
+    [Parameter, EditorRequired] public ConfigurationFieldCapability Field { get; set; } = default!;
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public UiText? Text { get; set; }
+    [Parameter] public EventCallback<(string FieldId, string Value)> ValueChanged { get; set; }
+
+    private string DisplayValue => string.IsNullOrWhiteSpace(Value) && Field.Id == "firmware_version" ? "-" : Value;
+
+    private string InputType =>
+        Field.ControlKind == "password" ? "password" :
+        Field.ControlKind == "number" ? "number" :
+        "text";
+
+    private string T(string key) => Text?[key] ?? key;
+
+    private Task SetValueAsync(string value) =>
+        ValueChanged.InvokeAsync((Field.Id, value));
+
+    private Task SetToggleValueAsync(ChangeEventArgs args) =>
+        SetValueAsync(args.Value?.ToString() == "true" ? "true" : "false");
+
+    private static bool IsTrue(string? value) =>
+        value is "true" or "True" or "Sim" or "1";
+
+    private static IReadOnlyList<(string Value, string LabelKey)> GetFieldOptions(string fieldId, string controlKind)
+    {
+        if (controlKind == "boolean_select")
+        {
+            return
+            [
+                ("false", "Option.No"),
+                ("true", "Option.Yes")
+            ];
+        }
+
+        return fieldId switch
+        {
+            "ip_mode" =>
+            [
+                ("DHCP", "Option.IpMode.Dhcp"),
+                ("Static", "Option.IpMode.Static")
+            ],
+            "flow_mode" =>
+            [
+                ("None", "Option.Flow.None"),
+                ("Entry", "Option.Flow.Entry"),
+                ("Exit", "Option.Flow.Exit"),
+                ("Both", "Option.Flow.Both")
+            ],
+            "l3_flow_out" =>
+            [
+                ("Out", "Option.FlowOut.Out"),
+                ("Controls", "Option.FlowOut.Controls")
+            ],
+            "l3_flow_picto_wait_in" or "l3_flow_picto_wait_out" =>
+            [
+                ("0", "Option.Picto.Arrow"),
+                ("1", "Option.Picto.Blocked"),
+                ("2", "Option.Picto.Free")
+            ],
+            "display_mode" =>
+            [
+                ("", "Option.Display.Default"),
+                ("temporary", "Option.Display.Temporary"),
+                ("clear", "Option.Display.Clear")
+            ],
+            "fingerprint_identification_mode" =>
+            [
+                ("CardOrFingerprint", "Option.Fingerprint.CardOrFingerprint"),
+                ("Fingerprint", "Option.Fingerprint.Fingerprint"),
+                ("Card", "Option.Fingerprint.Card")
+            ],
+            "notify_tone" =>
+            [
+                ("0", "Option.NotifyTone.Success"),
+                ("1", "Option.NotifyTone.Alert"),
+                ("2", "Option.NotifyTone.Silent")
+            ],
+            _ =>
+            [
+                ("", "Field.SelectOption")
+            ]
+        };
+    }
+
+    private static string NormalizeHex(string? value)
+    {
+        var cleaned = (value ?? string.Empty).Trim().TrimStart('#').ToUpperInvariant();
+        return cleaned.Length == 6 && cleaned.All(Uri.IsHexDigit)
+            ? $"#{cleaned}"
+            : "#0000FF";
+    }
+}
