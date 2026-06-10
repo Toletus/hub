@@ -4074,3 +4074,67 @@ body,
         width: min(280px, calc(100vw - 20px));
     }
 }
+
+/* Final fidelity shims for BlazorWebView cascade parity */
+.chip.on {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(249, 118, 13, 0.08);
+}
+
+.ev {
+    background: transparent !important;
+}
+
+.ev-body {
+    background: transparent !important;
+}
+
+.ev-rail::before {
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line2);
+    opacity: 1;
+}
+
+.ev-dot {
+    border: 0;
+    box-shadow: 0 0 0 3px var(--bg);
+}
+
+.tag-cmd {
+    color: var(--accent);
+    background: rgba(249, 118, 13, 0.1);
+}
+
+.tag-resp {
+    color: var(--ok);
+    background: rgba(76, 174, 94, 0.1);
+}
+
+.tag-evt {
+    color: var(--info);
+    background: rgba(91, 155, 217, 0.1);
+}
+
+.tag-err {
+    color: var(--err);
+    background: rgba(229, 96, 76, 0.12);
+}
+
+.tag-sys {
+    color: var(--mut);
+    background: var(--panel2);
+}
+
+.sev-err .ev-title {
+    color: var(--err);
+}
+
+.sev-ok .ev-title,
+.sev-run .ev-title,
+.sev-info .ev-title,
+.sev-warn .ev-title {
+    color: var(--text);
+}

@@ -17,11 +17,11 @@ public sealed class TimelinePresentationMapper
             KindCssClass = kind switch
             {
                 TimelineEventKind.Command => "tag-cmd",
-                TimelineEventKind.Connection => "tag-conn",
-                TimelineEventKind.Configuration => "tag-config",
-                TimelineEventKind.Discovery => "tag-discovery",
-                TimelineEventKind.Notification => "tag-note",
-                TimelineEventKind.Error => "tag-error",
+                TimelineEventKind.Connection => "tag-resp",
+                TimelineEventKind.Configuration => "tag-sys",
+                TimelineEventKind.Discovery => "tag-sys",
+                TimelineEventKind.Notification => "tag-evt",
+                TimelineEventKind.Error => "tag-err",
                 _ => "tag-cmd"
             },
             KindLabelKey = kind switch
@@ -36,12 +36,12 @@ public sealed class TimelinePresentationMapper
             },
             SeverityCssClass = severity switch
             {
-                TimelinePresentationSeverity.Idle => "sev-idle",
+                TimelinePresentationSeverity.Idle => "sev-info",
                 TimelinePresentationSeverity.Running => "sev-run",
                 TimelinePresentationSeverity.Success => "sev-ok",
                 TimelinePresentationSeverity.Warning => "sev-warn",
-                TimelinePresentationSeverity.Error => "sev-error",
-                _ => "sev-idle"
+                TimelinePresentationSeverity.Error => "sev-err",
+                _ => "sev-info"
             }
         };
     }

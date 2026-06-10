@@ -186,7 +186,7 @@
   <data name="Command.ConnectSerial" xml:space="preserve"><value>Connect LiteNet3 serial</value></data>
   <data name="Command.Disconnect" xml:space="preserve"><value>Disconnect</value></data>
   <data name="Command.ReleaseEntry" xml:space="preserve"><value>Release entry</value></data>
-  <data name="Command.ReleaseEntryAndExit" xml:space="preserve"><value>Release entry and exit</value></data>
+  <data name="Command.ReleaseEntryAndExit" xml:space="preserve"><value>Release I/O</value></data>
   <data name="Command.ReleaseExit" xml:space="preserve"><value>Release exit</value></data>
   <data name="Command.Reset" xml:space="preserve"><value>Reset</value></data>
   <data name="Command.ResetCounters" xml:space="preserve"><value>Reset counters</value></data>
@@ -265,8 +265,8 @@
   <data name="Option.NotifyTone.Alert" xml:space="preserve"><value>Alert</value></data>
   <data name="Option.NotifyTone.Silent" xml:space="preserve"><value>Silent</value></data>
   <data name="Actionbar.Empty" xml:space="preserve"><value>Device actions</value></data>
-  <data name="Actionbar.ForDevice" xml:space="preserve"><value>Actions for {0}</value></data>
-  <data name="Actionbar.Hint" xml:space="preserve"><value>Real commands: Connection, Operation, Diagnostics, Maintenance, Settings and SM25 biometrics.</value></data>
+  <data name="Actionbar.ForDevice" xml:space="preserve"><value>Actions &#183; {0}</value></data>
+  <data name="Actionbar.Hint" xml:space="preserve"><value>Connect the device to send release commands.</value></data>
   <data name="Actionbar.Details" xml:space="preserve"><value>Details</value></data>
   <data name="Tweaks.Title" xml:space="preserve"><value>Tweaks</value></data>
   <data name="Tweaks.OpenLabel" xml:space="preserve"><value>Open tweaks panel</value></data>
