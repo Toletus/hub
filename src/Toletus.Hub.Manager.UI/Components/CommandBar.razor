@@ -6,16 +6,30 @@
     <div class="thm-commands">
         @if (SelectedDevice is null)
         {
-            <button class="thm-cmd" disabled>@Text["Workspace.EmptyTitle"]</button>
+            <button class="thm-cmd" type="button" disabled aria-disabled="true">
+                @Text["Workspace.EmptyTitle"]
+            </button>
         }
         else
         {
             @foreach (var command in Commands)
             {
                 <button class="@GetCommandClass(command)"
+                        type="button"
                         @onclick="() => CommandRequested.InvokeAsync(command.Id)"
-                        disabled="@IsCommandDisabled(command)">
+                        disabled="@IsCommandDisabled(command)"
+                        aria-busy="@IsCommandActive(command)"
+                        aria-pressed="@IsPrimaryConnectionCommand(command)">
                     @Text[command.LabelKey]
+                </button>
+            }
+
+            @if (DetailsToggled.HasDelegate)
+            {
+                <button class="thm-cmd"
+                        type="button"
+                        @onclick="() => DetailsToggled.InvokeAsync()">
+                    Details
                 </button>
             }
         }
@@ -30,10 +44,38 @@
     [Parameter] public EventCallback<string> CommandRequested { get; set; }
     [Parameter] public Func<CommandCapability, string>? CommandClass { get; set; }
     [Parameter] public Func<CommandCapability, bool>? CommandDisabled { get; set; }
+    [Parameter] public EventCallback DetailsToggled { get; set; }
 
-    private string GetCommandClass(CommandCapability command) =>
-        CommandClass?.Invoke(command) ?? "thm-cmd";
+    private string GetCommandClass(CommandCapability command)
+    {
+        var classes = new HashSet<string>(
+            (CommandClass?.Invoke(command) ?? "thm-cmd").Split(' ', StringSplitOptions.RemoveEmptyEntries),
+            StringComparer.Ordinal);
+
+        classes.Add("thm-cmd");
+
+        if (IsPrimaryConnectionCommand(command))
+            classes.Add(SelectedDevice?.Connected == true ? "danger" : "brand");
+
+        return string.Join(" ", classes);
+    }
 
     private bool IsCommandDisabled(CommandCapability command) =>
-        CommandDisabled?.Invoke(command) ?? true;
+        (CommandDisabled?.Invoke(command) ?? true) || IsUnavailableConnectionCommand(command);
+
+    private bool IsCommandActive(CommandCapability command) =>
+        HasCommandClass(command, "active");
+
+    private bool IsPrimaryConnectionCommand(CommandCapability command) =>
+        SelectedDevice is { Connected: false } && command.Id == DeviceCapabilityCatalog.Connect ||
+        SelectedDevice is { Connected: true } && command.Id == DeviceCapabilityCatalog.Disconnect;
+
+    private bool IsUnavailableConnectionCommand(CommandCapability command) =>
+        SelectedDevice is { Connected: true } && command.Id == DeviceCapabilityCatalog.Connect ||
+        SelectedDevice is { Connected: false } && command.Id == DeviceCapabilityCatalog.Disconnect;
+
+    private bool HasCommandClass(CommandCapability command, string className) =>
+        (CommandClass?.Invoke(command) ?? string.Empty)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Contains(className, StringComparer.Ordinal);
 }
