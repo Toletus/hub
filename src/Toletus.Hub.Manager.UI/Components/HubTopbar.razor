@@ -1,0 +1,38 @@
+<header class="thm-topbar topbar">
+    <div class="thm-brand">
+        <span class="thm-brand-mark" aria-hidden="true">TH</span>
+        <div>
+            <strong>Hub Universal Manager</strong>
+            <span>@Text["App.Subtitle"]</span>
+        </div>
+    </div>
+
+    <div class="thm-top-controls">
+        <select class="thm-select" @bind="State.SelectedNetwork" disabled="@State.IsBusy" aria-label="@Text["Toolbar.Network"]">
+            <option value="">@Text["Toolbar.SelectNetwork"]</option>
+            @foreach (var network in State.Networks)
+            {
+                <option value="@network">@network</option>
+            }
+        </select>
+
+        <select class="thm-select" value="@Culture.CurrentCulture.Name" @onchange="CultureChanged" aria-label="@Text["Toolbar.Language"]">
+            @foreach (var culture in Culture.SupportedCultures)
+            {
+                <option value="@culture.Name">@Text[$"Language.{culture.Name}"]</option>
+            }
+        </select>
+
+        <button class="thm-primary" @onclick="() => DiscoverRequested.InvokeAsync()" disabled="@State.IsBusy">
+            @Text["Toolbar.Discover"]
+        </button>
+    </div>
+</header>
+
+@code {
+    [Parameter, EditorRequired] public ManagerUiState State { get; set; } = default!;
+    [Parameter, EditorRequired] public CultureState Culture { get; set; } = default!;
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public EventCallback<ChangeEventArgs> CultureChanged { get; set; }
+    [Parameter] public EventCallback DiscoverRequested { get; set; }
+}

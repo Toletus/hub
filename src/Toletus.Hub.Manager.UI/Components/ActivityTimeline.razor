@@ -1,0 +1,50 @@
+<section class="thm-console-panel activity-timeline">
+    <div class="thm-console-head">
+        <strong>@Text["History.Title"]</strong>
+        <div class="thm-console-actions">
+            <span>@Text["History.SelectedDeviceEvents"]</span>
+            <button class="thm-clear-history" type="button" @onclick="() => ClearRequested.InvokeAsync()">@Text["History.Clear"]</button>
+        </div>
+    </div>
+
+    <div class="thm-console-body">
+        <div class="thm-timeline">
+            @if (Items.Count == 0)
+            {
+                <p class="thm-empty">@Text["History.Empty"]</p>
+            }
+            else
+            {
+                @foreach (var item in Items)
+                {
+                    <article class="thm-event @(SelectedItem == item ? "selected" : null) @GetHistoryStatusClass(item)"
+                             role="button"
+                             tabindex="0"
+                             @onclick="() => ItemSelected.InvokeAsync(item)"
+                             @onkeydown="args => ItemKeyDown.InvokeAsync((args, item))">
+                        <time>@item.Timestamp.ToString("HH:mm:ss")</time>
+                        <strong>@Text[item.MessageKey]</strong>
+                        <span class="thm-meta">@GetSummary(item)</span>
+                    </article>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public IReadOnlyList<CommandHistoryItemViewModel> Items { get; set; } = Array.Empty<CommandHistoryItemViewModel>();
+    [Parameter] public CommandHistoryItemViewModel? SelectedItem { get; set; }
+    [Parameter] public EventCallback<CommandHistoryItemViewModel> ItemSelected { get; set; }
+    [Parameter] public EventCallback<(KeyboardEventArgs Args, CommandHistoryItemViewModel Item)> ItemKeyDown { get; set; }
+    [Parameter] public EventCallback ClearRequested { get; set; }
+    [Parameter] public Func<CommandHistoryItemViewModel, string>? HistorySummary { get; set; }
+    [Parameter] public Func<CommandHistoryItemViewModel, string>? HistoryStatusClass { get; set; }
+
+    private string GetSummary(CommandHistoryItemViewModel item) =>
+        HistorySummary?.Invoke(item) ?? string.Empty;
+
+    private string GetHistoryStatusClass(CommandHistoryItemViewModel item) =>
+        HistoryStatusClass?.Invoke(item) ?? string.Empty;
+}

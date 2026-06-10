@@ -1,0 +1,14 @@
+<section class="thm-console-panel json-drawer">
+    <div class="thm-console-head">
+        <strong>JSON</strong>
+        <span>@Text["Workspace.JsonHint"]</span>
+    </div>
+    <div class="thm-console-body">
+        <pre class="thm-json-view">@Payload</pre>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public string Payload { get; set; } = string.Empty;
+}

@@ -1,0 +1,14 @@
+<aside class="tweak-panel @(IsOpen ? "open" : "closed")" hidden="@(!IsOpen)">
+    <header>
+        <strong>@Title</strong>
+        <button type="button" @onclick="() => CloseRequested.InvokeAsync()">x</button>
+    </header>
+    @ChildContent
+</aside>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Title { get; set; } = "Tweaks";
+    [Parameter] public EventCallback CloseRequested { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

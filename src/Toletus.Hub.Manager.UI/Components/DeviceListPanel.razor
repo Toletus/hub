@@ -1,0 +1,74 @@
+<aside class="thm-list">
+    <div class="thm-list-head">
+        <label class="thm-search">
+            <input @bind="State.SearchText"
+                   @bind:event="oninput"
+                   aria-label="@Text["Toolbar.Search"]"
+                   placeholder="@Text["Toolbar.Search"]" />
+        </label>
+
+        <div class="thm-filters" aria-label="@Text["Devices.Filters"]">
+            @foreach (var filter in DeviceFilters)
+            {
+                <button class="thm-filter @(ActiveDeviceFilter == filter.Id ? "active" : null)"
+                        type="button"
+                        @onclick="() => ActiveDeviceFilterChanged.InvokeAsync(filter.Id)">
+                    @Text[filter.LabelKey]
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="thm-devices">
+        @if (!VisibleDevices.Any())
+        {
+            <p class="thm-empty">@Text["Devices.Empty"]</p>
+        }
+        else
+        {
+            @foreach (var device in VisibleDevices)
+            {
+                <button class="thm-device @(SelectedDevice?.Key == device.Key ? "selected" : null)"
+                        type="button"
+                        @onclick="() => DeviceSelected.InvokeAsync(device)">
+                    <span class="thm-row">
+                        <span class="thm-name">@device.Name</span>
+                        <span class="thm-pill @GetDeviceStatusClass(device)">
+                            @(device.Connected ? Text["Workspace.Connected"] : Text["Workspace.Disconnected"])
+                        </span>
+                    </span>
+                    <span class="thm-meta">@device.TypeLabel &middot; @Text["Workspace.Serial"] @(device.SerialNumber ?? "-") &middot; IP @device.IpAddress</span>
+                    @if (device.Modules.Count > 0)
+                    {
+                        <span class="thm-pill module">@string.Join(", ", device.Modules)</span>
+                    }
+                </button>
+            }
+        }
+    </div>
+</aside>
+
+@code {
+    [Parameter, EditorRequired] public ManagerUiState State { get; set; } = default!;
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public IReadOnlyList<(string Id, string LabelKey)> DeviceFilters { get; set; } = Array.Empty<(string, string)>();
+    [Parameter] public string ActiveDeviceFilter { get; set; } = "all";
+    [Parameter] public EventCallback<string> ActiveDeviceFilterChanged { get; set; }
+    [Parameter] public EventCallback<DeviceRefViewModel> DeviceSelected { get; set; }
+    [Parameter] public Func<DeviceRefViewModel, string>? DeviceStatusClass { get; set; }
+
+    private IEnumerable<DeviceRefViewModel> VisibleDevices =>
+        State.FilteredDevices.Where(device => ActiveDeviceFilter switch
+        {
+            "connected" => device.Connected,
+            "offline" => !device.Connected,
+            "LiteNet3" => device.Type == DeviceTypeKind.LiteNet3,
+            "SM25" => device.Modules.Contains(DeviceModuleKind.SM25),
+            _ => true
+        });
+
+    private DeviceRefViewModel? SelectedDevice => State.SelectedDevice;
+
+    private string GetDeviceStatusClass(DeviceRefViewModel device) =>
+        DeviceStatusClass?.Invoke(device) ?? string.Empty;
+}
