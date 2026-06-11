@@ -76,6 +76,11 @@
                         <div class="cfg-group-head">
                             <h4>@T(group.Key)</h4>
                             <span class="scope-tag mono">@GetConfigurationGroupHint(group.Key)</span>
+                            <button class="btn btn-primary"
+                                    @onclick="() => SendConfigurationAsync(group.Key)"
+                                    disabled="@(IsConfigurationActionDisabled || !CanSubmitConfigurationGroup(group))">
+                                @T("Command.SendConfiguration")
+                            </button>
                         </div>
 
                         <div class="cfg-fields" aria-busy="@IsConfigurationLoading">
@@ -103,9 +108,6 @@
                 }
 
                 <div class="cfg-footer">
-                    <button class="btn btn-primary" @onclick="SendVisibleConfigurationAsync" disabled="@IsConfigurationActionDisabled">
-                        @T("Command.SendConfiguration")
-                    </button>
                     @if (SelectedDevice.Connected != true)
                     {
                         <div class="cfg-hint">@T("Actionbar.Hint")</div>
@@ -197,7 +199,6 @@
     private string GetConfigurationGroupHint(string groupKey) =>
         groupKey switch
         {
-            "Config.LiteNet3" => "LiteNet3",
             "Config.Biometrics" => "SM25",
             "Config.Notification" => "LiteNet2",
             "Config.Operation" => "comum",
@@ -212,12 +213,6 @@
             await State.RefreshConfigurationAsync();
     }
 
-    private async Task SendVisibleConfigurationAsync()
-    {
-        foreach (var groupKey in GetConfigurationGroups().Select(group => group.Key))
-            await SendConfigurationAsync(groupKey);
-    }
-
     private async Task SendConfigurationAsync(string moduleKey)
     {
         if (SendConfigurationRequested.HasDelegate)
@@ -225,6 +220,26 @@
         else if (State is not null)
             await State.SendConfigurationAsync(moduleKey);
     }
+
+    private bool CanSubmitConfigurationGroup(IGrouping<string, ConfigurationFieldCapability> group) =>
+        SelectedDevice is not null &&
+        group.Any(field => field.ControlKind != "read") &&
+        IsConfigurationGroupSupported(SelectedDevice.Type, group.Key);
+
+    private static bool IsConfigurationGroupSupported(DeviceTypeKind type, string groupKey) =>
+        groupKey switch
+        {
+            "Config.General" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Flow" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Counters" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2,
+            "Config.Operation" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Messages" => type is DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Biometrics" => type is DeviceTypeKind.LiteNet2,
+            "Config.Notification" => type is DeviceTypeKind.LiteNet2,
+            "Config.Network" => type is DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Security" => type is DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            _ => false
+        };
 
     private async Task ExecuteModuleCommandAsync(string commandId)
     {

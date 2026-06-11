@@ -57,12 +57,14 @@ public sealed class DeviceCapabilityCatalog
         {
             new("firmware_version", "Field.FirmwareVersion", "Config.General", "read"),
             new("device_id", "Field.DeviceId", "Config.General", "number"),
-            new("flow_mode", "Field.FlowMode", "Config.Flow", "select"),
             new("buzzer_mute", "Field.BuzzerMute", "Config.Operation", "boolean_select"),
             new("entered", "Field.Entered", "Config.Counters", "read"),
             new("exited", "Field.Exited", "Config.Counters", "read"),
             new("release_duration", "Field.ReleaseDuration", "Config.Operation", "number")
         };
+
+        if (type is not DeviceTypeKind.LiteNet3)
+            fields.Add(new("flow_mode", "Field.FlowMode", "Config.Flow", "select"));
 
         if (type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2)
         {
@@ -88,11 +90,13 @@ public sealed class DeviceCapabilityCatalog
         if (type is DeviceTypeKind.LiteNet3)
         {
             fields.AddRange([
+                new("alias", "Field.Alias", "Config.General", "text"),
                 new("l3_flow_inverted", "Field.FlowInverted", "Config.Flow", "boolean_select"),
+                new("l3_flow_in", "Field.FlowIn", "Config.Flow", "select"),
                 new("l3_flow_out", "Field.FlowOut", "Config.Flow", "select"),
-                new("l3_flow_front_wait", "Field.LedWait", "Config.LiteNet3", "color"),
-                new("l3_flow_picto_wait_in", "Field.PictoWaitIn", "Config.LiteNet3", "select"),
-                new("l3_flow_picto_wait_out", "Field.PictoWaitOut", "Config.LiteNet3", "select"),
+                new("l3_flow_front_wait", "Field.LedWait", "Config.Flow", "color"),
+                new("l3_flow_picto_wait_in", "Field.PictoWaitIn", "Config.Flow", "select"),
+                new("l3_flow_picto_wait_out", "Field.PictoWaitOut", "Config.Flow", "select"),
                 new("default_message", "Field.DisplayTop", "Config.Messages", "text", "Placeholder.DefaultMessage"),
                 new("secondary_message", "Field.DisplayBottom", "Config.Messages", "text", "Placeholder.SecondaryMessage"),
                 new("display_mode", "Field.DisplayMode", "Config.Messages", "select")
@@ -108,6 +112,9 @@ public sealed class DeviceCapabilityCatalog
                 new("menu_password", "Field.MenuPassword", "Config.Security", "password"),
                 new("mac", "Field.Mac", "Config.Network", "text")
             ]);
+
+            if (type is DeviceTypeKind.LiteNet3)
+                fields.Add(new("gateway", "Field.Gateway", "Config.Network", "ip"));
         }
 
         return fields;

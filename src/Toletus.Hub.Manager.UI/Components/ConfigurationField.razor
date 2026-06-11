@@ -95,22 +95,23 @@ else
                 ("Exit", "Option.Flow.Exit"),
                 ("Both", "Option.Flow.Both")
             ],
-            "l3_flow_out" =>
+            "l3_flow_in" or "l3_flow_out" =>
             [
-                ("Out", "Option.FlowOut.Out"),
-                ("Controls", "Option.FlowOut.Controls")
+                ("controls", "Option.FlowPermission.Controls"),
+                ("free", "Option.FlowPermission.Free"),
+                ("blocks", "Option.FlowPermission.Blocks")
             ],
             "l3_flow_picto_wait_in" or "l3_flow_picto_wait_out" =>
             [
-                ("0", "Option.Picto.Arrow"),
-                ("1", "Option.Picto.Blocked"),
-                ("2", "Option.Picto.Free")
+                ("0", "Option.Picto.Off"),
+                ("1", "Option.Picto.Arrow"),
+                ("2", "Option.Picto.Blocked"),
+                ("3", "Option.Picto.ArrowAndBlocked")
             ],
             "display_mode" =>
             [
-                ("", "Option.Display.Default"),
-                ("temporary", "Option.Display.Temporary"),
-                ("clear", "Option.Display.Clear")
+                ("message", "Option.Display.Message"),
+                ("counters", "Option.Display.Counters")
             ],
             "fingerprint_identification_mode" =>
             [

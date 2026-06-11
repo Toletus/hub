@@ -254,6 +254,7 @@ public sealed class HubDirectDeviceManager(
         {
             var statusAndConfigurations = liteNet3CommandService.GetStatusAndConfigurations(hubDevice);
             await TryPopulateAsync(values, "device_id", statusAndConfigurations);
+            await TryPopulateAsync(values, "alias", statusAndConfigurations);
             await TryPopulateAsync(values, "firmware_version", statusAndConfigurations);
             await TryPopulateAsync(values, "release_duration", statusAndConfigurations);
             await TryPopulateAsync(values, "menu_password", statusAndConfigurations);
@@ -266,8 +267,8 @@ public sealed class HubDirectDeviceManager(
             await TryPopulateAsync(values, "ip_mode", ethernet);
 
             var flow = liteNet3CommandService.GetFlow(hubDevice);
-            await TryPopulateAsync(values, "flow_mode", flow);
             await TryPopulateAsync(values, "l3_flow_inverted", flow);
+            await TryPopulateAsync(values, "l3_flow_in", flow);
             await TryPopulateAsync(values, "l3_flow_out", flow);
             await TryPopulateAsync(values, "l3_flow_front_wait", flow);
             await TryPopulateAsync(values, "l3_flow_picto_wait_in", flow);
@@ -276,6 +277,7 @@ public sealed class HubDirectDeviceManager(
             var display = liteNet3CommandService.GetDisplay(hubDevice);
             await TryPopulateAsync(values, "default_message", display);
             await TryPopulateAsync(values, "secondary_message", display);
+            await TryPopulateAsync(values, "display_mode", display);
 
             return new DeviceConfigurationViewModel { Device = device, Values = values };
         }
@@ -471,23 +473,30 @@ public sealed class HubDirectDeviceManager(
                         _ => UnsupportedNotification(device)
                     });
                 }
+
+                if (device.Type == HubDeviceType.LiteNet3 && TryGet(values, "alias", out var alias))
+                    await Add(liteNet3CommandService.SetAlias(device, alias));
+
                 break;
 
             case "Config.Flow":
-                if (TryGet(values, "flow_mode", out var flowMode))
+                if (device.Type == HubDeviceType.LiteNet3)
+                {
+                    await Add(liteNet3CommandService.SetFlow(
+                        device,
+                        TryGetBool(values, "l3_flow_inverted", out var inverted) && inverted,
+                        GetValue(values, "l3_flow_in") ?? "controls",
+                        GetValue(values, "l3_flow_out") ?? "controls",
+                        NormalizeLiteNet3Color(GetValue(values, "l3_flow_front_wait")),
+                        TryGetInt(values, "l3_flow_picto_wait_in", out var pictoWaitIn) ? pictoWaitIn : 0,
+                        TryGetInt(values, "l3_flow_picto_wait_out", out var pictoWaitOut) ? pictoWaitOut : 0));
+                }
+                else if (TryGet(values, "flow_mode", out var flowMode))
                 {
                     await Add(device.Type switch
                     {
                         HubDeviceType.LiteNet1 => liteNet1CommandService.SetFlowControl(device, ToLiteNet1Flow(flowMode)),
                         HubDeviceType.LiteNet2 => liteNet2CommandService.SetFlowControl(device, ToLiteNet2Flow(flowMode)),
-                        HubDeviceType.LiteNet3 => liteNet3CommandService.SetFlow(
-                            device,
-                            TryGetBool(values, "l3_flow_inverted", out var inverted) && inverted,
-                            ToLiteNet3FlowDirection(flowMode),
-                            GetValue(values, "l3_flow_out") ?? "Out",
-                            GetValue(values, "l3_flow_front_wait") ?? "None",
-                            TryGetInt(values, "l3_flow_picto_wait_in", out var pictoWaitIn) ? pictoWaitIn : 0,
-                            TryGetInt(values, "l3_flow_picto_wait_out", out var pictoWaitOut) ? pictoWaitOut : 0),
                         _ => UnsupportedNotification(device)
                     });
                 }
@@ -539,16 +548,20 @@ public sealed class HubDirectDeviceManager(
                 break;
 
             case "Config.Messages":
-                if (TryGet(values, "default_message", out var defaultMessage))
+                if (device.Type == HubDeviceType.LiteNet3 &&
+                    (values.ContainsKey("default_message") || values.ContainsKey("secondary_message") || values.ContainsKey("display_mode")))
+                {
+                    await Add(liteNet3CommandService.SetDisplay(
+                        device,
+                        GetValue(values, "default_message"),
+                        GetValue(values, "secondary_message"),
+                        GetValue(values, "display_mode") ?? "message"));
+                }
+                else if (TryGet(values, "default_message", out var defaultMessage))
                 {
                     await Add(device.Type switch
                     {
                         HubDeviceType.LiteNet2 => liteNet2CommandService.SetMessageLine1(device, defaultMessage),
-                        HubDeviceType.LiteNet3 => liteNet3CommandService.SetDisplay(
-                            device,
-                            defaultMessage,
-                            GetValue(values, "secondary_message"),
-                            GetValue(values, "display_mode")),
                         _ => UnsupportedNotification(device)
                     });
                 }
@@ -671,14 +684,17 @@ public sealed class HubDirectDeviceManager(
                 ReadProperty(payload, "Firmware") ??
                 ReadProperty(payload, "VersaoFirmware") ??
                 ScalarOrNull(payload)),
+            "alias" => Stringify(ReadProperty(payload, "Alias") ?? ReadProperty(payload, "Name")),
             "mac" => FormatMac(ReadProperty(payload, "Mac") ?? ScalarOrNull(payload)),
             "menu_password" => Stringify(ReadProperty(payload, "MenuPassword") ?? ReadProperty(payload, "MenuPass") ?? ScalarOrNull(payload)),
-            "default_message" => Stringify(ReadProperty(payload, "MessageLine1") ?? ReadProperty(payload, "TopRow") ?? ReadProperty(payload, "MensagemPadrao") ?? ScalarOrNull(payload)),
-            "secondary_message" => Stringify(ReadProperty(payload, "MessageLine2") ?? ReadProperty(payload, "BottomRow") ?? ReadProperty(payload, "MensagemSecundaria") ?? ScalarOrNull(payload)),
+            "default_message" => Stringify(ReadProperty(payload, "MessageLine1") ?? ReadProperty(payload, "TopRow") ?? ReadProperty(payload, "MensagemPadrao") ?? ReadProperty(payload, "topRow") ?? ScalarOrNull(payload)),
+            "secondary_message" => Stringify(ReadProperty(payload, "MessageLine2") ?? ReadProperty(payload, "BottomRow") ?? ReadProperty(payload, "MensagemSecundaria") ?? ReadProperty(payload, "bottomRow") ?? ScalarOrNull(payload)),
+            "display_mode" => Stringify(ReadProperty(payload, "Mode")),
             "release_duration" => Stringify(ReadProperty(payload, "ReleaseDuration") ?? ReadProperty(payload, "ReleaseTime") ?? ReadProperty(payload, "DuracaoAcionamento") ?? ScalarOrNull(payload)),
             "show_counters" => FormatBool(ReadProperty(payload, "ShowCounters") ?? ReadProperty(payload, "ExibirContador") ?? ScalarOrNull(payload)),
             "flow_mode" => FormatFlowMode(ReadProperty(payload, "ControlledFlow") ?? ReadProperty(payload, "ControleFluxo") ?? ReadProperty(payload, "In") ?? ScalarOrNull(payload)),
             "l3_flow_inverted" => FormatBool(ReadProperty(payload, "Inverted")),
+            "l3_flow_in" => Stringify(ReadProperty(payload, "In")),
             "l3_flow_out" => Stringify(ReadProperty(payload, "Out")),
             "l3_flow_front_wait" => Stringify(ReadProperty(payload, "FrontWait")),
             "l3_flow_picto_wait_in" => Stringify(ReadProperty(payload, "PictoWaitIn")),
@@ -698,8 +714,23 @@ public sealed class HubDirectDeviceManager(
         if (value is null)
             return null;
 
-        var property = value.GetType().GetProperty(name);
-        return property?.GetValue(value);
+        if (value is JsonElement element)
+        {
+            if (element.ValueKind != JsonValueKind.Object)
+                return null;
+
+            foreach (var property in element.EnumerateObject())
+            {
+                if (property.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    return property.Value;
+            }
+
+            return null;
+        }
+
+        var propertyInfo = value.GetType().GetProperties()
+            .FirstOrDefault(property => property.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        return propertyInfo?.GetValue(value);
     }
 
     private static string? Stringify(object? value) =>
@@ -725,6 +756,8 @@ public sealed class HubDirectDeviceManager(
         {
             bool boolean => boolean ? "true" : "false",
             int number => number != 0 ? "true" : "false",
+            JsonElement { ValueKind: JsonValueKind.True } => "true",
+            JsonElement { ValueKind: JsonValueKind.False } => "false",
             _ => Stringify(value)
         };
 
@@ -738,10 +771,10 @@ public sealed class HubDirectDeviceManager(
 
     private static string? FormatIpMode(object? payload)
     {
-        if (ReadProperty(payload, "StaticIp") is bool staticIp)
+        if (TryReadBool(ReadProperty(payload, "StaticIp"), out var staticIp))
             return staticIp ? "Static" : "DHCP";
 
-        var text = Stringify(ReadProperty(payload, "IpMode") ?? ReadProperty(payload, "ModoIP") ?? payload);
+        var text = Stringify(ReadProperty(payload, "IpMode") ?? ReadProperty(payload, "ModoIP"));
         if (string.IsNullOrWhiteSpace(text))
             return null;
 
@@ -797,8 +830,34 @@ public sealed class HubDirectDeviceManager(
         return false;
     }
 
+    private static bool TryReadBool(object? value, out bool result)
+    {
+        switch (value)
+        {
+            case bool boolean:
+                result = boolean;
+                return true;
+            case JsonElement { ValueKind: JsonValueKind.True }:
+                result = true;
+                return true;
+            case JsonElement { ValueKind: JsonValueKind.False }:
+                result = false;
+                return true;
+            default:
+                return bool.TryParse(Stringify(value), out result);
+        }
+    }
+
     private static bool IsDhcp(string ipMode) =>
         ipMode.Equals("DHCP", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeLiteNet3Color(string? value)
+    {
+        var cleaned = (value ?? string.Empty).Trim().TrimStart('#');
+        return cleaned.Length == 6 && cleaned.All(Uri.IsHexDigit)
+            ? cleaned.ToUpperInvariant()
+            : "0000FF";
+    }
 
     private static ControlledFlow ToLiteNet2Flow(string value) =>
         Enum.TryParse<ControlledFlow>(value, ignoreCase: true, out var flow) ? flow : ControlledFlow.None;

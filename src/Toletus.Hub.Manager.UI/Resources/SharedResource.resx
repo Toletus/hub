@@ -195,7 +195,7 @@
   <data name="Command.GetProperties" xml:space="preserve"><value>Obter propriedades</value></data>
   <data name="Command.Sm25ReaderInfo" xml:space="preserve"><value>Informa&#231;&#245;es do leitor</value></data>
   <data name="Command.Sm25Cancel" xml:space="preserve"><value>Cancelar leitura</value></data>
-  <data name="Command.SendConfiguration" xml:space="preserve"><value>Enviar configura&#231;&#227;o</value></data>
+  <data name="Command.SendConfiguration" xml:space="preserve"><value>Enviar</value></data>
   <data name="Message.NetworkMissing" xml:space="preserve"><value>Selecione uma interface de rede.</value></data>
   <data name="Message.DiscoveryPending" xml:space="preserve"><value>Descoberta em andamento.</value></data>
   <data name="Message.DiscoverySuccess" xml:space="preserve"><value>Descoberta conclu&#237;da.</value></data>
@@ -233,7 +233,6 @@
   <data name="Config.Edit" xml:space="preserve"><value>Editar configura&#231;&#227;o</value></data>
   <data name="Config.Biometrics" xml:space="preserve"><value>LiteNet2 / SM25</value></data>
   <data name="Config.Notification" xml:space="preserve"><value>Notifica&#231;&#227;o</value></data>
-  <data name="Config.LiteNet3" xml:space="preserve"><value>LiteNet3</value></data>
   <data name="Field.EntryClockwise" xml:space="preserve"><value>Entrada sentido hor&#225;rio</value></data>
   <data name="Field.BuzzerMute" xml:space="preserve"><value>Mudo</value></data>
   <data name="Field.ShowClock" xml:space="preserve"><value>Exibir rel&#243;gio</value></data>
@@ -242,6 +241,7 @@
   <data name="Field.NotifyTone" xml:space="preserve"><value>Tom</value></data>
   <data name="Field.NotifyShowMessage" xml:space="preserve"><value>Mostrar mensagem</value></data>
   <data name="Field.FlowInverted" xml:space="preserve"><value>Fluxo invertido</value></data>
+  <data name="Field.FlowIn" xml:space="preserve"><value>Fluxo entrada</value></data>
   <data name="Field.FlowOut" xml:space="preserve"><value>Fluxo sa&#237;da</value></data>
   <data name="Field.LedWait" xml:space="preserve"><value>LED espera</value></data>
   <data name="Field.PictoWaitIn" xml:space="preserve"><value>Pictograma entrada</value></data>
@@ -249,16 +249,25 @@
   <data name="Field.DisplayTop" xml:space="preserve"><value>Linha superior</value></data>
   <data name="Field.DisplayBottom" xml:space="preserve"><value>Linha inferior</value></data>
   <data name="Field.DisplayMode" xml:space="preserve"><value>Display</value></data>
+  <data name="Field.Alias" xml:space="preserve"><value>Apelido</value></data>
+  <data name="Field.Gateway" xml:space="preserve"><value>Gateway</value></data>
   <data name="Option.Yes" xml:space="preserve"><value>Sim</value></data>
   <data name="Option.No" xml:space="preserve"><value>N&#227;o</value></data>
   <data name="Option.FlowOut.Out" xml:space="preserve"><value>Sa&#237;da</value></data>
   <data name="Option.FlowOut.Controls" xml:space="preserve"><value>Controlado</value></data>
+  <data name="Option.FlowPermission.Controls" xml:space="preserve"><value>Controlado</value></data>
+  <data name="Option.FlowPermission.Free" xml:space="preserve"><value>Livre</value></data>
+  <data name="Option.FlowPermission.Blocks" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="Option.Picto.Off" xml:space="preserve"><value>Apagado</value></data>
   <data name="Option.Picto.Arrow" xml:space="preserve"><value>Seta</value></data>
   <data name="Option.Picto.Blocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="Option.Picto.ArrowAndBlocked" xml:space="preserve"><value>Seta e bloqueio</value></data>
   <data name="Option.Picto.Free" xml:space="preserve"><value>Livre</value></data>
   <data name="Option.Display.Default" xml:space="preserve"><value>Mensagem fixa</value></data>
   <data name="Option.Display.Temporary" xml:space="preserve"><value>Notifica&#231;&#227;o tempor&#225;ria</value></data>
   <data name="Option.Display.Clear" xml:space="preserve"><value>Limpar display</value></data>
+  <data name="Option.Display.Message" xml:space="preserve"><value>Mensagem</value></data>
+  <data name="Option.Display.Counters" xml:space="preserve"><value>Contadores</value></data>
   <data name="Option.Fingerprint.CardOrFingerprint" xml:space="preserve"><value>Digital + cart&#227;o</value></data>
   <data name="Option.Fingerprint.Fingerprint" xml:space="preserve"><value>Apenas digital</value></data>
   <data name="Option.Fingerprint.Card" xml:space="preserve"><value>Apenas cart&#227;o</value></data>

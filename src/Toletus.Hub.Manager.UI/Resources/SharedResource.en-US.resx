@@ -195,7 +195,7 @@
   <data name="Command.GetProperties" xml:space="preserve"><value>Get properties</value></data>
   <data name="Command.Sm25ReaderInfo" xml:space="preserve"><value>Reader information</value></data>
   <data name="Command.Sm25Cancel" xml:space="preserve"><value>Cancel read</value></data>
-  <data name="Command.SendConfiguration" xml:space="preserve"><value>Send configuration</value></data>
+  <data name="Command.SendConfiguration" xml:space="preserve"><value>Send</value></data>
   <data name="Message.NetworkMissing" xml:space="preserve"><value>Select a network interface.</value></data>
   <data name="Message.DiscoveryPending" xml:space="preserve"><value>Discovery in progress.</value></data>
   <data name="Message.DiscoverySuccess" xml:space="preserve"><value>Discovery completed.</value></data>
@@ -233,7 +233,6 @@
   <data name="Config.Edit" xml:space="preserve"><value>Edit configuration</value></data>
   <data name="Config.Biometrics" xml:space="preserve"><value>LiteNet2 / SM25</value></data>
   <data name="Config.Notification" xml:space="preserve"><value>Notification</value></data>
-  <data name="Config.LiteNet3" xml:space="preserve"><value>LiteNet3</value></data>
   <data name="Field.EntryClockwise" xml:space="preserve"><value>Entry clockwise</value></data>
   <data name="Field.BuzzerMute" xml:space="preserve"><value>Mute</value></data>
   <data name="Field.ShowClock" xml:space="preserve"><value>Show clock</value></data>
@@ -242,6 +241,7 @@
   <data name="Field.NotifyTone" xml:space="preserve"><value>Tone</value></data>
   <data name="Field.NotifyShowMessage" xml:space="preserve"><value>Show message</value></data>
   <data name="Field.FlowInverted" xml:space="preserve"><value>Inverted flow</value></data>
+  <data name="Field.FlowIn" xml:space="preserve"><value>Entry flow</value></data>
   <data name="Field.FlowOut" xml:space="preserve"><value>Exit flow</value></data>
   <data name="Field.LedWait" xml:space="preserve"><value>Wait LED</value></data>
   <data name="Field.PictoWaitIn" xml:space="preserve"><value>Entry pictogram</value></data>
@@ -249,16 +249,25 @@
   <data name="Field.DisplayTop" xml:space="preserve"><value>Top row</value></data>
   <data name="Field.DisplayBottom" xml:space="preserve"><value>Bottom row</value></data>
   <data name="Field.DisplayMode" xml:space="preserve"><value>Display</value></data>
+  <data name="Field.Alias" xml:space="preserve"><value>Alias</value></data>
+  <data name="Field.Gateway" xml:space="preserve"><value>Gateway</value></data>
   <data name="Option.Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Option.No" xml:space="preserve"><value>No</value></data>
   <data name="Option.FlowOut.Out" xml:space="preserve"><value>Exit</value></data>
   <data name="Option.FlowOut.Controls" xml:space="preserve"><value>Controlled</value></data>
+  <data name="Option.FlowPermission.Controls" xml:space="preserve"><value>Controlled</value></data>
+  <data name="Option.FlowPermission.Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Option.FlowPermission.Blocks" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Option.Picto.Off" xml:space="preserve"><value>Off</value></data>
   <data name="Option.Picto.Arrow" xml:space="preserve"><value>Arrow</value></data>
   <data name="Option.Picto.Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Option.Picto.ArrowAndBlocked" xml:space="preserve"><value>Arrow and blocked</value></data>
   <data name="Option.Picto.Free" xml:space="preserve"><value>Free</value></data>
   <data name="Option.Display.Default" xml:space="preserve"><value>Fixed message</value></data>
   <data name="Option.Display.Temporary" xml:space="preserve"><value>Temporary notification</value></data>
   <data name="Option.Display.Clear" xml:space="preserve"><value>Clear display</value></data>
+  <data name="Option.Display.Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Option.Display.Counters" xml:space="preserve"><value>Counters</value></data>
   <data name="Option.Fingerprint.CardOrFingerprint" xml:space="preserve"><value>Fingerprint + card</value></data>
   <data name="Option.Fingerprint.Fingerprint" xml:space="preserve"><value>Fingerprint only</value></data>
   <data name="Option.Fingerprint.Card" xml:space="preserve"><value>Card only</value></data>
