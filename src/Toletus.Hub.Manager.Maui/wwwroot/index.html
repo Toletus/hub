@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>LiteNet Manager</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="_content/Toletus.Hub.Manager.UI/hub-manager.css" />
+    <link rel="stylesheet" href="Toletus.Hub.Manager.Maui.styles.css" />
+    <link rel="icon" href="appicon.svg">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: #0f0d0b;
+            color: #f5efe7;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        #app {
+            min-height: 100dvh;
+            width: 100%;
+            margin: 0;
+            background:
+                linear-gradient(180deg, rgba(255, 106, 0, .035), transparent 38%),
+                #0f0d0b;
+        }
+
+        .boot {
+            min-height: 100dvh;
+            display: grid;
+            place-items: center;
+        }
+
+        .boot-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            min-width: 220px;
+        }
+
+        .boot-mark {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            object-fit: contain;
+            animation: boot-pulse 1.7s ease-in-out infinite;
+        }
+
+        .boot-title {
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .boot-bar {
+            width: 190px;
+            height: 2px;
+            border-radius: 99px;
+            background: #2a2119;
+            overflow: hidden;
+        }
+
+        .boot-bar span {
+            display: block;
+            width: 38%;
+            height: 100%;
+            border-radius: inherit;
+            background: #ff6a00;
+            animation: boot-scan 1.15s ease-in-out infinite;
+        }
+
+        .boot-sub {
+            color: #8a7b6b;
+            font-size: 11px;
+        }
+
+        @keyframes boot-scan {
+            from { transform: translateX(-110%); }
+            to { transform: translateX(280%); }
+        }
+
+        @keyframes boot-pulse {
+            50% {
+                transform: scale(1.04);
+                filter: drop-shadow(0 0 16px rgba(255, 106, 0, .32));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+    <div id="app">
+        <div class="boot" role="status" aria-live="polite">
+            <div class="boot-card">
+                <img class="boot-mark" src="appicon.svg" alt="" />
+                <div class="boot-title">LiteNet Manager</div>
+                <div class="boot-bar" aria-hidden="true"><span></span></div>
+                <div class="boot-sub">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+
+</body>
+
+</html>

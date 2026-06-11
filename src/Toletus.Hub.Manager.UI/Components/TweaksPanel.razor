@@ -1,0 +1,220 @@
+<aside class="twk-panel @(IsOpen ? "open" : "closed")"
+       hidden="@(!IsOpen)"
+       style="@PanelStyle"
+       data-omelette-chrome=""
+       @onpointermove="HandlePointerMove"
+       @onpointerup="StopDrag"
+       @onpointerleave="StopDrag">
+    <header class="twk-hd" @onpointerdown="StartDrag">
+        <b>@ResolvedTitle</b>
+        <button type="button"
+                class="twk-x"
+                aria-label="@T("Tweaks.CloseLabel")"
+                @onpointerdown:stopPropagation="true"
+                @onclick="() => CloseRequested.InvokeAsync()">
+            &times;
+        </button>
+    </header>
+
+    <div class="twk-body">
+        <div class="twk-sect">@T("Tweaks.Appearance")</div>
+        <section class="twk-row">
+            <div class="twk-row twk-row-h">
+                <div class="twk-lbl">
+                    <span>@T("Tweaks.Accent")</span>
+                    <span class="twk-val">@Theme.Accent</span>
+                </div>
+                <input id="hubAccent"
+                       type="color"
+                       class="twk-swatch"
+                       value="@Theme.Accent"
+                       @oninput="SetAccent" />
+            </div>
+            <input value="@Theme.Accent"
+                   class="twk-field"
+                   @onchange="SetAccent"
+                   aria-label="@T("Tweaks.AccentHexLabel")" />
+            <div class="twk-chips" role="radiogroup" aria-label="@T("Tweaks.Accent")">
+                @foreach (var color in AccentPresets)
+                {
+                    var selected = IsSelectedAccent(color);
+                    <button type="button"
+                            class="twk-chip"
+                            role="radio"
+                            aria-checked="@selected"
+                            data-on="@(selected ? "1" : "0")"
+                            aria-label="@($"{T("Tweaks.SetAccent")} {color}")"
+                            title="@color"
+                            style="@GetChipStyle(color)"
+                            @onclick="() => Theme.Accent = color">
+                        @if (selected)
+                        {
+                            <svg viewBox="0 0 14 14" aria-hidden="true">
+                                <path d="M3 7.2 5.8 10 11 4.2"
+                                      fill="none"
+                                      stroke-width="2.2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke="@GetCheckStroke(color)" />
+                            </svg>
+                        }
+                    </button>
+                }
+            </div>
+        </section>
+
+        <div class="twk-sect">@T("Tweaks.Density")</div>
+        <section class="twk-row">
+            <div class="twk-seg" role="radiogroup" aria-label="@T("Tweaks.Density")">
+                <div class="twk-seg-thumb" style="@GetSegmentThumbStyle(GetSelectedIndex(DensityOptions, Theme.Density), DensityOptions.Count)"></div>
+                @foreach (var density in DensityOptions)
+                {
+                    <button type="button"
+                            role="radio"
+                            aria-checked="@(Theme.Density == density)"
+                            @onclick="() => Theme.Density = density">
+                        @T(GetDensityLabelKey(density))
+                    </button>
+                }
+            </div>
+        </section>
+
+        <div class="twk-sect">@T("Tweaks.Activity")</div>
+        <section class="twk-row">
+            <div class="twk-seg" role="radiogroup" aria-label="@T("Tweaks.TimeFormat")">
+                <div class="twk-seg-thumb" style="@GetSegmentThumbStyle(GetSelectedIndex(TimeFormatOptions, Theme.TimeFormat), TimeFormatOptions.Count)"></div>
+                @foreach (var format in TimeFormatOptions)
+                {
+                    <button type="button"
+                            role="radio"
+                            aria-checked="@(Theme.TimeFormat == format)"
+                            @onclick="() => Theme.TimeFormat = format">
+                        @T(GetTimeFormatLabelKey(format))
+                    </button>
+                }
+            </div>
+        </section>
+
+        @ChildContent
+    </div>
+</aside>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter, EditorRequired] public HubManagerThemeState Theme { get; set; } = default!;
+    [Parameter] public UiText? Text { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public EventCallback CloseRequested { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private static readonly IReadOnlyList<string> AccentPresets =
+    [
+        "#F9760D",
+        "#FF8C2E",
+        "#E85D04",
+        "#D9A514"
+    ];
+
+    private static readonly IReadOnlyList<HubManagerDensity> DensityOptions =
+    [
+        HubManagerDensity.Compact,
+        HubManagerDensity.Regular
+    ];
+
+    private static readonly IReadOnlyList<HubManagerTimeFormat> TimeFormatOptions =
+        Enum.GetValues<HubManagerTimeFormat>();
+
+    private bool IsDragging { get; set; }
+    private double DragOffsetX { get; set; }
+    private double DragOffsetY { get; set; }
+    private double? Left { get; set; }
+    private double? Top { get; set; }
+
+    private string PanelStyle =>
+        Left is { } left && Top is { } top
+            ? $"left:clamp(16px,{left:0}px,calc(100vw - 296px));top:clamp(16px,{top:0}px,calc(100vh - 360px));right:auto;bottom:auto"
+            : string.Empty;
+
+    private string ResolvedTitle =>
+        string.IsNullOrWhiteSpace(Title) ? T("Tweaks.Title") : Title;
+
+    private void SetAccent(ChangeEventArgs args)
+    {
+        if (args.Value is string value)
+            Theme.Accent = NormalizeHex(value);
+    }
+
+    private void StartDrag(PointerEventArgs args)
+    {
+        IsDragging = true;
+        DragOffsetX = Left.HasValue ? args.ClientX - Left.Value : args.ClientX - (args.ClientX - 140);
+        DragOffsetY = Left.HasValue ? args.ClientY - Top.GetValueOrDefault(16) : 16;
+    }
+
+    private void HandlePointerMove(PointerEventArgs args)
+    {
+        if (!IsDragging)
+            return;
+
+        Left = Math.Max(8, args.ClientX - DragOffsetX);
+        Top = Math.Max(8, args.ClientY - DragOffsetY);
+    }
+
+    private void StopDrag()
+    {
+        IsDragging = false;
+    }
+
+    private bool IsSelectedAccent(string color) =>
+        string.Equals(Theme.Accent, color, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetChipStyle(string color) => $"background:{color}";
+
+    private static string GetSegmentThumbStyle(int index, int count) =>
+        $"left:calc(2px + {Math.Max(0, index)} * (100% - 4px) / {count});width:calc((100% - 4px) / {count})";
+
+    private static int GetSelectedIndex<T>(IReadOnlyList<T> options, T value)
+    {
+        for (var i = 0; i < options.Count; i++)
+        {
+            if (EqualityComparer<T>.Default.Equals(options[i], value))
+                return i;
+        }
+
+        return 0;
+    }
+
+    private static string GetCheckStroke(string color) =>
+        IsLight(color) ? "rgba(0,0,0,.78)" : "#fff";
+
+    private static bool IsLight(string color)
+    {
+        var hex = color.Trim().TrimStart('#');
+        if (hex.Length == 3)
+            hex = string.Concat(hex.Select(c => $"{c}{c}"));
+
+        if (hex.Length < 6 || !int.TryParse(hex[..6], System.Globalization.NumberStyles.HexNumber, null, out var value))
+            return true;
+
+        var r = (value >> 16) & 255;
+        var g = (value >> 8) & 255;
+        var b = value & 255;
+        return r * 299 + g * 587 + b * 114 > 148000;
+    }
+
+    private string T(string key) => Text?[key] ?? key;
+
+    private static string GetDensityLabelKey(HubManagerDensity density) =>
+        $"Tweaks.Density.{density}";
+
+    private static string GetTimeFormatLabelKey(HubManagerTimeFormat format) =>
+        $"Tweaks.TimeFormat.{format}";
+
+    private static string NormalizeHex(string value)
+    {
+        var cleaned = value.Trim().TrimStart('#');
+        return cleaned.Length == 6 && cleaned.All(Uri.IsHexDigit)
+            ? $"#{cleaned.ToUpperInvariant()}"
+            : "#F9760D";
+    }
+}

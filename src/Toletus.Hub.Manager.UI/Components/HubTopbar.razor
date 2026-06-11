@@ -1,0 +1,74 @@
+<header class="topbar" data-screen-label="Topbar">
+    <div class="brand">
+        <img class="brand-mark brand-logo" src="_content/Toletus.Hub.Manager.UI/brand/appicon.svg" alt="" aria-hidden="true" />
+        <div class="brand-text">
+            <strong>@Text["App.Title"]</strong>
+            <span>@Text["App.Subtitle"]</span>
+        </div>
+    </div>
+
+    <div class="panel-head-spacer"></div>
+
+    <label class="net-select">
+        <span class="field-label">@Text["Toolbar.Network"]</span>
+        <span class="select-wrap">
+            <select class="input" @bind="State.SelectedNetwork" disabled="@State.IsBusy" aria-label="@Text["Toolbar.Network"]">
+                <option value="">@Text["Toolbar.SelectNetwork"]</option>
+                @foreach (var network in State.Networks)
+                {
+                    <option value="@network">@network</option>
+                }
+            </select>
+        </span>
+    </label>
+
+    <button class="btn btn-primary"
+            @onclick="() => DiscoverRequested.InvokeAsync()"
+            disabled="@State.IsBusy"
+            aria-busy="@IsDiscovering">
+        @if (IsDiscovering)
+        {
+            <span class="spin" aria-hidden="true"></span>
+        }
+        <span>@DiscoverButtonText</span>
+    </button>
+
+    <div class="seg" role="group" aria-label="@Text["Toolbar.Language"]">
+        @foreach (var culture in Culture.SupportedCultures)
+        {
+            var isSelected = string.Equals(culture.Name, Culture.CurrentCulture.Name, StringComparison.OrdinalIgnoreCase);
+            <button type="button"
+                    class="seg-item @(isSelected ? "on" : null)"
+                    @onclick="() => SelectCultureAsync(culture.Name)"
+                    aria-pressed="@isSelected"
+                    title="@Text[$"Language.{culture.Name}"]">
+                @GetCultureSegmentLabel(culture.Name)
+            </button>
+        }
+    </div>
+</header>
+
+@code {
+    [Parameter, EditorRequired] public ManagerUiState State { get; set; } = default!;
+    [Parameter, EditorRequired] public CultureState Culture { get; set; } = default!;
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public EventCallback<ChangeEventArgs> CultureChanged { get; set; }
+    [Parameter] public EventCallback DiscoverRequested { get; set; }
+
+    private bool IsDiscovering => State.CurrentCommandId == "discovery";
+    private string DiscoverButtonText =>
+        IsDiscovering ? Text["Message.DiscoveryPending"] :
+        State.Devices.Count > 0 ? Text["Toolbar.DiscoverAgain"] :
+        Text["Toolbar.Discover"];
+
+    private Task SelectCultureAsync(string cultureName) =>
+        CultureChanged.InvokeAsync(new ChangeEventArgs { Value = cultureName });
+
+    private static string GetCultureSegmentLabel(string cultureName) =>
+        cultureName switch
+        {
+            "pt-BR" => "PT",
+            "en-US" => "EN",
+            _ => cultureName
+        };
+}

@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App.Title" xml:space="preserve"><value>LiteNet Manager</value></data>
+  <data name="App.Subtitle" xml:space="preserve"><value>Direct control for LiteNet devices and modules exposed by Hub</value></data>
+  <data name="Toolbar.Network" xml:space="preserve"><value>Network</value></data>
+  <data name="Toolbar.Search" xml:space="preserve"><value>Search by name, serial, or type</value></data>
+  <data name="Toolbar.Discover" xml:space="preserve"><value>Discover</value></data>
+  <data name="Toolbar.DiscoverAgain" xml:space="preserve"><value>Discover again</value></data>
+  <data name="Toolbar.Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Toolbar.SelectNetwork" xml:space="preserve"><value>Select network</value></data>
+  <data name="Toolbar.Subtitle" xml:space="preserve"><value>Device console</value></data>
+  <data name="Language.pt-BR" xml:space="preserve"><value>Portuguese</value></data>
+  <data name="Language.en-US" xml:space="preserve"><value>English</value></data>
+  <data name="Devices.Title" xml:space="preserve"><value>Devices exposed by Hub</value></data>
+  <data name="Devices.Hint" xml:space="preserve"><value>LiteNet devices discovered by network; SM25 appears as a biometric module.</value></data>
+  <data name="Devices.Empty" xml:space="preserve"><value>No devices discovered on this network.</value></data>
+  <data name="Devices.EmptyHint" xml:space="preserve"><value>Select the network and click Discover.</value></data>
+  <data name="Devices.EmptyFiltered" xml:space="preserve"><value>No devices match the current filters.</value></data>
+  <data name="Devices.PanelTitle" xml:space="preserve"><value>Devices</value></data>
+  <data name="Devices.Visible" xml:space="preserve"><value>visible</value></data>
+  <data name="Devices.Modules" xml:space="preserve"><value>Modules</value></data>
+  <data name="Devices.SerialHint" xml:space="preserve"><value>Connect through serial port when applicable.</value></data>
+  <data name="Workspace.EmptyTitle" xml:space="preserve"><value>Select a device</value></data>
+  <data name="Workspace.EmptyText" xml:space="preserve"><value>Commands and diagnostics appear here after discovery.</value></data>
+  <data name="Workspace.Connected" xml:space="preserve"><value>Connected</value></data>
+  <data name="Workspace.Disconnected" xml:space="preserve"><value>Disconnected</value></data>
+  <data name="Workspace.Serial" xml:space="preserve"><value>Serial</value></data>
+  <data name="History.Title" xml:space="preserve"><value>Activity</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>No commands executed.</value></data>
+  <data name="History.Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="History.Detail.Message" xml:space="preserve"><value>Message</value></data>
+  <data name="History.Detail.Success" xml:space="preserve"><value>Result</value></data>
+  <data name="History.Detail.Result" xml:space="preserve"><value>Result</value></data>
+  <data name="History.Detail.Command" xml:space="preserve"><value>Command</value></data>
+  <data name="History.Detail.Summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="History.Detail.Value" xml:space="preserve"><value>Detail</value></data>
+  <data name="History.Detail.Technical" xml:space="preserve"><value>Technical</value></data>
+  <data name="History.Detail.Content" xml:space="preserve"><value>Content</value></data>
+  <data name="History.Detail.Data_Content" xml:space="preserve"><value>Content</value></data>
+  <data name="History.Detail.Action" xml:space="preserve"><value>Action</value></data>
+  <data name="History.Detail.Id" xml:space="preserve"><value>ID</value></data>
+  <data name="History.Detail.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="History.Detail.Ip" xml:space="preserve"><value>IP</value></data>
+  <data name="History.Detail.SerialNumber" xml:space="preserve"><value>Serial</value></data>
+  <data name="History.Detail.Port" xml:space="preserve"><value>Port</value></data>
+  <data name="History.Detail.Type" xml:space="preserve"><value>Type</value></data>
+  <data name="History.Detail.Connected" xml:space="preserve"><value>Connection</value></data>
+  <data name="History.Detail.Connection" xml:space="preserve"><value>Connection</value></data>
+  <data name="History.Detail.Firmware" xml:space="preserve"><value>Firmware</value></data>
+  <data name="History.Detail.Flow" xml:space="preserve"><value>Flow</value></data>
+  <data name="History.Detail.EntryClockwise" xml:space="preserve"><value>Entry direction</value></data>
+  <data name="History.Detail.Entered" xml:space="preserve"><value>Entries</value></data>
+  <data name="History.Detail.Exited" xml:space="preserve"><value>Exits</value></data>
+  <data name="History.Detail.FingerprintMode" xml:space="preserve"><value>Fingerprint mode</value></data>
+  <data name="History.Detail.FingerprintReader" xml:space="preserve"><value>Biometric reader</value></data>
+  <data name="History.Detail.Gateway" xml:space="preserve"><value>Gateway</value></data>
+  <data name="History.Detail.Identification" xml:space="preserve"><value>Identification</value></data>
+  <data name="History.Detail.IpMode" xml:space="preserve"><value>IP mode</value></data>
+  <data name="History.Detail.Ready" xml:space="preserve"><value>Ready</value></data>
+  <data name="History.Detail.Mac" xml:space="preserve"><value>MAC</value></data>
+  <data name="History.Detail.MenuPassword" xml:space="preserve"><value>Menu password</value></data>
+  <data name="History.Detail.DefaultMessage" xml:space="preserve"><value>Default message</value></data>
+  <data name="History.Detail.SecondaryMessage" xml:space="preserve"><value>Secondary message</value></data>
+  <data name="History.Detail.Passage" xml:space="preserve"><value>Passage</value></data>
+  <data name="History.Detail.Payload" xml:space="preserve"><value>Received data</value></data>
+  <data name="History.Detail.PayloadSize" xml:space="preserve"><value>Size (bytes)</value></data>
+  <data name="History.Detail.ReleaseDuration" xml:space="preserve"><value>Duration</value></data>
+  <data name="History.Detail.ReturnCode" xml:space="preserve"><value>Return code</value></data>
+  <data name="History.Detail.Rfid" xml:space="preserve"><value>RFID</value></data>
+  <data name="History.Detail.Barcode" xml:space="preserve"><value>Barcode</value></data>
+  <data name="History.Detail.Keypad" xml:space="preserve"><value>Keypad</value></data>
+  <data name="History.Detail.ShowCounters" xml:space="preserve"><value>Show counters</value></data>
+  <data name="History.Detail.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="History.Detail.SubnetMask" xml:space="preserve"><value>Subnet mask</value></data>
+  <data name="History.Detail.Template" xml:space="preserve"><value>Template</value></data>
+  <data name="History.Detail.Timeout" xml:space="preserve"><value>Timeout</value></data>
+  <data name="History.Detail.Biometrics" xml:space="preserve"><value>Biometrics</value></data>
+  <data name="History.Detail.Checksum" xml:space="preserve"><value>Checksum</value></data>
+  <data name="History.Detail.Code" xml:space="preserve"><value>Code</value></data>
+  <data name="History.Detail.Error" xml:space="preserve"><value>Error</value></data>
+  <data name="History.Detail.BiometricsSize" xml:space="preserve"><value>Size</value></data>
+  <data name="History.Detail.BiometricsFormat" xml:space="preserve"><value>Biometrics</value></data>
+  <data name="History.Media.ImageAlt" xml:space="preserve"><value>Event image</value></data>
+  <data name="History.Media.BiometricsAlt" xml:space="preserve"><value>Received biometrics image</value></data>
+  <data name="History.Media.BiometricsCaption" xml:space="preserve"><value>Biometrics received by LiteNet3.</value></data>
+  <data name="History.Result.Idle" xml:space="preserve"><value>Idle</value></data>
+  <data name="History.Result.Pending" xml:space="preserve"><value>In progress</value></data>
+  <data name="History.Result.Success" xml:space="preserve"><value>Completed</value></data>
+  <data name="History.Result.Warning" xml:space="preserve"><value>Attention</value></data>
+  <data name="History.Result.Error" xml:space="preserve"><value>Error</value></data>
+  <data name="History.Result.Canceled" xml:space="preserve"><value>Canceled</value></data>
+  <data name="History.Value.True" xml:space="preserve"><value>Yes</value></data>
+  <data name="History.Value.False" xml:space="preserve"><value>No</value></data>
+  <data name="History.Value.Recognized" xml:space="preserve"><value>Recognized value</value></data>
+  <data name="History.Value.PayloadSummaryUnavailable" xml:space="preserve"><value>Payload received without an available summary.</value></data>
+  <data name="History.Value.ImageFormatUnknown" xml:space="preserve"><value>Image format not recognized.</value></data>
+  <data name="History.Filter.All" xml:space="preserve"><value>All</value></data>
+  <data name="History.Filter.Commands" xml:space="preserve"><value>Commands</value></data>
+  <data name="History.Filter.Events" xml:space="preserve"><value>Events</value></data>
+  <data name="History.Filter.Errors" xml:space="preserve"><value>Errors</value></data>
+  <data name="History.Action.Collapse" xml:space="preserve"><value>Collapse</value></data>
+  <data name="History.Action.Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="History.Action.ViewJson" xml:space="preserve"><value>View JSON</value></data>
+  <data name="History.Kind.Command" xml:space="preserve"><value>COMMAND</value></data>
+  <data name="History.Kind.Event" xml:space="preserve"><value>EVENT</value></data>
+  <data name="History.Kind.System" xml:space="preserve"><value>SYSTEM</value></data>
+  <data name="History.Kind.Error" xml:space="preserve"><value>ERROR</value></data>
+  <data name="History.Relative.Now" xml:space="preserve"><value>now</value></data>
+  <data name="History.Event.Discovery" xml:space="preserve"><value>Devices updated from network discovery.</value></data>
+  <data name="History.Event.Connect" xml:space="preserve"><value>Connection requested for the selected device.</value></data>
+  <data name="History.Event.Disconnect" xml:space="preserve"><value>Disconnection requested for the selected device.</value></data>
+  <data name="History.Event.ConnectSerial" xml:space="preserve"><value>LiteNet3 serial connection requested.</value></data>
+  <data name="History.Event.ReleaseEntry" xml:space="preserve"><value>Entry released by the device.</value></data>
+  <data name="History.Event.ReleaseEntryAndExit" xml:space="preserve"><value>Entry and exit released by the device.</value></data>
+  <data name="History.Event.ReleaseExit" xml:space="preserve"><value>Exit released by the device.</value></data>
+  <data name="History.Event.Reset" xml:space="preserve"><value>Reset sent to the device.</value></data>
+  <data name="History.Event.ResetCounters" xml:space="preserve"><value>Counter reset sent.</value></data>
+  <data name="History.Event.Status" xml:space="preserve"><value>Status and diagnostics received from the device.</value></data>
+  <data name="History.Event.ConfigurationRefresh" xml:space="preserve"><value>Device properties loaded.</value></data>
+  <data name="History.Event.ConfigurationSubmit" xml:space="preserve"><value>Configuration sent to the device.</value></data>
+  <data name="History.Event.Sm25ReaderInfo" xml:space="preserve"><value>Biometric reader information received.</value></data>
+  <data name="History.Event.Sm25Cancel" xml:space="preserve"><value>Biometric read canceled.</value></data>
+  <data name="History.Event.Biometrics" xml:space="preserve"><value>Biometric image received from LiteNet3.</value></data>
+  <data name="History.Event.Identification" xml:space="preserve"><value>Identification received from the device.</value></data>
+  <data name="History.Event.IdentificationRfid" xml:space="preserve"><value>RFID identification received.</value></data>
+  <data name="History.Event.IdentificationBarcode" xml:space="preserve"><value>Barcode identification received.</value></data>
+  <data name="History.Event.IdentificationKeypad" xml:space="preserve"><value>Keypad identification received.</value></data>
+  <data name="History.Event.IdentificationFingerprint" xml:space="preserve"><value>Biometric identification received.</value></data>
+  <data name="History.Event.Passage" xml:space="preserve"><value>Passage registered by the device.</value></data>
+  <data name="History.Event.Timeout" xml:space="preserve"><value>Passage time expired.</value></data>
+  <data name="History.Event.NotificationStatus" xml:space="preserve"><value>Status received from the device.</value></data>
+  <data name="History.Event.Ready" xml:space="preserve"><value>Device readiness state updated.</value></data>
+  <data name="History.Event.ConnectionChanged" xml:space="preserve"><value>Device connection state updated.</value></data>
+  <data name="History.Event.FingerprintReader" xml:space="preserve"><value>Biometric reader state updated.</value></data>
+  <data name="History.Event.Sm25" xml:space="preserve"><value>SM25 biometric reader event received.</value></data>
+  <data name="History.Event.PingResponse" xml:space="preserve"><value>Ping response received from LiteNet3.</value></data>
+  <data name="History.Event.ErrorResponse" xml:space="preserve"><value>Error received from LiteNet3.</value></data>
+  <data name="Group.Connection" xml:space="preserve"><value>Connection</value></data>
+  <data name="Group.Operation" xml:space="preserve"><value>Operation</value></data>
+  <data name="Group.Maintenance" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="Group.Diagnostics" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="Group.Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Group.Biometrics" xml:space="preserve"><value>SM25 Biometrics</value></data>
+  <data name="Config.General" xml:space="preserve"><value>Overview</value></data>
+  <data name="Config.Network" xml:space="preserve"><value>Network</value></data>
+  <data name="Config.Flow" xml:space="preserve"><value>Flow</value></data>
+  <data name="Config.Messages" xml:space="preserve"><value>Messages</value></data>
+  <data name="Config.Counters" xml:space="preserve"><value>Counters</value></data>
+  <data name="Config.Operation" xml:space="preserve"><value>Operation</value></data>
+  <data name="Config.Security" xml:space="preserve"><value>Security</value></data>
+  <data name="Metric.Devices" xml:space="preserve"><value>Devices</value></data>
+  <data name="Metric.Connected" xml:space="preserve"><value>Connected</value></data>
+  <data name="Metric.ActiveCommand" xml:space="preserve"><value>Active commands</value></data>
+  <data name="Metric.DevicesHint" xml:space="preserve"><value>discovered on network</value></data>
+  <data name="Metric.ConnectedHint" xml:space="preserve"><value>ready for commands</value></data>
+  <data name="Metric.ActiveCommandHint" xml:space="preserve"><value>running right now</value></data>
+  <data name="Field.FirmwareVersion" xml:space="preserve"><value>Firmware version</value></data>
+  <data name="Field.DeviceId" xml:space="preserve"><value>Device ID</value></data>
+  <data name="Field.FlowMode" xml:space="preserve"><value>Flow mode</value></data>
+  <data name="Field.DefaultMessage" xml:space="preserve"><value>Default message</value></data>
+  <data name="Field.SecondaryMessage" xml:space="preserve"><value>Secondary message</value></data>
+  <data name="Field.IpMode" xml:space="preserve"><value>IP mode</value></data>
+  <data name="Field.StaticIp" xml:space="preserve"><value>Static IP</value></data>
+  <data name="Field.SubnetMask" xml:space="preserve"><value>Subnet mask</value></data>
+  <data name="Field.ShowCounters" xml:space="preserve"><value>Show counters</value></data>
+  <data name="Field.Entered" xml:space="preserve"><value>Entered</value></data>
+  <data name="Field.Exited" xml:space="preserve"><value>Exited</value></data>
+  <data name="Field.ReleaseDuration" xml:space="preserve"><value>Release duration</value></data>
+  <data name="Field.MenuPassword" xml:space="preserve"><value>Menu password</value></data>
+  <data name="Field.Mac" xml:space="preserve"><value>MAC</value></data>
+  <data name="Field.SelectOption" xml:space="preserve"><value>Select</value></data>
+  <data name="Option.Flow.None" xml:space="preserve"><value>None</value></data>
+  <data name="Option.Flow.Entry" xml:space="preserve"><value>Entry</value></data>
+  <data name="Option.Flow.Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Option.Flow.Both" xml:space="preserve"><value>Entry and exit</value></data>
+  <data name="Option.IpMode.Dhcp" xml:space="preserve"><value>DHCP</value></data>
+  <data name="Option.IpMode.Static" xml:space="preserve"><value>Static IP</value></data>
+  <data name="Placeholder.DefaultMessage" xml:space="preserve"><value>Message shown on display</value></data>
+  <data name="Placeholder.SecondaryMessage" xml:space="preserve"><value>Auxiliary message</value></data>
+  <data name="Modules.Empty" xml:space="preserve"><value>No additional module is available for this device.</value></data>
+  <data name="Modules.Sm25Hint" xml:space="preserve"><value>Available when the connected LiteNet2 exposes the biometric reader.</value></data>
+  <data name="Command.Connect" xml:space="preserve"><value>Connect</value></data>
+  <data name="Command.ConnectSerial" xml:space="preserve"><value>Connect LiteNet3 serial</value></data>
+  <data name="Command.Disconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Command.ReleaseEntry" xml:space="preserve"><value>Release entry</value></data>
+  <data name="Command.ReleaseEntryAndExit" xml:space="preserve"><value>Release I/O</value></data>
+  <data name="Command.ReleaseExit" xml:space="preserve"><value>Release exit</value></data>
+  <data name="Command.Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Command.ResetCounters" xml:space="preserve"><value>Reset counters</value></data>
+  <data name="Command.GetStatus" xml:space="preserve"><value>Refresh status</value></data>
+  <data name="Command.GetProperties" xml:space="preserve"><value>Get properties</value></data>
+  <data name="Command.Sm25ReaderInfo" xml:space="preserve"><value>Reader information</value></data>
+  <data name="Command.Sm25Cancel" xml:space="preserve"><value>Cancel read</value></data>
+  <data name="Command.SendConfiguration" xml:space="preserve"><value>Send</value></data>
+  <data name="Message.NetworkMissing" xml:space="preserve"><value>Select a network interface.</value></data>
+  <data name="Message.DiscoveryPending" xml:space="preserve"><value>Discovery in progress.</value></data>
+  <data name="Message.DiscoverySuccess" xml:space="preserve"><value>Discovery completed.</value></data>
+  <data name="Message.CommandPending" xml:space="preserve"><value>Command in progress.</value></data>
+  <data name="Message.CommandSuccess" xml:space="preserve"><value>Command executed.</value></data>
+  <data name="Message.CommandAlreadyInProgress" xml:space="preserve"><value>A command is already in progress for this device.</value></data>
+  <data name="Message.CommandUnsupported" xml:space="preserve"><value>This command is not available for this device yet.</value></data>
+  <data name="Message.CommandFailed" xml:space="preserve"><value>The command could not be executed.</value></data>
+  <data name="Message.Connected" xml:space="preserve"><value>Device connected.</value></data>
+  <data name="Message.Disconnected" xml:space="preserve"><value>Device disconnected.</value></data>
+  <data name="Message.ConfigurationSent" xml:space="preserve"><value>Configuration sent.</value></data>
+  <data name="Message.ConfigurationLoading" xml:space="preserve"><value>Loading properties...</value></data>
+  <data name="Message.ConfigurationLoaded" xml:space="preserve"><value>Properties loaded.</value></data>
+  <data name="Message.ConfigurationEmptyTitle" xml:space="preserve"><value>Properties are not loaded yet.</value></data>
+  <data name="Message.ConfigurationEmptyText" xml:space="preserve"><value>Fields will be filled after reading. LiteNet3 can take a few seconds.</value></data>
+  <data name="Message.ConfigurationQueued" xml:space="preserve"><value>Configuration is ready to be sent through specific commands.</value></data>
+  <data name="Message.BiometricsReceived" xml:space="preserve"><value>Biometrics received.</value></data>
+  <data name="Message.NotificationReceived" xml:space="preserve"><value>Event received.</value></data>
+  <data name="Message.NotificationErrorReceived" xml:space="preserve"><value>Error received.</value></data>
+  <data name="Devices.Filters" xml:space="preserve"><value>Device filters</value></data>
+  <data name="Filter.All" xml:space="preserve"><value>All</value></data>
+  <data name="Filter.Connected" xml:space="preserve"><value>Connected</value></data>
+  <data name="Filter.Offline" xml:space="preserve"><value>Offline</value></data>
+  <data name="Filter.LiteNet3" xml:space="preserve"><value>LiteNet3</value></data>
+  <data name="Filter.SM25" xml:space="preserve"><value>SM25</value></data>
+  <data name="Workspace.TechnicalReturn" xml:space="preserve"><value>Technical device return</value></data>
+  <data name="Workspace.TechnicalReturnHint" xml:space="preserve"><value>Operational history and raw JSON stay centered for technical users.</value></data>
+  <data name="Workspace.JsonHint" xml:space="preserve"><value>technical payload / Hub response</value></data>
+  <data name="Json.PayloadLabel" xml:space="preserve"><value>JSON payload</value></data>
+  <data name="Json.CopyLabel" xml:space="preserve"><value>Copy JSON payload</value></data>
+  <data name="Json.CloseLabel" xml:space="preserve"><value>Close JSON drawer</value></data>
+  <data name="Json.Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Json.Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="Json.CopyFailed" xml:space="preserve"><value>Copy failed</value></data>
+  <data name="History.SelectedDeviceEvents" xml:space="preserve"><value>selected device events</value></data>
+  <data name="Config.Edit" xml:space="preserve"><value>Edit configuration</value></data>
+  <data name="Config.Biometrics" xml:space="preserve"><value>LiteNet2 / SM25</value></data>
+  <data name="Config.Notification" xml:space="preserve"><value>Notification</value></data>
+  <data name="Field.EntryClockwise" xml:space="preserve"><value>Entry clockwise</value></data>
+  <data name="Field.BuzzerMute" xml:space="preserve"><value>Mute</value></data>
+  <data name="Field.ShowClock" xml:space="preserve"><value>Show clock</value></data>
+  <data name="Field.FingerprintMode" xml:space="preserve"><value>Identification</value></data>
+  <data name="Field.NotifyColor" xml:space="preserve"><value>Notification LED</value></data>
+  <data name="Field.NotifyTone" xml:space="preserve"><value>Tone</value></data>
+  <data name="Field.NotifyShowMessage" xml:space="preserve"><value>Show message</value></data>
+  <data name="Field.FlowInverted" xml:space="preserve"><value>Inverted flow</value></data>
+  <data name="Field.FlowIn" xml:space="preserve"><value>Entry flow</value></data>
+  <data name="Field.FlowOut" xml:space="preserve"><value>Exit flow</value></data>
+  <data name="Field.LedWait" xml:space="preserve"><value>Wait LED</value></data>
+  <data name="Field.PictoWaitIn" xml:space="preserve"><value>Entry pictogram</value></data>
+  <data name="Field.PictoWaitOut" xml:space="preserve"><value>Exit pictogram</value></data>
+  <data name="Field.DisplayTop" xml:space="preserve"><value>Top row</value></data>
+  <data name="Field.DisplayBottom" xml:space="preserve"><value>Bottom row</value></data>
+  <data name="Field.DisplayMode" xml:space="preserve"><value>Display</value></data>
+  <data name="Field.Alias" xml:space="preserve"><value>Alias</value></data>
+  <data name="Field.Gateway" xml:space="preserve"><value>Gateway</value></data>
+  <data name="Option.Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Option.No" xml:space="preserve"><value>No</value></data>
+  <data name="Option.FlowOut.Out" xml:space="preserve"><value>Exit</value></data>
+  <data name="Option.FlowOut.Controls" xml:space="preserve"><value>Controlled</value></data>
+  <data name="Option.FlowPermission.Controls" xml:space="preserve"><value>Controlled</value></data>
+  <data name="Option.FlowPermission.Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Option.FlowPermission.Blocks" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Option.Picto.Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Option.Picto.Arrow" xml:space="preserve"><value>Arrow</value></data>
+  <data name="Option.Picto.Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Option.Picto.ArrowAndBlocked" xml:space="preserve"><value>Arrow and blocked</value></data>
+  <data name="Option.Picto.Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Option.Display.Default" xml:space="preserve"><value>Fixed message</value></data>
+  <data name="Option.Display.Temporary" xml:space="preserve"><value>Temporary notification</value></data>
+  <data name="Option.Display.Clear" xml:space="preserve"><value>Clear display</value></data>
+  <data name="Option.Display.Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Option.Display.Counters" xml:space="preserve"><value>Counters</value></data>
+  <data name="Option.Fingerprint.CardOrFingerprint" xml:space="preserve"><value>Fingerprint + card</value></data>
+  <data name="Option.Fingerprint.Fingerprint" xml:space="preserve"><value>Fingerprint only</value></data>
+  <data name="Option.Fingerprint.Card" xml:space="preserve"><value>Card only</value></data>
+  <data name="Option.NotifyTone.Success" xml:space="preserve"><value>Success</value></data>
+  <data name="Option.NotifyTone.Alert" xml:space="preserve"><value>Alert</value></data>
+  <data name="Option.NotifyTone.Silent" xml:space="preserve"><value>Silent</value></data>
+  <data name="Actionbar.Empty" xml:space="preserve"><value>Device actions</value></data>
+  <data name="Actionbar.ForDevice" xml:space="preserve"><value>Actions &#183; {0}</value></data>
+  <data name="Actionbar.Hint" xml:space="preserve"><value>Connect the device to send release commands.</value></data>
+  <data name="Actionbar.Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Tweaks.Title" xml:space="preserve"><value>Tweaks</value></data>
+  <data name="Tweaks.OpenLabel" xml:space="preserve"><value>Open tweaks panel</value></data>
+  <data name="Tweaks.CloseLabel" xml:space="preserve"><value>Close tweaks panel</value></data>
+  <data name="Tweaks.ButtonText" xml:space="preserve"><value>T</value></data>
+  <data name="Tweaks.Appearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Tweaks.Activity" xml:space="preserve"><value>Activity</value></data>
+  <data name="Tweaks.Accent" xml:space="preserve"><value>Accent</value></data>
+  <data name="Tweaks.AccentHexLabel" xml:space="preserve"><value>Accent hex color</value></data>
+  <data name="Tweaks.SetAccent" xml:space="preserve"><value>Set accent</value></data>
+  <data name="Tweaks.Density" xml:space="preserve"><value>Density</value></data>
+  <data name="Tweaks.Density.Compact" xml:space="preserve"><value>Compact</value></data>
+  <data name="Tweaks.Density.Regular" xml:space="preserve"><value>Regular</value></data>
+  <data name="Tweaks.Density.Comfy" xml:space="preserve"><value>Comfy</value></data>
+  <data name="Tweaks.TimeFormat" xml:space="preserve"><value>Time</value></data>
+  <data name="Tweaks.TimeFormat.Clock" xml:space="preserve"><value>Clock</value></data>
+  <data name="Tweaks.TimeFormat.Relative" xml:space="preserve"><value>Relative</value></data>
+  <data name="Color.Edit" xml:space="preserve"><value>Edit colors</value></data>
+  <data name="Color.Basic" xml:space="preserve"><value>Basic colors</value></data>
+  <data name="Color.Custom" xml:space="preserve"><value>Custom colors</value></data>
+  <data name="Color.Select" xml:space="preserve"><value>Select color</value></data>
+</root>

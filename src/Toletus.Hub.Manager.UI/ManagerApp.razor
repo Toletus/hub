@@ -1,0 +1,347 @@
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using Toletus.Hub.Manager.UI.Components
+@implements IDisposable
+@inject ManagerUiState State
+@inject DeviceCapabilityCatalog Catalog
+@inject NotificationHistoryService History
+@inject CultureState Culture
+@inject UiText Text
+@inject HubManagerThemeState Theme
+@inject IJSRuntime JsRuntime
+
+<div class="thm-page">
+    <section class="app" style="@GetAppStyle()" data-density="@GetDensityAttribute()">
+        <HubTopbar State="State"
+                   Culture="Culture"
+                   Text="Text"
+                   CultureChanged="ChangeCulture"
+                   DiscoverRequested="DiscoverAsync" />
+
+        @if (State.CurrentCommandId == "discovery")
+        {
+            <div class="scanbar" aria-hidden="true"><span></span></div>
+        }
+
+        <DeviceStrip Text="Text"
+                     Devices="State.Devices"
+                     SelectedDevice="State.SelectedDevice"
+                     DeviceSelected="SelectDeviceAsync" />
+
+        <div class="main">
+            <DeviceListPanel State="State"
+                             Text="Text"
+                             DeviceSelected="SelectDeviceAsync"
+                             DeviceStatusClass="GetDeviceStatusClass" />
+
+            <main class="center">
+                    <ActivityTimeline Text="Text"
+                                      Items="History.Items"
+                                      SelectedItem="SelectedHistoryItem"
+                                      TimeFormat="Theme.TimeFormat"
+                                      ItemSelected="SelectHistoryItem"
+                                      ViewJsonRequested="ViewJson"
+                                      ItemKeyDown="HandleHistoryKey"
+                                      ClearRequested="ClearHistory"
+                                      HistorySummary="GetHistorySummary"
+                                      HistoryStatusClass="GetHistoryStatusClass" />
+
+                    <JsonDrawer Text="Text"
+                                Payload="@BuildJsonPayload()"
+                                Open="IsJsonDrawerOpen"
+                                CloseRequested="CloseJsonDrawer" />
+            </main>
+
+            <DeviceDetailPanel State="State"
+                               Catalog="Catalog"
+                               Text="Text"
+                               DeviceStatusClass="@(State.SelectedDevice is null ? null : GetDeviceStatusClass(State.SelectedDevice))" />
+        </div>
+
+        @if (IsDetailOverlayOpen)
+        {
+            <div class="overlay-backdrop"
+                 @onclick="CloseDetails">
+                <DeviceDetailPanel State="State"
+                                   Catalog="Catalog"
+                                   Text="Text"
+                                   DeviceStatusClass="@(State.SelectedDevice is null ? null : GetDeviceStatusClass(State.SelectedDevice))"
+                                   IsOverlay="true"
+                                   CloseRequested="CloseDetails"
+                                   @onclick:stopPropagation="true" />
+            </div>
+        }
+
+        <CommandBar Text="Text"
+                    SelectedDevice="State.SelectedDevice"
+                    ActionTitle="@GetActionTitle()"
+                    Commands="GetFooterCommands()"
+                    CommandRequested="ExecuteCommandAsync"
+                    CommandClass="GetFooterCommandClass"
+                    CommandDisabled="IsDisabled"
+                    DetailsToggled="OpenDetails" />
+    </section>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private CommandHistoryItemViewModel? SelectedHistoryItem { get; set; }
+    private bool IsJsonDrawerOpen { get; set; }
+    private bool IsDetailOverlayOpen { get; set; }
+    private bool CanPersistTheme { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        State.Changed += OnStateChanged;
+        History.Changed += OnHistoryChanged;
+        Culture.Changed += OnStateChanged;
+        Theme.Changed += OnThemeChanged;
+        await State.InitializeAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        CanPersistTheme = true;
+        await Theme.LoadAsync(JsRuntime);
+    }
+
+    private async Task SelectDeviceAsync(DeviceRefViewModel device)
+    {
+        SelectedHistoryItem = null;
+        await State.SelectDeviceAsync(device);
+    }
+
+    private async Task DiscoverAsync()
+    {
+        await State.DiscoverAsync();
+    }
+
+    private async Task ExecuteCommandAsync(string commandId)
+    {
+        await State.ExecuteAsync(commandId);
+    }
+
+    private bool IsDisabled(CommandCapability command) =>
+        State.IsBusy || (command.RequiresConnection && State.SelectedDevice?.Connected != true);
+
+    private IEnumerable<CommandCapability> GetFooterCommands()
+    {
+        if (State.SelectedDevice is null)
+            return Array.Empty<CommandCapability>();
+
+        var commandIds = new List<string>
+        {
+            DeviceCapabilityCatalog.ReleaseEntry,
+            DeviceCapabilityCatalog.ReleaseExit,
+            DeviceCapabilityCatalog.ReleaseEntryAndExit,
+            DeviceCapabilityCatalog.GetStatus
+        };
+
+        commandIds.Add(State.SelectedDevice.Connected
+            ? DeviceCapabilityCatalog.Disconnect
+            : DeviceCapabilityCatalog.Connect);
+
+        return Catalog.GetCommands(State.SelectedDevice.Type)
+            .Where(command => commandIds.Contains(command.Id))
+            .OrderBy(command => commandIds.IndexOf(command.Id));
+    }
+
+    private string GetFooterCommandClass(CommandCapability command)
+    {
+        var classes = new List<string> { "btn", "btn-soft" };
+
+        if (command.Id == DeviceCapabilityCatalog.Connect)
+        {
+            classes.Remove("btn-soft");
+            classes.Add("btn-primary");
+        }
+
+        if (command.Id == DeviceCapabilityCatalog.Disconnect)
+        {
+            classes.Remove("btn-soft");
+            classes.Add("btn-danger");
+        }
+
+        if (State.CurrentCommandId == command.Id)
+            classes.Add("is-busy");
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetDeviceStatusClass(DeviceRefViewModel device) =>
+        device.Connected ? "st-connected" : "st-disconnected";
+
+    private static string GetHistoryStatusClass(CommandHistoryItemViewModel item) =>
+        item.Status switch
+        {
+            CommandStatusKind.Warning => "sev-warn",
+            CommandStatusKind.Error => "sev-err",
+            CommandStatusKind.Pending => "sev-run",
+            _ => "sev-ok"
+        };
+
+    private string GetActionTitle() =>
+        State.SelectedDevice is null
+            ? Text["Actionbar.Empty"]
+            : string.Format(Text["Actionbar.ForDevice"], State.SelectedDevice.Name);
+
+    private string GetAppStyle() =>
+        $"position: relative; --accent: {Theme.Accent}; --thm-brand: {Theme.Accent}; --hub-accent: {Theme.Accent}";
+
+    private string GetDensityAttribute() =>
+        Theme.Density.ToString().ToLowerInvariant();
+
+    private string GetHistorySummary(CommandHistoryItemViewModel item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.DeviceName))
+            return item.DeviceName;
+
+        if (item.Details.Count > 0)
+            return GetDetailValue(item.Details[0]);
+
+        return Text[item.Status switch
+        {
+            CommandStatusKind.Pending => "History.Result.Pending",
+            CommandStatusKind.Success => "History.Result.Success",
+            CommandStatusKind.Warning => "History.Result.Warning",
+            CommandStatusKind.Error => "History.Result.Error",
+            CommandStatusKind.Canceled => "History.Result.Canceled",
+            _ => "History.Result.Idle"
+        }];
+    }
+
+    private void SelectHistoryItem(CommandHistoryItemViewModel item)
+    {
+        SelectedHistoryItem = item;
+    }
+
+    private void ViewJson(CommandHistoryItemViewModel item)
+    {
+        SelectedHistoryItem = item;
+        IsJsonDrawerOpen = true;
+    }
+
+    private void CloseJsonDrawer()
+    {
+        IsJsonDrawerOpen = false;
+    }
+
+    private void OpenDetails()
+    {
+        IsDetailOverlayOpen = true;
+    }
+
+    private void CloseDetails()
+    {
+        IsDetailOverlayOpen = false;
+    }
+
+    private void HandleHistoryKey(KeyboardEventArgs args, CommandHistoryItemViewModel item)
+    {
+        if (args.Key is "Enter" or " ")
+            SelectHistoryItem(item);
+    }
+
+    private void HandleHistoryKey((KeyboardEventArgs Args, CommandHistoryItemViewModel Item) eventArgs)
+    {
+        HandleHistoryKey(eventArgs.Args, eventArgs.Item);
+    }
+
+    private void ClearHistory()
+    {
+        SelectedHistoryItem = null;
+        IsJsonDrawerOpen = false;
+        History.Clear();
+    }
+
+    private string BuildJsonPayload()
+    {
+        var selectedDevice = State.SelectedDevice;
+        var selectedHistory = SelectedHistoryItem;
+        if (selectedHistory?.Payload is not null)
+            return JsonSerializer.Serialize(selectedHistory.Payload, JsonOptions);
+
+        var payload = new
+        {
+            device = selectedDevice?.Name,
+            type = selectedDevice?.TypeLabel,
+            command = selectedHistory?.CommandId ?? State.CurrentCommandId ?? "GetStatus",
+            status = selectedHistory?.Status.ToString().ToLowerInvariant() ?? (selectedDevice?.Connected == true ? "connected" : "idle"),
+            ip = selectedDevice?.IpAddress,
+            serial = selectedDevice?.SerialNumber,
+            history_event = selectedHistory is null ? null : new
+            {
+                title = Text[selectedHistory.MessageKey],
+                detail = GetHistorySummary(selectedHistory),
+                selected_at = selectedHistory.Timestamp.ToString("HH:mm:ss"),
+                details = selectedHistory.Details.ToDictionary(GetDetailLabel, GetDetailValue),
+                technical = selectedHistory.TechnicalDetails
+            },
+            configuration = State.ConfigurationValues.ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase)
+        };
+
+        return JsonSerializer.Serialize(payload, JsonOptions);
+    }
+
+    private void ChangeCulture(ChangeEventArgs args)
+    {
+        if (args.Value is string culture)
+            Culture.SetCulture(culture);
+    }
+
+    private string GetDetailLabel(HistoryDetailViewModel detail)
+    {
+        var localized = Text[detail.LabelKey];
+        if (!localized.Equals(detail.LabelKey, StringComparison.Ordinal))
+            return localized;
+
+        return Text["History.Detail.Value"];
+    }
+
+    private string GetDetailValue(HistoryDetailViewModel detail)
+    {
+        if (detail.ValueKey is null)
+            return detail.Value;
+
+        var localized = Text[detail.ValueKey];
+        return localized.Equals(detail.ValueKey, StringComparison.Ordinal) ? detail.Value : localized;
+    }
+
+    private void OnStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnHistoryChanged()
+    {
+        if (SelectedHistoryItem is not null && !History.Items.Contains(SelectedHistoryItem))
+            SelectedHistoryItem = null;
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnThemeChanged()
+    {
+        if (CanPersistTheme)
+            _ = PersistThemeAsync();
+
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PersistThemeAsync()
+    {
+        await Theme.SaveAsync(JsRuntime);
+    }
+
+    public void Dispose()
+    {
+        State.Changed -= OnStateChanged;
+        History.Changed -= OnHistoryChanged;
+        Culture.Changed -= OnStateChanged;
+        Theme.Changed -= OnThemeChanged;
+    }
+}

@@ -1,0 +1,253 @@
+<aside class="panel detail-panel @(IsOverlay ? "as-overlay" : null)" data-screen-label="Detalhes do dispositivo">
+    @if (ShouldRenderChildContentFallback)
+    {
+        @ChildContent
+    }
+    else if (SelectedDevice is null)
+    {
+        <section class="detail-empty">
+            <div class="tl-empty-title">@T("Workspace.EmptyTitle")</div>
+            <div class="tl-empty-sub">@T("Workspace.EmptyText")</div>
+        </section>
+    }
+    else
+    {
+        <header class="detail-head">
+            <div class="detail-head-row">
+                <h2 class="detail-name">@SelectedDevice.Name</h2>
+                <span class="badge @ResolvedDeviceStatusClass">
+                    <span class="badge-dot"></span>
+                    @(SelectedDevice.Connected ? T("Workspace.Connected") : T("Workspace.Disconnected"))
+                </span>
+                @if (IsOverlay && CloseRequested.HasDelegate)
+                {
+                    <button type="button" class="icon-btn" @onclick="() => CloseRequested.InvokeAsync()" aria-label="@T("Json.CloseLabel")">
+                        x
+                    </button>
+                }
+            </div>
+
+            <div class="detail-sub">
+                <span class="type-chip">@SelectedDevice.TypeLabel</span>
+                @foreach (var module in SelectedModules)
+                {
+                    <span class="type-chip">@module</span>
+                }
+                <span class="detail-fw mono">@T("Config.General") @GetConfigurationValue("firmware_version", "-")</span>
+            </div>
+
+            <div class="ident-grid">
+                <div class="ident-cell"><span>ID</span><strong class="mono">@SelectedDevice.Id</strong></div>
+                <div class="ident-cell"><span>@T("Workspace.Serial")</span><strong class="mono">@(SelectedDevice.SerialNumber ?? "-")</strong></div>
+                <div class="ident-cell"><span>IP</span><strong class="mono">@SelectedDevice.IpAddress</strong></div>
+                <div class="ident-cell"><span>MAC</span><strong class="mono">@GetConfigurationValue("mac", "-")</strong></div>
+            </div>
+        </header>
+
+        <div class="detail-scroll">
+            <div class="cfg-toolbar">
+                <h3>@T("Config.Edit")</h3>
+                <div class="panel-head-spacer"></div>
+                    <button class="btn btn-soft" @onclick="RefreshConfigurationAsync" disabled="@IsConfigurationActionDisabled">
+                        @T("Command.GetProperties")
+                    </button>
+            </div>
+
+                @if (IsConfigurationLoading)
+                {
+                    <div class="props-progress">
+                        <div class="props-progress-bar"><span style="width:55%"></span></div>
+                        <span class="mono">@T("Message.CommandPending")</span>
+                    </div>
+                }
+                else if (IsConfigurationEmpty)
+                {
+                    <div class="props-banner">
+                        <div>
+                            <strong>@T("Message.ConfigurationEmptyTitle")</strong>
+                            <span>@T("Message.ConfigurationEmptyText")</span>
+                        </div>
+                    </div>
+                }
+
+                @foreach (var group in GetConfigurationGroups())
+                {
+                    <section class="cfg-group">
+                        <div class="cfg-group-head">
+                            <h4>@T(group.Key)</h4>
+                            <span class="scope-tag mono">@GetConfigurationGroupHint(group.Key)</span>
+                            <button class="btn btn-primary"
+                                    @onclick="() => SendConfigurationAsync(group.Key)"
+                                    disabled="@(IsConfigurationActionDisabled || !CanSubmitConfigurationGroup(group))">
+                                @T("Command.SendConfiguration")
+                            </button>
+                        </div>
+
+                        <div class="cfg-fields" aria-busy="@IsConfigurationLoading">
+                            @foreach (var field in group)
+                            {
+                                <ConfigurationField Field="field"
+                                                    Value="@GetConfigurationValue(field.Id)"
+                                                    Disabled="@IsFieldDisabled(field)"
+                                                    Text="Text"
+                                                    ValueChanged="OnConfigurationValueChanged" />
+                            }
+                        </div>
+                    </section>
+                }
+
+                @if (SelectedModules.Contains(DeviceModuleKind.SM25))
+                {
+                <Sm25Section Modules="SelectedModules"
+                             Catalog="Catalog"
+                             Text="Text"
+                             CurrentCommandId="CurrentCommandId"
+                             IsBusy="IsBusy"
+                             IsConnected="SelectedDevice.Connected"
+                             CommandRequested="ExecuteModuleCommandAsync" />
+                }
+
+                <div class="cfg-footer">
+                    @if (SelectedDevice.Connected != true)
+                    {
+                        <div class="cfg-hint">@T("Actionbar.Hint")</div>
+                    }
+                </div>
+        </div>
+    }
+</aside>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public DeviceRefViewModel? Device { get; set; }
+    [Parameter] public ManagerUiState? State { get; set; }
+    [Parameter] public DeviceCapabilityCatalog? Catalog { get; set; }
+    [Parameter] public UiText? Text { get; set; }
+    [Parameter] public IReadOnlyList<ConfigurationFieldCapability>? ConfigurationFields { get; set; }
+    [Parameter] public IDictionary<string, string>? ConfigurationValues { get; set; }
+    [Parameter] public EventCallback RefreshConfigurationRequested { get; set; }
+    [Parameter] public EventCallback<string> SendConfigurationRequested { get; set; }
+    [Parameter] public EventCallback<string> CommandRequested { get; set; }
+    [Parameter] public EventCallback<string> ModuleCommandRequested { get; set; }
+    [Parameter] public EventCallback<(string FieldId, string Value)> ConfigurationValueChanged { get; set; }
+    [Parameter] public string? DeviceStatusClass { get; set; }
+    [Parameter] public bool? IsBusyOverride { get; set; }
+    [Parameter] public bool? IsConfigurationLoadingOverride { get; set; }
+    [Parameter] public string? CurrentCommandIdOverride { get; set; }
+    [Parameter] public bool IsOverlay { get; set; }
+    [Parameter] public EventCallback CloseRequested { get; set; }
+
+    private DeviceRefViewModel? SelectedDevice => Device ?? State?.SelectedDevice;
+
+    private IDictionary<string, string> Values =>
+        ConfigurationValues ?? State?.ConfigurationValues ?? LocalConfigurationValues;
+
+    private Dictionary<string, string> LocalConfigurationValues { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    private bool IsBusy => IsBusyOverride ?? State?.IsBusy ?? false;
+
+    private bool IsConfigurationLoading => IsConfigurationLoadingOverride ?? State?.IsConfigurationLoading ?? false;
+
+    private bool IsConfigurationEmpty =>
+        Values.Count == 0 || Values.Values.All(string.IsNullOrWhiteSpace);
+
+    private string? CurrentCommandId => CurrentCommandIdOverride ?? State?.CurrentCommandId;
+
+    private bool IsConfigurationActionDisabled =>
+        IsBusy || IsConfigurationLoading || SelectedDevice?.Connected != true;
+
+    private string ResolvedDeviceStatusClass =>
+        DeviceStatusClass ?? (SelectedDevice?.Connected == true ? "ok" : "off");
+
+    private bool ShouldRenderChildContentFallback =>
+        ChildContent is not null &&
+        Device is null &&
+        State is null &&
+        Catalog is null &&
+        Text is null &&
+        ConfigurationFields is null &&
+        ConfigurationValues is null;
+
+    private IReadOnlyList<DeviceModuleKind> SelectedModules =>
+        SelectedDevice?.Modules ?? Array.Empty<DeviceModuleKind>();
+
+    private string T(string key) => Text?[key] ?? key;
+
+    private IReadOnlyList<IGrouping<string, ConfigurationFieldCapability>> GetConfigurationGroups()
+    {
+        if (SelectedDevice is null)
+            return Array.Empty<IGrouping<string, ConfigurationFieldCapability>>();
+
+        var fields = ConfigurationFields ?? Catalog?.GetConfigurationFields(SelectedDevice.Type) ?? Array.Empty<ConfigurationFieldCapability>();
+        return fields.GroupBy(field => field.GroupKey).ToList();
+    }
+
+    private string GetConfigurationValue(string fieldId, string fallback = "") =>
+        Values.TryGetValue(fieldId, out var value) ? value : fallback;
+
+    private async Task OnConfigurationValueChanged((string FieldId, string Value) change)
+    {
+        Values[change.FieldId] = change.Value;
+
+        if (ConfigurationValueChanged.HasDelegate)
+            await ConfigurationValueChanged.InvokeAsync(change);
+    }
+
+    private bool IsFieldDisabled(ConfigurationFieldCapability field) =>
+        IsConfigurationLoading || (field.RequiresConnection && SelectedDevice?.Connected != true);
+
+    private string GetConfigurationGroupHint(string groupKey) =>
+        groupKey switch
+        {
+            "Config.Biometrics" => "SM25",
+            "Config.Notification" => "LiteNet2",
+            "Config.Operation" => "comum",
+            _ => "device"
+        };
+
+    private async Task RefreshConfigurationAsync()
+    {
+        if (RefreshConfigurationRequested.HasDelegate)
+            await RefreshConfigurationRequested.InvokeAsync();
+        else if (State is not null)
+            await State.RefreshConfigurationAsync();
+    }
+
+    private async Task SendConfigurationAsync(string moduleKey)
+    {
+        if (SendConfigurationRequested.HasDelegate)
+            await SendConfigurationRequested.InvokeAsync(moduleKey);
+        else if (State is not null)
+            await State.SendConfigurationAsync(moduleKey);
+    }
+
+    private bool CanSubmitConfigurationGroup(IGrouping<string, ConfigurationFieldCapability> group) =>
+        SelectedDevice is not null &&
+        group.Any(field => field.ControlKind != "read") &&
+        IsConfigurationGroupSupported(SelectedDevice.Type, group.Key);
+
+    private static bool IsConfigurationGroupSupported(DeviceTypeKind type, string groupKey) =>
+        groupKey switch
+        {
+            "Config.General" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Flow" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Counters" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2,
+            "Config.Operation" => type is DeviceTypeKind.LiteNet1 or DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Messages" => type is DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Biometrics" => type is DeviceTypeKind.LiteNet2,
+            "Config.Notification" => type is DeviceTypeKind.LiteNet2,
+            "Config.Network" => type is DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            "Config.Security" => type is DeviceTypeKind.LiteNet2 or DeviceTypeKind.LiteNet3,
+            _ => false
+        };
+
+    private async Task ExecuteModuleCommandAsync(string commandId)
+    {
+        if (ModuleCommandRequested.HasDelegate)
+            await ModuleCommandRequested.InvokeAsync(commandId);
+        else if (CommandRequested.HasDelegate)
+            await CommandRequested.InvokeAsync(commandId);
+        else if (State is not null)
+            await State.ExecuteAsync(commandId);
+    }
+}

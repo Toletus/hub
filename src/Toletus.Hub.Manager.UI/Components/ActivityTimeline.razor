@@ -1,0 +1,220 @@
+@inject TimelinePresentationMapper PresentationMapper
+@implements IDisposable
+
+<section class="panel tl-panel" data-screen-label="Atividade / Historico">
+    <header class="panel-head">
+        <h2 class="panel-title">@Text["History.Title"]</h2>
+        <div class="seg" role="tablist" aria-label="@Text["History.Title"]">
+            @foreach (var filter in Filters)
+            {
+                <button class="seg-item @(ActiveFilter == filter.Id ? "on" : null)"
+                        type="button"
+                        role="tab"
+                        aria-selected="@(ActiveFilter == filter.Id)"
+                        @onclick="() => SetFilter(filter.Id)">
+                    @Text[filter.LabelKey]
+                </button>
+            }
+        </div>
+        <div class="panel-head-spacer"></div>
+        <button class="ghost-btn" type="button" disabled="@(Items.Count == 0)" @onclick="() => ClearRequested.InvokeAsync()">@Text["History.Clear"]</button>
+    </header>
+
+    <div class="tl-scroll">
+            @if (VisibleItems.Count == 0)
+            {
+                <div class="tl-empty">
+                    <div class="tl-empty-title">@Text["History.Empty"]</div>
+                    <div class="tl-empty-sub">@Text["History.SelectedDeviceEvents"]</div>
+                </div>
+            }
+            else
+            {
+                @foreach (var item in VisibleItems)
+                {
+                    var presentation = PresentationMapper.Map(item);
+                    var isExpanded = IsExpanded(item);
+
+                    <article class="ev @GetHistoryStatusClass(item) @presentation.KindCssClass @presentation.SeverityCssClass @(isExpanded ? "open" : null)"
+                             role="button"
+                             tabindex="0"
+                             @onclick="() => ItemSelected.InvokeAsync(item)"
+                             @onkeydown="args => ItemKeyDown.InvokeAsync((args, item))">
+                        <time class="ev-time mono">@FormatTimestamp(item.Timestamp)</time>
+                        <div class="ev-rail"><span class="ev-dot"></span></div>
+                        <div class="ev-body">
+                        <div class="ev-head">
+                            <span class="ev-tag @presentation.KindCssClass">@Text[presentation.KindLabelKey]</span>
+                            <span class="ev-title">@Text[item.MessageKey]</span>
+                            @if (!string.IsNullOrWhiteSpace(item.DeviceName))
+                            {
+                                <span class="ev-dev mono">@item.DeviceName</span>
+                            }
+                        </div>
+                        <div class="ev-sum">@GetSummary(item)</div>
+
+                        <div class="ev-actions" @onclick:stopPropagation="true" @onkeydown:stopPropagation="true">
+                            @if (HasExpandableContent(item))
+                            {
+                                <button class="ev-link"
+                                        type="button"
+                                        aria-expanded="@isExpanded"
+                                        @onclick="() => ToggleExpanded(item)">
+                                    <span class="ev-chev" aria-hidden="true"></span>
+                                    @(isExpanded ? Text["History.Action.Collapse"] : Text["History.Action.Expand"])
+                                </button>
+                            }
+                            <button class="ev-link @(SelectedItem == item ? "on" : null)"
+                                    type="button"
+                                    @onclick="() => ViewJsonRequested.InvokeAsync(item)">
+                                <span class="mono">{ }</span>
+                                @Text["History.Action.ViewJson"]
+                            </button>
+                        </div>
+
+                        @if (isExpanded)
+                        {
+                            <div class="ev-detail" @onclick:stopPropagation="true">
+                            <div class="kv-grid">
+                                @foreach (var detail in item.Details)
+                                {
+                                    <div class="kv-row">
+                                        <span class="kv-k">@Text[detail.LabelKey]</span>
+                                        <span class="kv-v">@GetDetailValue(detail)</span>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(item.TechnicalDetails))
+                                {
+                                    <div class="kv-row">
+                                        <span class="kv-k">@Text["History.Detail.Technical"]</span>
+                                        <span class="kv-v mono">@item.TechnicalDetails</span>
+                                    </div>
+                                }
+                            </div>
+                            </div>
+
+                            @if (item.Media is { } media && IsImageMedia(media))
+                            {
+                                <figure class="ev-media" @onclick:stopPropagation="true">
+                                    <img class="fp-canvas" src="@media.Source" alt="@GetMediaAlt(media)" />
+                                    @if (!string.IsNullOrWhiteSpace(media.CaptionKey))
+                                    {
+                                        <figcaption class="tl-empty-sub">@Text[media.CaptionKey]</figcaption>
+                                    }
+                                </figure>
+                            }
+                        }
+                        </div>
+                    </article>
+                }
+            }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public IReadOnlyList<CommandHistoryItemViewModel> Items { get; set; } = Array.Empty<CommandHistoryItemViewModel>();
+    [Parameter] public CommandHistoryItemViewModel? SelectedItem { get; set; }
+    [Parameter] public HubManagerTimeFormat TimeFormat { get; set; } = HubManagerTimeFormat.Clock;
+    [Parameter] public EventCallback<CommandHistoryItemViewModel> ItemSelected { get; set; }
+    [Parameter] public EventCallback<CommandHistoryItemViewModel> ViewJsonRequested { get; set; }
+    [Parameter] public EventCallback<(KeyboardEventArgs Args, CommandHistoryItemViewModel Item)> ItemKeyDown { get; set; }
+    [Parameter] public EventCallback ClearRequested { get; set; }
+    [Parameter] public Func<CommandHistoryItemViewModel, string>? HistorySummary { get; set; }
+    [Parameter] public Func<CommandHistoryItemViewModel, string>? HistoryStatusClass { get; set; }
+
+    private static readonly IReadOnlyList<(string Id, string LabelKey)> Filters =
+    [
+        ("all", "History.Filter.All"),
+        ("commands", "History.Filter.Commands"),
+        ("events", "History.Filter.Events"),
+        ("errors", "History.Filter.Errors")
+    ];
+
+    private readonly HashSet<string> _expandedItems = new(StringComparer.Ordinal);
+    private System.Threading.Timer? relativeTimer;
+    private string ActiveFilter { get; set; } = "all";
+
+    protected override void OnParametersSet()
+    {
+        if (TimeFormat == HubManagerTimeFormat.Relative)
+        {
+            relativeTimer ??= new System.Threading.Timer(_ => InvokeAsync(StateHasChanged), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+        }
+        else
+        {
+            relativeTimer?.Dispose();
+            relativeTimer = null;
+        }
+    }
+
+    private IReadOnlyList<CommandHistoryItemViewModel> VisibleItems =>
+        Items.Where(item =>
+        {
+            var presentation = PresentationMapper.Map(item);
+            return ActiveFilter switch
+            {
+                "commands" => presentation.Kind == TimelineEventKind.Command,
+                "events" => presentation.Kind != TimelineEventKind.Command && presentation.Kind != TimelineEventKind.Error,
+                "errors" => presentation.Kind == TimelineEventKind.Error || presentation.Severity == TimelinePresentationSeverity.Error,
+                _ => true
+            };
+        }).ToList();
+
+    private string GetSummary(CommandHistoryItemViewModel item) =>
+        HistorySummary?.Invoke(item) ?? string.Empty;
+
+    private string GetHistoryStatusClass(CommandHistoryItemViewModel item) =>
+        HistoryStatusClass?.Invoke(item) ?? string.Empty;
+
+    private void SetFilter(string filterId)
+    {
+        ActiveFilter = filterId;
+    }
+
+    private bool IsExpanded(CommandHistoryItemViewModel item) =>
+        _expandedItems.Contains(GetItemKey(item));
+
+    private void ToggleExpanded(CommandHistoryItemViewModel item)
+    {
+        var key = GetItemKey(item);
+        if (!_expandedItems.Add(key))
+            _expandedItems.Remove(key);
+    }
+
+    private static bool HasExpandableContent(CommandHistoryItemViewModel item) =>
+        item.Details.Count > 0 || item.Media is not null || !string.IsNullOrWhiteSpace(item.TechnicalDetails);
+
+    private static bool IsImageMedia(HistoryMediaViewModel media) =>
+        media.Kind.Equals("image", StringComparison.OrdinalIgnoreCase);
+
+    private string GetDetailValue(HistoryDetailViewModel detail) =>
+        string.IsNullOrWhiteSpace(detail.ValueKey) ? detail.Value : Text[detail.ValueKey];
+
+    private string GetMediaAlt(HistoryMediaViewModel media) =>
+        string.IsNullOrWhiteSpace(media.AltKey) ? string.Empty : Text[media.AltKey];
+
+    private string FormatTimestamp(DateTimeOffset timestamp)
+    {
+        if (TimeFormat == HubManagerTimeFormat.Clock)
+            return timestamp.ToString("HH:mm:ss");
+
+        var elapsed = DateTimeOffset.Now - timestamp;
+        if (elapsed.TotalSeconds < 5)
+            return Text["History.Relative.Now"];
+
+        if (elapsed.TotalSeconds < 60)
+            return $"{Math.Max(1, (int)Math.Round(elapsed.TotalSeconds))}s";
+
+        return $"{Math.Max(1, (int)Math.Round(elapsed.TotalMinutes))}m";
+    }
+
+    private static string GetItemKey(CommandHistoryItemViewModel item) =>
+        $"{item.Timestamp:O}|{item.CommandId}|{item.MessageKey}";
+
+    public void Dispose()
+    {
+        relativeTimer?.Dispose();
+    }
+}

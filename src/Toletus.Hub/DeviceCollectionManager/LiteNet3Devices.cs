@@ -12,15 +12,19 @@ public static class LiteNet3Devices
     public static void SetBoards(List<LiteNet3Board> newBoards)
     {
         if (Boards == null)
-            Boards = newBoards.ToList();
-        else
         {
-            SetRemovedBoards(newBoards);
-            SetAddedBoards(newBoards);
+            Boards = newBoards.ToList();
+
+            foreach (var newBoard in newBoards)
+                OnBoardReceived?.Invoke(newBoard);
+
+            return;
         }
 
-        foreach (var newBoard in newBoards)
-            OnBoardReceived?.Invoke(newBoard);
+        SetRemovedBoards(newBoards);
+
+        foreach (var addedBoard in SetAddedBoards(newBoards))
+            OnBoardReceived?.Invoke(addedBoard);
     }
 
     public static void SetBoard(LiteNet3Board board)
@@ -34,8 +38,8 @@ public static class LiteNet3Devices
 
     private static void SetRemovedBoards(List<LiteNet3Board> newBoards)
     {
-        var removedBoards = Boards?.Where(x => 
-                newBoards.Exists(p => x.Ip.ToString() == p.Ip.ToString()))
+        var removedBoards = Boards?.Where(x =>
+                !newBoards.Exists(p => x.Ip.ToString() == p.Ip.ToString()))
             .ToList();
         
         if (removedBoards == null || removedBoards.Count == 0) return;
@@ -43,11 +47,18 @@ public static class LiteNet3Devices
         Boards?.RemoveAll(removedBoards.Contains);
     }
 
-    private static void SetAddedBoards(List<LiteNet3Board> newBoards)
+    private static IEnumerable<LiteNet3Board> SetAddedBoards(List<LiteNet3Board> newBoards)
     {
+        var addedBoards = new List<LiteNet3Board>();
+
         foreach (var newBoard in newBoards)
             if (!Boards.Any(existingBoard => existingBoard.Ip.ToString() == newBoard.Ip.ToString()))
+            {
                 Boards.Add(newBoard);
+                addedBoards.Add(newBoard);
+            }
+
+        return addedBoards;
     }
 
     public static LiteNet3Board[] SearchLiteNet3Boards(IPAddress? address = null)

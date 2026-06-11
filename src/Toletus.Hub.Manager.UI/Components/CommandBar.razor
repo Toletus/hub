@@ -1,0 +1,94 @@
+<footer class="cmdbar" data-screen-label="Barra de comandos">
+    @if (SelectedDevice is null)
+    {
+        <span class="cmdbar-hint">@Text["Actionbar.Empty"]</span>
+    }
+    else
+    {
+        <div class="cmdbar-label">
+            <strong>@ActionTitle</strong>
+            @if (SelectedDevice.Connected != true)
+            {
+                <span class="cmdbar-note">@Text["Actionbar.Hint"]</span>
+            }
+        </div>
+    }
+    <div class="cmdbar-btns">
+        @if (SelectedDevice is not null)
+        {
+            @foreach (var command in Commands)
+            {
+                @if (IsConnectionCommand(command))
+                {
+                    <span class="cmdbar-sep" aria-hidden="true"></span>
+                }
+
+                <button class="@GetCommandClass(command)"
+                        type="button"
+                        @onclick="() => CommandRequested.InvokeAsync(command.Id)"
+                        disabled="@IsCommandDisabled(command)"
+                        aria-busy="@IsCommandActive(command)"
+                        aria-pressed="@IsPrimaryConnectionCommand(command)">
+                    @if (IsCommandActive(command))
+                    {
+                        <span class="spin" aria-hidden="true"></span>
+                    }
+                    <span>@Text[command.LabelKey]</span>
+                </button>
+            }
+
+            @if (DetailsToggled.HasDelegate)
+            {
+                <button class="ghost-btn details-toggle"
+                        type="button"
+                        @onclick="() => DetailsToggled.InvokeAsync()">
+                    @Text["Actionbar.Details"]
+                </button>
+            }
+        }
+    </div>
+</footer>
+
+@code {
+    [Parameter, EditorRequired] public UiText Text { get; set; } = default!;
+    [Parameter] public DeviceRefViewModel? SelectedDevice { get; set; }
+    [Parameter] public string ActionTitle { get; set; } = string.Empty;
+    [Parameter] public IEnumerable<CommandCapability> Commands { get; set; } = Array.Empty<CommandCapability>();
+    [Parameter] public EventCallback<string> CommandRequested { get; set; }
+    [Parameter] public Func<CommandCapability, string>? CommandClass { get; set; }
+    [Parameter] public Func<CommandCapability, bool>? CommandDisabled { get; set; }
+    [Parameter] public EventCallback DetailsToggled { get; set; }
+
+    private string GetCommandClass(CommandCapability command)
+    {
+        var classes = new HashSet<string>(
+            (CommandClass?.Invoke(command) ?? "btn btn-soft").Split(' ', StringSplitOptions.RemoveEmptyEntries),
+            StringComparer.Ordinal);
+
+        classes.Add("btn");
+
+        return string.Join(" ", classes);
+    }
+
+    private bool IsCommandDisabled(CommandCapability command) =>
+        (CommandDisabled?.Invoke(command) ?? true) || IsUnavailableConnectionCommand(command);
+
+    private bool IsCommandActive(CommandCapability command) =>
+        HasCommandClass(command, "is-busy");
+
+    private bool IsPrimaryConnectionCommand(CommandCapability command) =>
+        SelectedDevice is { Connected: false } && command.Id == DeviceCapabilityCatalog.Connect ||
+        SelectedDevice is { Connected: true } && command.Id == DeviceCapabilityCatalog.Disconnect;
+
+    private static bool IsConnectionCommand(CommandCapability command) =>
+        command.Id is DeviceCapabilityCatalog.Connect or DeviceCapabilityCatalog.Disconnect;
+
+    private bool IsUnavailableConnectionCommand(CommandCapability command) =>
+        SelectedDevice is { Connected: true } && command.Id == DeviceCapabilityCatalog.Connect ||
+        SelectedDevice is { Connected: false } && command.Id == DeviceCapabilityCatalog.Disconnect;
+
+    private bool HasCommandClass(CommandCapability command, string className) =>
+        (CommandClass?.Invoke(command) ?? string.Empty)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Contains(className, StringComparer.Ordinal);
+}
