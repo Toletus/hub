@@ -50,10 +50,9 @@ public static class CommandHelper
                 or FlowUpdateResponse
                 => (int)ResponseType.Flow,
 
-            LiteNet3Response
-                or LiteNet3UpdateResponse
-                or LiteNet3ActionResponse
-                => (int)ResponseType.LiteNet3,
+            LiteNet3Response => (int)ResponseType.LiteNet3,
+            LiteNet3UpdateResponse => (int)ResponseType.LiteNet3Update,
+            LiteNet3ActionResponse => (int)ResponseType.LiteNet3Action,
 
             SensorResponse
                 or SensorUpdateResponse

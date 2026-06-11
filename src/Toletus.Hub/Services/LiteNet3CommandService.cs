@@ -83,7 +83,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
     {
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Action,
             () => device.Get<LiteNet3Board>()?.ReleaseEntry(topRow, bottomRow));
     }
 
@@ -91,7 +91,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
     {
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Action,
             () => device.Get<LiteNet3Board>()?.ReleaseEntryAndExit(topRow, bottomRow));
     }
 
@@ -99,7 +99,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
     {
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Action,
             () => device.Get<LiteNet3Board>()?.ReleaseExit(topRow, bottomRow));
     }
 
@@ -125,7 +125,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
         device.Id = id;
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Update,
             () => device.Get<LiteNet3Board>()?.SetId(id));
     }
 
@@ -133,7 +133,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
     {
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Update,
             () => device.Get<LiteNet3Board>()?.SetAlias(alias));
     }
 
@@ -206,7 +206,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
     {
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Update,
             () => device.Get<LiteNet3Board>()?.SetMenuPassword(password));
     }
 
@@ -222,7 +222,7 @@ public class LiteNet3CommandService : LiteNet3NotificationService
     {
         return await ExecuteCommandAsync(
             device,
-            ResponseType.LiteNet3,
+            ResponseType.LiteNet3Update,
             () => device.Get<LiteNet3Board>()?.SetReleaseDuration(releaseDuration));
     }
 

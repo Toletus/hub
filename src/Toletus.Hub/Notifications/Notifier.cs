@@ -12,7 +12,10 @@ public static class Notifier
         lock (NotificationsLock)
         {
             if (HasNotification(ip, command, hasResponse: false))
+            {
+                Console.WriteLine($"[Notifier] WARN: command {command} for {ip} already pending — discarding duplicate.");
                 return;
+            }
 
             Notifications.Add(new Notification(ip, id, command, type));
         }
