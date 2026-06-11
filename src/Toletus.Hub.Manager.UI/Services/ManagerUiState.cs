@@ -11,6 +11,7 @@ public sealed class ManagerUiState(
     ILogger<ManagerUiState> logger)
 {
     private readonly List<DeviceRefViewModel> _devices = [];
+    private int _activeExecuteAsync;
     private int _configurationLoadVersion;
 
     public event Action? Changed;
@@ -92,6 +93,19 @@ public sealed class ManagerUiState(
         if (SelectedDevice is null)
             return;
 
+        if (IsBusy || Interlocked.CompareExchange(ref _activeExecuteAsync, 1, 0) != 0)
+        {
+            logger.LogInformation(
+                "HubManagerDiag ExecuteAsync duplicate-blocked command={CommandId} activeCommand={ActiveCommandId} device={DeviceKey} thread={ThreadId}",
+                commandId,
+                CurrentCommandId,
+                SelectedDevice.Key,
+                Environment.CurrentManagedThreadId);
+            history.Add(commandId, CommandResultViewModel.Warning("Message.CommandAlreadyInProgress", CurrentCommandId, SelectedDevice));
+            Changed?.Invoke();
+            return;
+        }
+
         var totalTimestamp = Stopwatch.GetTimestamp();
         logger.LogInformation(
             "HubManagerDiag ExecuteAsync start command={CommandId} device={DeviceKey} type={DeviceType} connected={Connected} thread={ThreadId}",
@@ -101,92 +115,78 @@ public sealed class ManagerUiState(
             SelectedDevice.Connected,
             Environment.CurrentManagedThreadId);
 
-        await RunBusyAsync(async () =>
+        try
         {
-            var pendingTimestamp = Stopwatch.GetTimestamp();
-            history.Add(commandId, CommandResultViewModel.Pending("Message.CommandPending", SelectedDevice));
-            logger.LogInformation(
-                "HubManagerDiag ExecuteAsync pending-history-added command={CommandId} elapsedMs={ElapsedMs} thread={ThreadId}",
-                commandId,
-                Stopwatch.GetElapsedTime(pendingTimestamp).TotalMilliseconds,
-                Environment.CurrentManagedThreadId);
-
-            var deviceManagerTimestamp = Stopwatch.GetTimestamp();
-            var result = commandId switch
+            await RunBusyAsync(async () =>
             {
-                "connection.connect" => await deviceManager.ConnectAsync(SelectedDevice, SelectedNetwork, cancellationToken),
-                "connection.disconnect" => await deviceManager.DisconnectAsync(SelectedDevice, cancellationToken),
-                _ => await deviceManager.ExecuteCommandAsync(new DeviceCommandRequestViewModel
+                var pendingTimestamp = Stopwatch.GetTimestamp();
+                history.Add(commandId, CommandResultViewModel.Pending("Message.CommandPending", SelectedDevice));
+                logger.LogInformation(
+                    "HubManagerDiag ExecuteAsync pending-history-added command={CommandId} elapsedMs={ElapsedMs} thread={ThreadId}",
+                    commandId,
+                    Stopwatch.GetElapsedTime(pendingTimestamp).TotalMilliseconds,
+                    Environment.CurrentManagedThreadId);
+
+                var deviceManagerTimestamp = Stopwatch.GetTimestamp();
+                var result = commandId switch
                 {
-                    Device = SelectedDevice,
-                    CommandId = commandId,
-                    Message = "LiteNet Manager"
-                }, cancellationToken)
-            };
-            logger.LogInformation(
-                "HubManagerDiag ExecuteAsync device-manager-returned command={CommandId} status={Status} elapsedMs={ElapsedMs} thread={ThreadId}",
-                commandId,
-                result.Status,
-                Stopwatch.GetElapsedTime(deviceManagerTimestamp).TotalMilliseconds,
-                Environment.CurrentManagedThreadId);
+                    "connection.connect" => await deviceManager.ConnectAsync(SelectedDevice, SelectedNetwork, cancellationToken),
+                    "connection.disconnect" => await deviceManager.DisconnectAsync(SelectedDevice, cancellationToken),
+                    _ => await deviceManager.ExecuteCommandAsync(new DeviceCommandRequestViewModel
+                    {
+                        Device = SelectedDevice,
+                        CommandId = commandId,
+                        Message = "LiteNet Manager"
+                    }, cancellationToken)
+                };
+                logger.LogInformation(
+                    "HubManagerDiag ExecuteAsync device-manager-returned command={CommandId} status={Status} elapsedMs={ElapsedMs} thread={ThreadId}",
+                    commandId,
+                    result.Status,
+                    Stopwatch.GetElapsedTime(deviceManagerTimestamp).TotalMilliseconds,
+                    Environment.CurrentManagedThreadId);
 
-            if (commandId == "connection.disconnect" && result.IsSuccess)
-            {
-                result = result with { Device = MarkDeviceDisconnected(result.Device) };
-            }
-            else if (result.Device is not null)
-            {
-                ReplaceDevice(result.Device);
-            }
+                if (commandId == "connection.disconnect" && result.IsSuccess)
+                {
+                    result = result with { Device = MarkDeviceDisconnected(result.Device) };
+                }
+                else if (result.Device is not null)
+                {
+                    ReplaceDevice(result.Device);
+                }
 
-            var finalHistoryTimestamp = Stopwatch.GetTimestamp();
-            history.Add(commandId, result);
-            logger.LogInformation(
-                "HubManagerDiag ExecuteAsync final-history-added command={CommandId} status={Status} elapsedMs={ElapsedMs} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
-                commandId,
-                result.Status,
-                Stopwatch.GetElapsedTime(finalHistoryTimestamp).TotalMilliseconds,
-                Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
-                Environment.CurrentManagedThreadId);
+                var finalHistoryTimestamp = Stopwatch.GetTimestamp();
+                history.Add(commandId, result);
+                logger.LogInformation(
+                    "HubManagerDiag ExecuteAsync final-history-added command={CommandId} status={Status} elapsedMs={ElapsedMs} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
+                    commandId,
+                    result.Status,
+                    Stopwatch.GetElapsedTime(finalHistoryTimestamp).TotalMilliseconds,
+                    Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+                    Environment.CurrentManagedThreadId);
 
-            if (commandId == "connection.connect" && result.IsSuccess && result.Device?.Connected == true)
-                StartConfigurationLoad(cancellationToken);
-            else if (commandId == "connection.disconnect" && result.IsSuccess)
-            {
-                _configurationLoadVersion++;
-                IsConfigurationLoading = false;
-                CurrentConfigurationCommandId = null;
-                ConfigurationValues.Clear();
-                Changed?.Invoke();
-            }
-        }, commandId);
+                if (commandId == "connection.connect" && result.IsSuccess && result.Device?.Connected == true)
+                    StartConfigurationLoad(cancellationToken);
+                else if (commandId == "connection.disconnect" && result.IsSuccess)
+                {
+                    _configurationLoadVersion++;
+                    IsConfigurationLoading = false;
+                    CurrentConfigurationCommandId = null;
+                    ConfigurationValues.Clear();
+                    Changed?.Invoke();
+                }
+            }, commandId);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _activeExecuteAsync, 0);
+        }
 
         logger.LogInformation(
             "HubManagerDiag ExecuteAsync end command={CommandId} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
             commandId,
             Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
             Environment.CurrentManagedThreadId);
-    }
-
-    public async Task ConnectSerialAsync(CancellationToken cancellationToken = default)
-    {
-        await RunBusyAsync(async () =>
-        {
-            const string commandId = "connection.connect_serial";
-            history.Add(commandId, CommandResultViewModel.Pending("Message.CommandPending"));
-            var result = await deviceManager.ConnectSerialAsync(null, cancellationToken);
-
-            if (result.Device is not null)
-            {
-                ReplaceDevice(result.Device);
-                SelectedDevice = result.Device;
-            }
-
-            history.Add(commandId, result);
-
-            if (result.IsSuccess && result.Device?.Connected == true)
-                StartConfigurationLoad(cancellationToken);
-        }, "connection.connect_serial");
     }
 
     public async Task SendConfigurationAsync(string moduleKey, CancellationToken cancellationToken = default)

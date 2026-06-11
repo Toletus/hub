@@ -25,6 +25,7 @@ public sealed class HubDirectDeviceManager(
     ILogger<HubDirectDeviceManager> logger) : IHubDeviceManager
 {
     private readonly Dictionary<string, HubDevice> _devices = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ReleaseCommandGate _releaseCommandGate = new();
 
     public Task<IReadOnlyList<string>> GetNetworksAsync(CancellationToken cancellationToken = default)
     {
@@ -134,27 +135,21 @@ public sealed class HubDirectDeviceManager(
         {
             var result = request.CommandId switch
             {
-                DeviceCapabilityCatalog.ReleaseEntry => ToResult(await ExecuteCommonReleaseAsync(
+                DeviceCapabilityCatalog.ReleaseEntry => await ExecuteReleaseCommandAsync(
                         request.CommandId,
                         request.Device,
                         () => commonCommandService.ReleaseEntry(device, request.Message ?? string.Empty),
                         cancellationToken),
-                    "Message.CommandSuccess",
-                    request.Device),
-                DeviceCapabilityCatalog.ReleaseEntryAndExit => ToResult(await ExecuteCommonReleaseAsync(
+                DeviceCapabilityCatalog.ReleaseEntryAndExit => await ExecuteReleaseCommandAsync(
                         request.CommandId,
                         request.Device,
                         () => commonCommandService.ReleaseEntryAndExit(device, request.Message ?? string.Empty),
                         cancellationToken),
-                    "Message.CommandSuccess",
-                    request.Device),
-                DeviceCapabilityCatalog.ReleaseExit => ToResult(await ExecuteCommonReleaseAsync(
+                DeviceCapabilityCatalog.ReleaseExit => await ExecuteReleaseCommandAsync(
                         request.CommandId,
                         request.Device,
                         () => commonCommandService.ReleaseExit(device, request.Message ?? string.Empty),
                         cancellationToken),
-                    "Message.CommandSuccess",
-                    request.Device),
                 DeviceCapabilityCatalog.Reset => await ExecuteResetAsync(device, request.Device),
                 DeviceCapabilityCatalog.ResetCounters => await ExecuteResetCountersAsync(device, request.Device),
                 DeviceCapabilityCatalog.GetStatus => await ExecuteStatusAsync(device, request.Device),
@@ -184,7 +179,37 @@ public sealed class HubDirectDeviceManager(
         }
     }
 
-    private async Task<DeviceResponse> ExecuteCommonReleaseAsync(
+    private async Task<CommandResultViewModel> ExecuteReleaseCommandAsync(
+        string commandId,
+        DeviceRefViewModel device,
+        Func<DeviceResponse> action,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (!_releaseCommandGate.TryEnter(device.Key, commandId, out var activeCommandId))
+        {
+            logger.LogInformation(
+                "HubManagerDiag HubDirect.CommonRelease duplicate-blocked command={CommandId} activeCommand={ActiveCommandId} device={DeviceKey} thread={ThreadId}",
+                commandId,
+                activeCommandId,
+                device.Key,
+                Environment.CurrentManagedThreadId);
+            return CommandResultViewModel.Warning("Message.CommandAlreadyInProgress", activeCommandId, device);
+        }
+
+        try
+        {
+            var response = await ExecuteCommonReleaseAsync(commandId, device, action, cancellationToken);
+            return ToResult(response, "Message.CommandSuccess", device);
+        }
+        finally
+        {
+            _releaseCommandGate.Exit(device.Key);
+        }
+    }
+
+    private Task<DeviceResponse> ExecuteCommonReleaseAsync(
         string commandId,
         DeviceRefViewModel device,
         Func<DeviceResponse> action,
@@ -192,44 +217,46 @@ public sealed class HubDirectDeviceManager(
     {
         var totalTimestamp = Stopwatch.GetTimestamp();
         logger.LogInformation(
-            "HubManagerDiag HubDirect.CommonRelease schedule command={CommandId} device={DeviceKey} thread={ThreadId}",
+            "HubManagerDiag HubDirect.CommonRelease dispatch-start command={CommandId} device={DeviceKey} thread={ThreadId}",
             commandId,
             device.Key,
             Environment.CurrentManagedThreadId);
 
-        var response = await Task.Run(() =>
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var actionTimestamp = Stopwatch.GetTimestamp();
+        logger.LogInformation(
+            "HubManagerDiag HubDirect.CommonRelease action-start command={CommandId} device={DeviceKey} dispatchElapsedMs={DispatchElapsedMs} thread={ThreadId}",
+            commandId,
+            device.Key,
+            Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
+            Environment.CurrentManagedThreadId);
+
+        DeviceResponse response;
+        try
         {
-            var workerTimestamp = Stopwatch.GetTimestamp();
+            response = action();
+        }
+        finally
+        {
             logger.LogInformation(
-                "HubManagerDiag HubDirect.CommonRelease worker-start command={CommandId} device={DeviceKey} thread={ThreadId}",
+                "HubManagerDiag HubDirect.CommonRelease action-end command={CommandId} device={DeviceKey} actionElapsedMs={ActionElapsedMs} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
                 commandId,
                 device.Key,
+                Stopwatch.GetElapsedTime(actionTimestamp).TotalMilliseconds,
+                Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
                 Environment.CurrentManagedThreadId);
-
-            try
-            {
-                return action();
-            }
-            finally
-            {
-                logger.LogInformation(
-                    "HubManagerDiag HubDirect.CommonRelease worker-end command={CommandId} device={DeviceKey} elapsedMs={ElapsedMs} thread={ThreadId}",
-                    commandId,
-                    device.Key,
-                    Stopwatch.GetElapsedTime(workerTimestamp).TotalMilliseconds,
-                    Environment.CurrentManagedThreadId);
-            }
-        }, cancellationToken);
+        }
 
         logger.LogInformation(
-            "HubManagerDiag HubDirect.CommonRelease returned command={CommandId} device={DeviceKey} success={Success} elapsedMs={ElapsedMs} thread={ThreadId}",
+            "HubManagerDiag HubDirect.CommonRelease returned command={CommandId} device={DeviceKey} success={Success} totalElapsedMs={TotalElapsedMs} thread={ThreadId}",
             commandId,
             device.Key,
             response.Success,
             Stopwatch.GetElapsedTime(totalTimestamp).TotalMilliseconds,
             Environment.CurrentManagedThreadId);
 
-        return response;
+        return Task.FromResult(response);
     }
 
     public async Task<DeviceConfigurationViewModel> LoadConfigurationAsync(

@@ -13,8 +13,10 @@ namespace Toletus.Hub.Manager.Maui.Services;
 
 public sealed class HubNotificationHistoryBridge : IDisposable
 {
+    private static readonly TimeSpan LiteNet3PingHistoryInterval = TimeSpan.FromSeconds(5);
     private readonly NotificationHistoryService _history;
     private readonly ICommandHistoryFormatter _formatter;
+    private readonly LiteNet3PingHistoryThrottle _pingHistoryThrottle = new(LiteNet3PingHistoryInterval);
     private readonly Dictionary<string, LiteNet3Board> _observedLiteNet3Boards = new(StringComparer.OrdinalIgnoreCase);
 
     public HubNotificationHistoryBridge(NotificationHistoryService history, ICommandHistoryFormatter formatter)
@@ -102,7 +104,13 @@ public sealed class HubNotificationHistoryBridge : IDisposable
         }
 
         if (IsPingResponse(response))
+        {
+            var deviceKey = $"{DeviceTypeKind.LiteNet3}:{board.Ip}:{board.Id}";
+            if (!_pingHistoryThrottle.ShouldRecord(deviceKey, DateTimeOffset.UtcNow))
+                return;
+
             _ = AddLiteNet3ResponseAsync(board, response, "notification.litenet3.ping", "Message.NotificationReceived");
+        }
     }
 
     private async Task AddLiteNet3ErrorResponseAsync(LiteNet3BoardBase board, object response)

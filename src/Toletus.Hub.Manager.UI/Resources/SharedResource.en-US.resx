@@ -201,6 +201,7 @@
   <data name="Message.DiscoverySuccess" xml:space="preserve"><value>Discovery completed.</value></data>
   <data name="Message.CommandPending" xml:space="preserve"><value>Command in progress.</value></data>
   <data name="Message.CommandSuccess" xml:space="preserve"><value>Command executed.</value></data>
+  <data name="Message.CommandAlreadyInProgress" xml:space="preserve"><value>A command is already in progress for this device.</value></data>
   <data name="Message.CommandUnsupported" xml:space="preserve"><value>This command is not available for this device yet.</value></data>
   <data name="Message.CommandFailed" xml:space="preserve"><value>The command could not be executed.</value></data>
   <data name="Message.Connected" xml:space="preserve"><value>Device connected.</value></data>

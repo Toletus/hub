@@ -201,6 +201,7 @@
   <data name="Message.DiscoverySuccess" xml:space="preserve"><value>Descoberta conclu&#237;da.</value></data>
   <data name="Message.CommandPending" xml:space="preserve"><value>Comando em andamento.</value></data>
   <data name="Message.CommandSuccess" xml:space="preserve"><value>Comando executado.</value></data>
+  <data name="Message.CommandAlreadyInProgress" xml:space="preserve"><value>Comando j&#225; em andamento para este dispositivo.</value></data>
   <data name="Message.CommandUnsupported" xml:space="preserve"><value>Comando ainda n&#227;o est&#225; dispon&#237;vel para este dispositivo.</value></data>
   <data name="Message.CommandFailed" xml:space="preserve"><value>N&#227;o foi poss&#237;vel executar o comando.</value></data>
   <data name="Message.Connected" xml:space="preserve"><value>Dispositivo conectado.</value></data>
