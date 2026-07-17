@@ -86,3 +86,10 @@ Empacota um instalável assinado para distribuição:
 dotnet publish src/Toletus.Hub.Manager.Maui -f net9.0-windows10.0.19041.0 -c Release -r win-x64 -p:UseMonoRuntime=false -p:WindowsPackageType=MSIX -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint={thumbprint}
 ```
 `{thumbprint}` é o identificador de um certificado de assinatura instalado na máquina. O pacote é gerado em `.../win-x64/AppPackages/`. Para instalar em outra máquina, confie no certificado (`.cer`) e execute o `.msix`.
+
+---
+
+## Suporte ao integrador
+
+- Telefone/WhatsApp: +55 62 99342-7398
+- E-mail: assistencia@toletus.com
