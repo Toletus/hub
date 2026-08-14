@@ -6,7 +6,7 @@ Solution for discovering, connecting to, and operating Toletus devices (LiteNet1
 
 ## Projects
 - **Toletus.Hub** — core library: device discovery, connection/disconnection, commands, and notifications.
-- **Toletus.Hub.API** — ASP.NET Core API (net9.0) that exposes the core library over HTTP.
+- **Toletus.Hub.API** — ASP.NET Core API (net10.0) that exposes the core library over HTTP.
 - **Toletus.Hub.Manager.UI** — Blazor user interface (Razor Class Library) shared by the manager.
 - **Toletus.Hub.Manager.Maui** — manager application that hosts the interface and communicates directly with the core library.
 
@@ -14,11 +14,11 @@ Solution for discovering, connecting to, and operating Toletus devices (LiteNet1
 LiteNet1, LiteNet2, LiteNet3, and the SM25 reader.
 
 ## Requirements
-- .NET SDK 9
+- .NET SDK 10
 - To build the MAUI manager: the MAUI workload (`dotnet workload install maui`)
 
 ## Technologies
-- .NET 9 / C# 13
+- .NET 10 / C# 14
 - ASP.NET Core (Web API)
 - .NET MAUI + Blazor Hybrid
 
@@ -77,13 +77,13 @@ Desktop application for operating the devices through a graphical interface. It 
 
 ### Running in development (Windows)
 ```
-dotnet run --project src/Toletus.Hub.Manager.Maui -f net9.0-windows10.0.19041.0
+dotnet run --project src/Toletus.Hub.Manager.Maui -f net10.0-windows10.0.19041.0
 ```
 
 ### Building the installer (MSIX)
 Packages a signed installer for distribution:
 ```
-dotnet publish src/Toletus.Hub.Manager.Maui -f net9.0-windows10.0.19041.0 -c Release -r win-x64 -p:UseMonoRuntime=false -p:WindowsPackageType=MSIX -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint={thumbprint}
+dotnet publish src/Toletus.Hub.Manager.Maui -f net10.0-windows10.0.19041.0 -c Release -r win-x64 -p:UseMonoRuntime=false -p:WindowsPackageType=MSIX -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint={thumbprint}
 ```
 `{thumbprint}` is the identifier of a signing certificate installed on the machine. The package is generated under `.../win-x64/AppPackages/`. To install it on another machine, trust the certificate (`.cer`) and run the `.msix`.
 
