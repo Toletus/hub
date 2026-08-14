@@ -6,7 +6,7 @@ Solução para descoberta, conexão e operação de dispositivos Toletus (LiteNe
 
 ## Projetos
 - **Toletus.Hub** — biblioteca central: descoberta de dispositivos, conexão/desconexão, comandos e notificações.
-- **Toletus.Hub.API** — API ASP.NET Core (net9.0) que expõe a biblioteca central via HTTP.
+- **Toletus.Hub.API** — API ASP.NET Core (net10.0) que expõe a biblioteca central via HTTP.
 - **Toletus.Hub.Manager.UI** — interface em Blazor (Razor Class Library) compartilhada pelo gerenciador.
 - **Toletus.Hub.Manager.Maui** — aplicativo gerenciador que hospeda a interface e se comunica diretamente com a biblioteca central.
 
@@ -14,11 +14,11 @@ Solução para descoberta, conexão e operação de dispositivos Toletus (LiteNe
 LiteNet1, LiteNet2, LiteNet3 e leitor SM25.
 
 ## Requisitos
-- .NET SDK 9
+- .NET SDK 10
 - Para compilar o gerenciador MAUI: workload MAUI (`dotnet workload install maui`)
 
 ## Tecnologias
-- .NET 9 / C# 13
+- .NET 10 / C# 14
 - ASP.NET Core (Web API)
 - .NET MAUI + Blazor Hybrid
 
@@ -77,13 +77,13 @@ Aplicativo desktop para operar os dispositivos por uma interface gráfica. Ele s
 
 ### Executando em desenvolvimento (Windows)
 ```
-dotnet run --project src/Toletus.Hub.Manager.Maui -f net9.0-windows10.0.19041.0
+dotnet run --project src/Toletus.Hub.Manager.Maui -f net10.0-windows10.0.19041.0
 ```
 
 ### Gerando o instalador (MSIX)
 Empacota um instalável assinado para distribuição:
 ```
-dotnet publish src/Toletus.Hub.Manager.Maui -f net9.0-windows10.0.19041.0 -c Release -r win-x64 -p:UseMonoRuntime=false -p:WindowsPackageType=MSIX -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint={thumbprint}
+dotnet publish src/Toletus.Hub.Manager.Maui -f net10.0-windows10.0.19041.0 -c Release -r win-x64 -p:UseMonoRuntime=false -p:WindowsPackageType=MSIX -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint={thumbprint}
 ```
 `{thumbprint}` é o identificador de um certificado de assinatura instalado na máquina. O pacote é gerado em `.../win-x64/AppPackages/`. Para instalar em outra máquina, confie no certificado (`.cer`) e execute o `.msix`.
 

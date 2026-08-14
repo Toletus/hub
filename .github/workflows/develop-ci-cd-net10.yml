@@ -1,22 +1,22 @@
-name: Main
+name: Develop (beta)
 
 on:
   workflow_dispatch:
 #  push:
 #    branches:
-#      main
+#      develop
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
 
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
           source-url: https://nuget.pkg.github.com/toletus/index.json
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -25,7 +25,7 @@ jobs:
         env:
           github_ref: ${{ github.ref }}
         run: |
-          version='9.${{ github.run_number }}.${{ github.run_attempt }}'
+          version='10.${{ github.run_number }}.${{ github.run_attempt }}'
            echo version=$version
            echo "version=$version" >> $GITHUB_ENV
 
@@ -35,7 +35,7 @@ jobs:
 
       - name: Create the Package
         run: |
-          dotnet pack "src/Toletus.Hub/Toletus.Hub.csproj" --configuration Release /p:PackageVersion=${{ env.version }}  #-beta
+          dotnet pack "src/Toletus.Hub/Toletus.Hub.csproj" --configuration Release /p:PackageVersion=${{ env.version }}-beta
 
       - name: Publish Toletus.Hub on Nuget
         run: |
