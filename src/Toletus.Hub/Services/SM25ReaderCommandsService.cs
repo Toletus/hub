@@ -1,4 +1,5 @@
-﻿using Toletus.Hub.Models;
+﻿using System.Collections.Concurrent;
+using Toletus.Hub.Models;
 using Toletus.Hub.Notifications;
 using Toletus.Hub.Services.NotificationsServices;
 using Toletus.LiteNet2;
@@ -10,7 +11,30 @@ namespace Toletus.Hub.Services;
 // ReSharper disable once InconsistentNaming
 public class SM25ReaderCommandsService : SM25NotificationService
 {
-    private static readonly Dictionary<string, SM25Reader> Readers = [];
+    // Concorrente: os comandos chegam por caminhos assíncronos e o dicionário comum
+    // que havia aqui podia ser mutado por dois deles ao mesmo tempo. O cache de
+    // placas ao lado (LiteNet2) já era concorrente; este não era.
+    private static readonly ConcurrentDictionary<string, ReaderEntry> Readers =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    // Um portão por leitor: duas operações lógicas nunca compartilham o mesmo
+    // equipamento. Vive fora de Readers porque precisa sobreviver à entrada ser
+    // removida no fim da sessão.
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    // internal, não private: o construtor da sessão precisa recebê-lo. Continua
+    // invisível para quem consome o pacote.
+    internal sealed class ReaderEntry(SM25Reader reader)
+    {
+        public SM25Reader Reader { get; } = reader;
+
+        /// <summary>
+        /// Verdadeiro enquanto uma sessão segura este leitor. Com sessão aberta, os
+        /// comandos individuais não abrem nem fecham conexão: reaproveitam a dela.
+        /// </summary>
+        public bool HeldBySession { get; set; }
+    }
 
     #region Reads Commands
 
@@ -284,7 +308,137 @@ public class SM25ReaderCommandsService : SM25NotificationService
 
     #endregion
 
+    #region Session
+
+    /// <summary>
+    /// Abre uma sessão exclusiva com o leitor daquele equipamento e a mantém até o
+    /// descarte. Enquanto ela vive, os comandos individuais reaproveitam a mesma
+    /// conexão em vez de abrir e fechar uma por comando.
+    ///
+    /// <para>
+    /// Existe porque duas operações do leitor são <b>sequências</b>, não comandos
+    /// avulsos: gravar um template é anunciar o tamanho, esperar a confirmação e só
+    /// então enviar slot e dados, tudo na mesma sessão; e capturar é uma interação
+    /// dirigida por eventos que dura até o tempo limite do dedo. Com conexão por
+    /// comando, a gravação parte em duas conexões e a captura perde os eventos ao
+    /// fim do primeiro comando.
+    /// </para>
+    ///
+    /// <para>
+    /// A exclusividade é por leitor: leitores diferentes seguem independentes. A
+    /// espera é pelo portão daquele equipamento, então duas sessões no mesmo leitor
+    /// se enfileiram em vez de se corromperem.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Sessão não é vaga de teto de carga.</b> Quem limita quantas requisições
+    /// simultâneas a máquina faz é o chamador, por requisição — segurar uma vaga pela
+    /// duração da sessão travaria as demais sincronizações.
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// A sessão, ou <c>null</c> quando não há placa conectada para aquele equipamento.
+    /// Quando devolve <c>null</c>, nada foi adquirido e não há o que descartar.
+    /// </returns>
+    public static async Task<SM25ReaderSession?> OpenSessionAsync(
+        Device device, CancellationToken cancellationToken = default)
+    {
+        var key = ResolveKey(device);
+
+        if (key == null) return null;
+
+        var gate = GateFor(key);
+        await gate.WaitAsync(cancellationToken);
+
+        try
+        {
+            var reader = GetReader(device);
+
+            if (reader == null)
+            {
+                gate.Release();
+                return null;
+            }
+
+            reader.Connect();
+
+            var entry = new ReaderEntry(reader) { HeldBySession = true };
+            Readers[key] = entry;
+            SubscribeSM25Reader(reader);
+
+            return new SM25ReaderSession(key, entry, gate);
+        }
+        catch
+        {
+            gate.Release();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Sessão exclusiva com o leitor de um equipamento. Descartar fecha a conexão e
+    /// libera o leitor para a próxima operação — inclusive quando a operação falhou.
+    /// </summary>
+    public sealed class SM25ReaderSession : IDisposable
+    {
+        private readonly string _key;
+        private readonly ReaderEntry _entry;
+        private readonly SemaphoreSlim _gate;
+        private int _disposed;
+
+        internal SM25ReaderSession(string key, ReaderEntry entry, SemaphoreSlim gate)
+        {
+            _key = key;
+            _entry = entry;
+            _gate = gate;
+        }
+
+        /// <summary>O leitor desta sessão, já conectado.</summary>
+        public SM25Reader Reader => _entry.Reader;
+
+        public void Dispose()
+        {
+            // Descarte duplo não pode liberar o portão duas vezes: isso deixaria dois
+            // donos no mesmo leitor.
+            if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+
+            try
+            {
+                _entry.HeldBySession = false;
+                Readers.TryRemove(_key, out _);
+
+                try
+                {
+                    _entry.Reader.Close();
+                }
+                finally
+                {
+                    UnsubscribeSM25Reader(_entry.Reader);
+                }
+            }
+            finally
+            {
+                _gate.Release();
+            }
+        }
+    }
+
+    #endregion
+
     #region Privates Methods
+
+    /// <summary>
+    /// Chave do leitor no cache. Vem do endereço da <b>placa</b>, que é o mesmo
+    /// endereço usado para criar o leitor — antes a chave vinha do dispositivo e a
+    /// criação da placa, e as duas origens podiam divergir, vazando entrada no cache.
+    /// <c>null</c> quando não há placa conectada: sem placa não há leitor.
+    /// </summary>
+    private static string? ResolveKey(Device device)
+    {
+        var board = device.Get<LiteNet2Board>();
+
+        return board is not { Connected: true } ? null : board.Ip.ToString();
+    }
 
     private static SM25Reader? GetReader(Device device)
     {
@@ -295,29 +449,49 @@ public class SM25ReaderCommandsService : SM25NotificationService
 
     private static SM25Reader? Connect(Device device)
     {
-        Readers.TryGetValue(device.Ip, out var reader);
+        var key = ResolveKey(device);
 
-        if (reader is { Connected: true }) return reader;
+        if (key == null) return null;
 
-        reader = GetReader(device);
+        if (Readers.TryGetValue(key, out var entry))
+        {
+            // Com sessão aberta o leitor é dela: devolve como está, mesmo que a
+            // conexão tenha caído — reconectar por baixo da sessão criaria um
+            // segundo socket para o mesmo leitor.
+            if (entry.HeldBySession) return entry.Reader;
+
+            if (entry.Reader.Connected) return entry.Reader;
+        }
+
+        var reader = GetReader(device);
 
         if (reader == null) return null;
 
         reader.Connect();
-        Readers.TryAdd(device.Ip, reader);
+        Readers[key] = new ReaderEntry(reader);
         SubscribeSM25Reader(reader);
         return reader;
     }
 
     private static void Disconnect(Device device)
     {
-        Readers.TryGetValue(device.Ip, out var reader);
+        var key = ResolveKey(device);
 
-        reader ??= GetReader(device);
-        reader?.Close();
-        Readers.Remove(device.Ip);
-        UnsubscribeSM25Reader(reader);
+        if (key == null) return;
+
+        if (!Readers.TryGetValue(key, out var entry))
+            return; // Nada a fechar. Antes fabricava um leitor só para fechá-lo.
+
+        // Sessão aberta: o fechamento é dela, no fim da operação lógica.
+        if (entry.HeldBySession) return;
+
+        Readers.TryRemove(key, out _);
+        entry.Reader.Close();
+        UnsubscribeSM25Reader(entry.Reader);
     }
+
+    private static SemaphoreSlim GateFor(string key) =>
+        Gates.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
 
     #endregion
 }
