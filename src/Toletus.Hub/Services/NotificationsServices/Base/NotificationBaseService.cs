@@ -40,8 +40,8 @@ public class NotificationBaseService
         Notification? notification,
         bool shouldSendToWebhook)
     {
-        if (Notifier.HasNotification(ip, command, hasResponse: false))
-            Notifier.UpdateNotification(ip, command, response!);
+        if (response != null && Notifier.HasPending(ip, command))
+            Notifier.CompleteOldest(ip, command, response);
         else if (notification != null && shouldSendToWebhook)
             _ = WebhookSerivce.PostDeviceResponse(notification);
     }
