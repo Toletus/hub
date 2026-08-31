@@ -27,10 +27,10 @@ public class LiteNet3NotificationService : NotificationBaseService
         if (TryCreateDeviceActionNotification(deviceAction, device, (int)command, out var notification))
             return notification;
 
-        Notifier.AddNotification(device.Ip, device.Id, (int)command, device.Type);
+        var token = Notifier.AddNotification(device.Ip, device.Id, (int)command, device.Type);
         deviceAction!.Invoke();
         if (waitResponse)
-            return await Notification.GetNotification(device.Ip, device.Id, (int)command, device.Type);
+            return await Notification.GetNotification(token, device.Ip, device.Id, (int)command, device.Type);
 
         return Notification.CreateNotification(
             device.Ip,

@@ -18,21 +18,26 @@ public class Notification(string ip, int id, int command, DeviceType deviceType,
     public DeviceType Type { get; set; } = deviceType;
     public object? Response { get; set; } = response;
 
-    public static async Task<Notification> GetNotification(string ip, int id, int command, DeviceType type)
+    /// <summary>Token de correlação — casa a resposta à requisição sem colidir por (ip, comando).</summary>
+    public Guid Token { get; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+
+    public static async Task<Notification> GetNotification(Guid token, string ip, int id, int command, DeviceType type)
     {
         var timer = new PeriodicTimer(PollingInterval);
         var startTime = DateTime.UtcNow;
 
         do
         {
-            if (Notifier.HasNotification(ip, command))
-                return ExtractAndClearNotification(ip, command);
+            if (Notifier.TryTakeResponse(token, out var response) && response != null)
+                return CreateNotification(ip, id, command, type, response);
 
             if (DateTime.UtcNow - startTime > MaxPollingDuration)
                 break;
         } while (await timer.WaitForNextTickAsync());
 
-        return CreateTimeoutNotification(ip, id, command, type);
+        Notifier.Remove(token);
+        return CreateNotification(ip, id, command, type, new DeviceResponse(false, "The request has timed out"));
     }
 
     public static Notification GetNotification(LiteNet2Board liteNet2Board, LiteNet2Response liteNet2Response)
@@ -55,17 +60,4 @@ public class Notification(string ip, int id, int command, DeviceType deviceType,
     public static Task<Notification>
         GetNotification(string ip, int id, int command, DeviceType type, DeviceResponse response) =>
         Task.FromResult(CreateNotification(ip, id, command, type, response));
-
-    private static Notification ExtractAndClearNotification(string ip, int command)
-    {
-        var notification = Notifier.GetNotification(ip, command);
-        Notifier.ClearNotification(ip, command);
-        return notification;
-    }
-
-    private static Notification CreateTimeoutNotification(string ip, int id, int command, DeviceType type)
-    {
-        Notifier.ClearNotification(ip, command);
-        return CreateNotification(ip, id, command, type, new DeviceResponse(false, "The request has timed out"));
-    }
 }

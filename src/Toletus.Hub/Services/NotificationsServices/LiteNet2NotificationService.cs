@@ -13,6 +13,8 @@ namespace Toletus.Hub.Services.NotificationsServices;
 
 public class LiteNet2NotificationService : NotificationBaseService
 {
+    public static Action<string>? Log;
+
     public static void Initialize()
     {
         LiteNet2Devices.OnBoardReceived += OnLiteNet2BoardReceived;
@@ -27,9 +29,18 @@ public class LiteNet2NotificationService : NotificationBaseService
         if (TryCreateDeviceActionNotification(deviceAction, device, (int)command, out var notification))
             return notification;
 
-        Notifier.AddNotification(device.Ip, device.Id, (int)command, device.Type);
+        var token = Notifier.AddNotification(device.Ip, device.Id, (int)command, device.Type);
+        var board = device.Get<LiteNet2Board>();
+
         deviceAction!.Invoke();
-        return await Notification.GetNotification(device.Ip, device.Id, (int)command, device.Type);
+
+        // Envio falhou (o transporte derrubou a conexão na escrita) -> registra catraca e comando (AC-005.2).
+        if (board != null && !board.Connected)
+            Log?.Invoke(
+                $"[LiteNet2] Falha de envio: comando {command} não entregue à catraca {device.Ip} " +
+                $"(serial {board.SerialNumber}).");
+
+        return await Notification.GetNotification(token, device.Ip, device.Id, (int)command, device.Type);
     }
 
     protected static async Task<Notification> ExecuteCommandAsync(
@@ -129,14 +140,18 @@ public class LiteNet2NotificationService : NotificationBaseService
     }
 
     private static void Board_OnConnectionStatusChanged(LiteNet2BoardBase litenet2Board,
-        BoardConnectionStatus boardConnectionStatus)
+        ConnectionStateChange change)
     {
+        if (change.Cause == ConnectionCause.SendError)
+            Log?.Invoke($"[LiteNet2] Falha de envio detectada na catraca {litenet2Board.Ip} " +
+                        $"(serial {litenet2Board.SerialNumber}).");
+
         var notification = Notification.CreateNotification(
             litenet2Board.Ip.ToString(),
             litenet2Board.Id,
             0,
             DeviceType.LiteNet2,
-            new { BoardConnectionStatus = boardConnectionStatus });
+            new { BoardConnectionStatus = change.Status, change.Cause });
 
         ProcessNotification(litenet2Board.Ip.ToString(), 0, notification: notification, shouldSendToWebhook: false);
     }
