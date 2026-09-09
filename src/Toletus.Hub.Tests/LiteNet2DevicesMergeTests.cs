@@ -77,14 +77,17 @@ public class LiteNet2DevicesMergeTests : IDisposable
         Assert.Equal(2, LiteNet2Devices.Boards!.Count);
     }
 
-    // Caso 4 — ausente da varredura, desconectada: remove.
+    // Caso 4 — ausente da varredura NAO e removida (nem desconectada).
+    // Varredura pode nao enxergar a catraca por motivo transitorio; remover transformava
+    // isso em "LiteNet2 board not found" permanente. O legado nunca remove.
     [Fact]
-    public void Absent_disconnected_is_removed()
+    public void Absent_disconnected_is_kept()
     {
         LiteNet2Devices.SetBoards(new List<LiteNet2Board> { Disconnected("127.0.0.4", "S5", 5) });
         LiteNet2Devices.SetBoards(new List<LiteNet2Board>()); // varredura vazia
 
-        Assert.Empty(LiteNet2Devices.Boards!);
+        Assert.Single(LiteNet2Devices.Boards!);
+        Assert.Equal("S5", LiteNet2Devices.Boards![0].SerialNumber);
     }
 
     // Caso 5 — ausente da varredura, conectada: mantém (o transporte decide a queda).

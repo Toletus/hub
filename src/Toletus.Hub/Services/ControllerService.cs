@@ -53,7 +53,7 @@ public class ControllerService
             return new DeviceResponse(success: false, NotFoundMessage);
 
         if (board.Connected)
-            return new DeviceResponse(success: false, AlreadyConnected);
+            return new DeviceResponse(success: false, AlreadyConnected, Device.CreateFrom(board));
 
         board.Connect();
 

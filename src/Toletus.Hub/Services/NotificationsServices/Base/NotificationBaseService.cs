@@ -1,4 +1,5 @@
-﻿using Toletus.Hub.Models;
+using Toletus.Hub.Models;
+using Toletus.LiteNet2;
 using Toletus.Hub.Notifications;
 
 namespace Toletus.Hub.Services.NotificationsServices.Base;
@@ -26,6 +27,16 @@ public class NotificationBaseService
 
     protected static Device RefreshDeviceConnectionState(Device device)
     {
+        if (device.Type == DeviceType.LiteNet2)
+        {
+            var liteNet2Board = device.Get<LiteNet2Board>();
+            if (liteNet2Board is not null)
+            {
+                device.Connected = liteNet2Board.Connected;
+                return device;
+            }
+        }
+
         device.Connected = DeviceService.Devices?.FirstOrDefault(x =>
             x.Ip == device.Ip
             && x.Type == device.Type)?.Connected ?? false;

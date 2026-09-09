@@ -34,16 +34,12 @@ public static class LiteNet2Devices
 
         lock (Lock)
         {
-            var present = new HashSet<LiteNet2Board>();
-
             foreach (var s in scanned)
             {
                 var existing = FindByIdentity(s);
 
                 if (existing != null)
                 {
-                    present.Add(existing);
-
                     if (existing.Connected)
                     {
                         // identidade conhecida, conectada -> mantém instância; atualiza metadados in place.
@@ -56,8 +52,6 @@ public static class LiteNet2Devices
                         // identidade conhecida, desconectada -> substitui pela nova.
                         BoardsInternal.Remove(existing);
                         BoardsInternal.Add(s);
-                        present.Remove(existing);
-                        present.Add(s);
                         newlyAdded.Add(s);
                     }
 
@@ -70,7 +64,6 @@ public static class LiteNet2Devices
                     if (sameAddress.Connected)
                     {
                         // mesmo endereço, identidade divergente, conectada -> mantém a conectada + log.
-                        present.Add(sameAddress);
                         Log?.Invoke(
                             $"[LiteNet2Devices] Divergência no endereço {s.Ip}: mantida a conectada " +
                             $"(serial {sameAddress.SerialNumber}); nova (serial {s.SerialNumber}) ignorada. " +
@@ -84,16 +77,7 @@ public static class LiteNet2Devices
 
                 // identidade nova -> adiciona.
                 BoardsInternal.Add(s);
-                present.Add(s);
                 newlyAdded.Add(s);
-            }
-
-            // Ausentes da varredura: desconectada -> remove; conectada -> mantém (o transporte decide a queda).
-            foreach (var board in BoardsInternal.ToList())
-            {
-                if (present.Contains(board)) continue;
-                if (!board.Connected)
-                    BoardsInternal.Remove(board);
             }
         }
 
