@@ -1,9 +1,9 @@
-using Scalar.AspNetCore;
+﻿using Scalar.AspNetCore;
 using Toletus.Hub;
-using Toletus.Hub.Services;
 using Toletus.Hub.Services.NotificationsServices;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseWindowsService();
 
 ConfigureServices(builder);
 

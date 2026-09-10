@@ -18,11 +18,12 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.12" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.8.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Toletus.Hub\Toletus.Hub.csproj"/>
+        <ProjectReference Include="..\Toletus.Hub\Toletus.Hub.csproj" />
     </ItemGroup>
 
 </Project>
